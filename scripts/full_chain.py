@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import tempfile
 from pathlib import Path
 import shutil
@@ -11,6 +12,7 @@ from typing import Any, Optional, Union
 import acts
 from acts.examples.simulation import (
     addParticleGun,
+    addPythia8,
     MomentumConfig,
     EtaConfig,
     PhiConfig,
@@ -42,6 +44,12 @@ materialMap = geoDir / "data/odd-material-maps.root"
 digiConfig = geoDir / "config/odd-digi-smearing-config.json"
 seedingSel = geoDir / "config/odd-seeding-config.json"
 materialDeco = acts.IMaterialDecorator.fromFile(materialMap)
+
+# ODD
+detector, trackingGeometry, decorators = getOpenDataDetector(
+    geoDir, mdecorator=materialDeco
+)
+field = acts.ConstantBField(acts.Vector3(0.0, 0.0, 2.0 * u.T))
 
 
 def main():
@@ -75,7 +83,7 @@ def main():
             outdir.mkdir(parents=True, exist_ok=True)
 
             # for debugging
-            #run_single_particles(outdir, event, simulation, seeding)
+            # run_single_particles(outdir, event, simulation, seeding)
 
             pool.apply_async(
                 run_single_particles, args=(outdir, event, simulation, seeding)
@@ -90,15 +98,16 @@ def create_label(event, simulation, seeding):
 
 
 def run_single_particles(outdir, event, simulation, seeding):
-    events = 1000
+    stdbackup = sys.stdout, sys.stderr
+    sys.stdout = open(outdir / "stdout.txt", "w")
+    sys.stderr = open(outdir / "stderr.txt", "w")
+
+    # TODO number of events will depend on what kind of event we are processing
+    events = 100000
+    # single thread because we do multiprocessing
     numThreads = 1
 
     with tempfile.TemporaryDirectory() as temp:
-        detector, trackingGeometry, decorators = getOpenDataDetector(
-            geoDir, mdecorator=materialDeco
-        )
-        field = acts.ConstantBField(acts.Vector3(0.0, 0.0, 2.0 * u.T))
-
         tp = Path(temp)
         rnd = acts.examples.RandomNumbers(seed=42)
 
@@ -112,10 +121,10 @@ def run_single_particles(outdir, event, simulation, seeding):
         for d in decorators:
             s.addContextDecorator(d)
 
-        addMyEventGen(
+        eventType = addMyEventGen(
             s,
             event,
-            rnd,
+            rnd=rnd,
             outputDirRoot=tp,
         )
 
@@ -124,7 +133,7 @@ def run_single_particles(outdir, event, simulation, seeding):
             simulation,
             trackingGeometry,
             field,
-            rnd,
+            rnd=rnd,
             detector=detector,
             preSelectParticles=ParticleSelectorConfig(),
             postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
@@ -145,7 +154,7 @@ def run_single_particles(outdir, event, simulation, seeding):
             seeding,
             trackingGeometry,
             field,
-            rnd,
+            rnd=rnd,
             outputDirRoot=tp,
         )
 
@@ -161,22 +170,23 @@ def run_single_particles(outdir, event, simulation, seeding):
             outputDirRoot=tp,
         )
 
-        addAmbiguityResolution(
-            s,
-            AmbiguityResolutionConfig(
-                maximumSharedHits=3,
-                maximumIterations=10000,
-                nMeasurementsMin=7,
-            ),
-            outputDirRoot=tp,
-        )
+        if eventType != "single_particles":
+            addAmbiguityResolution(
+                s,
+                AmbiguityResolutionConfig(
+                    maximumSharedHits=3,
+                    maximumIterations=10000,
+                    nMeasurementsMin=7,
+                ),
+                outputDirRoot=tp,
+            )
 
-        addVertexFitting(
-            s,
-            field,
-            vertexFinder=VertexFinder.Iterative,
-            outputDirRoot=tp,
-        )
+            addVertexFitting(
+                s,
+                field,
+                vertexFinder=VertexFinder.Iterative,
+                outputDirRoot=tp,
+            )
 
         s.run()
         del s
@@ -193,6 +203,9 @@ def run_single_particles(outdir, event, simulation, seeding):
             assert perf_file.exists(), "Performance file not found"
             shutil.copy(perf_file, outdir / f"{stem}.root")
 
+    # TODO make this work even if there was an error before
+    sys.stdout, sys.stderr = stdbackup
+
 
 def addMyEventGen(
     s: acts.examples.Sequencer,
@@ -200,10 +213,24 @@ def addMyEventGen(
     rnd: acts.examples.RandomNumbers,
     outputDirRoot: Optional[Union[Path, str]] = None,
 ):
+    vtxGen = acts.examples.GaussianVertexGenerator(
+        mean=acts.Vector4(0, 0, 0, 0),
+        stddev=acts.Vector4(10 * u.um, 10 * u.um, 50 * u.mm, 1 * u.ns),
+    )
+
     # generate special events on top
 
-    if event == "ttbar":
-        raise NotImplementedError("ttbar not implemented yet")
+    if event.startswith("ttbar_"):
+        pu = float(event.split("_")[1])
+
+        addPythia8(
+            s,
+            hardProcess=["Top:qqbar2ttbar=on"],
+            npileup=pu,
+            vtxGen=vtxGen,
+            rnd=rnd,
+        )
+
         return "ttbar"
 
     # generate single particles
@@ -225,10 +252,7 @@ def addMyEventGen(
         MomentumConfig(pT, pT, transverse=True),
         EtaConfig(-3.0, 3.0, uniform=True),
         PhiConfig(0.0 * u.degree, 360.0 * u.degree),
-        vtxGen=acts.examples.GaussianVertexGenerator(
-            mean=acts.Vector4(0, 0, 0, 0),
-            stddev=acts.Vector4(10 * u.um, 10 * u.um, 50 * u.mm, 1 * u.ns),
-        ),
+        vtxGen=vtxGen,
         multiplicity=1,
         rnd=rnd,
         outputDirRoot=outputDirRoot,

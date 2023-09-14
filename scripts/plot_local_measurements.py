@@ -80,7 +80,9 @@ with pd.option_context("display.max_rows", None, "display.max_columns", None):
     )
 
 for ids in np.unique(
-    np.concatenate((measurements[id_columns_m].values, trackstates[id_columns_t].values)),
+    np.concatenate(
+        (measurements[id_columns_m].values, trackstates[id_columns_t].values)
+    ),
     axis=0,
 ):
     mask_m = np.all(measurements[id_columns_m] == ids, axis=1)
