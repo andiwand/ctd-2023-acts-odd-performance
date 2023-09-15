@@ -8,6 +8,7 @@ import itertools
 from multiprocessing import Pool, freeze_support
 import argparse
 from typing import Any, Optional, Union
+import fnmatch
 
 import acts
 from acts.examples.simulation import (
@@ -58,7 +59,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("outdir")
-    parser.add_argument("--pool-size", default=2)
+    parser.add_argument("--pool-size", default=4)
+    parser.add_argument("--filter", default="*")
     args = parser.parse_args()
 
     events = [
@@ -81,6 +83,10 @@ def main():
             label = create_label(event, simulation, seeding)
             outdir = Path(args.outdir) / label
             outdir.mkdir(parents=True, exist_ok=True)
+
+            if not fnmatch.fnmatch(label, args.filter):
+                print(f"skipping {label}")
+                continue
 
             # for debugging
             # run_single_particles(outdir, event, simulation, seeding)
