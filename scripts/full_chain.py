@@ -176,33 +176,38 @@ def run_single_particles(outdir, event, simulation, seeding):
             outputDirRoot=tp,
         )
 
-        if eventType != "single_particles":
-            addAmbiguityResolution(
-                s,
-                AmbiguityResolutionConfig(
-                    maximumSharedHits=3,
-                    maximumIterations=10000,
-                    nMeasurementsMin=7,
-                ),
-                outputDirRoot=tp,
-            )
+        addAmbiguityResolution(
+            s,
+            AmbiguityResolutionConfig(
+                maximumSharedHits=3,
+                maximumIterations=10000,
+                nMeasurementsMin=7,
+            ),
+            outputDirRoot=tp,
+        )
 
-            addVertexFitting(
-                s,
-                field,
-                vertexFinder=VertexFinder.Iterative,
-                outputDirRoot=tp,
-            )
+        addVertexFitting(
+            s,
+            field,
+            vertexFinder=VertexFinder.Iterative,
+            outputDirRoot=tp,
+        )
 
         s.run()
         del s
 
         for stem in [
+            "particles",
+            "particles_initial",
+            "particles_final",
             "hits",
             "measurements",
             "tracksummary_ckf",
             "trackstates_ckf",
             "performance_ckf",
+            "tracksummary_ambi",
+            "trackstates_ambi",
+            "performance_ambi",
             "performance_ivf",
         ]:
             perf_file = tp / f"{stem}.root"

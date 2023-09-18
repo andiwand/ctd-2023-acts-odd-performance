@@ -8,28 +8,9 @@ import argparse
 import numpy as np
 from scipy.stats import binned_statistic
 
-from common.plot_style import myPlotStyle
-
-
-def label(file):
-    particle_map = {
-        "mu": "$\mu$",
-        "pi": "$\pi$",
-        "e": "$e$",
-    }
-    split = Path(file).parent.name.split("_")
-    #return f"single {particle_map[split[0]]} {split[1].replace('GeV', '')} GeV"
-    return f"{split[1].replace('GeV', '')} GeV"
-
-
-def smoothed_std(data):
-    def fit2(data):
-        return np.mean(data), np.std(data)
-
-    for _ in range(3):
-        m, s = fit2(data)
-        data = data[np.abs(data - m) < 3 * s]
-    return s
+from mycommon.plot_style import myPlotStyle
+from mycommon.stats import smoothed_std
+from mycommon.label import pt_label
 
 
 myPlotStyle()
@@ -66,7 +47,7 @@ for file in args.tracksummary:
     """
 
     plt.figure(0)
-    plt.plot(abs_eta_mid, resolution_d0_binned, marker="o", label=label(file))
+    plt.plot(abs_eta_mid, resolution_d0_binned, marker="o", label=pt_label(file))
 
 plt.title("Resolution of $d_0$ over $|\eta|$ for single $\mu$ events")
 plt.xlabel("$|\eta|$")
@@ -74,4 +55,5 @@ plt.ylabel("$\sigma(d_0)$ [mm]")
 plt.xticks(np.linspace(0, 3, 7))
 plt.yticks(np.linspace(0, 0.3, 6))
 plt.legend()
+plt.savefig(Path(__file__).parent.parent / "plots/resolution_over_eta.png")
 plt.show()
