@@ -1,12 +1,12 @@
 import numpy as np
 
 
-def smoothed_std(data):
-    return smoothed_mean_std(data)[1]
-
-
 def smoothed_mean(data):
     return smoothed_mean_std(data)[0]
+
+
+def smoothed_std(data):
+    return smoothed_mean_std(data)[1]
 
 
 def smoothed_mean_std(data):

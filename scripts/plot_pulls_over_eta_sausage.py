@@ -18,12 +18,12 @@ args = parser.parse_args()
 columns = [
     "pull_eLOC0_fit",
     "pull_eLOC1_fit",
-    #"pull_eT_fit",
-    #"pull_ePHI_fit",
-    #"pull_eTHETA_fit",
+    "pull_eT_fit",
+    "pull_ePHI_fit",
+    "pull_eTHETA_fit",
     "pull_eQOP_fit",
 ]
-eta_range = (-3, 3)
+eta_range = (-4, 4)
 pull_range = (-4, 4)
 std_range = (0, 4)
 eta_bins = 20

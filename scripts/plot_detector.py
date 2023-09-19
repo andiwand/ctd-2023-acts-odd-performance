@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 import uproot
 import awkward as ak
 import numpy as np

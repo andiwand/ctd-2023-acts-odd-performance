@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import tempfile
 from pathlib import Path
 import shutil
@@ -26,9 +25,11 @@ from acts.examples.simulation import (
 from acts.examples.reconstruction import (
     addSeeding,
     TruthSeedRanges,
+    ParticleSmearingSigmas,
     SeedingAlgorithm,
+    addKalmanTracks,
+    addTrajectoryWriters,
     addCKFTracks,
-    TrackSelectorConfig,
     addAmbiguityResolution,
     AmbiguityResolutionConfig,
     VertexFinder,
@@ -81,19 +82,26 @@ def main():
             events, simulations, seedings
         ):
             label = create_label(event, simulation, seeding)
-            outdir = Path(args.outdir) / label
-            outdir.mkdir(parents=True, exist_ok=True)
 
             if not fnmatch.fnmatch(label, args.filter):
                 print(f"skipping {label}")
                 continue
 
-            # for debugging
-            # run_single_particles(outdir, event, simulation, seeding)
+            outdir = Path(args.outdir) / label
+            outdir.mkdir(parents=True, exist_ok=True)
 
-            pool.apply_async(
-                run_single_particles, args=(outdir, event, simulation, seeding)
-            )
+            # TODO number of events will depend on what kind of event we are processing
+            events = 100000
+            skip = 0
+
+            with tempfile.TemporaryDirectory() as temp:
+                # for debugging
+                #run_single_particles(outdir, temp, events, skip, event, simulation, seeding)
+
+                pool.apply_async(
+                    run_single_particles,
+                    args=(outdir, temp, events, skip, event, simulation, seeding),
+                )
 
         pool.close()
         pool.join()
@@ -103,119 +111,126 @@ def create_label(event, simulation, seeding):
     return f"{event}_{simulation}_{seeding}"
 
 
-def run_single_particles(outdir, event, simulation, seeding):
-    stdbackup = sys.stdout, sys.stderr
-    sys.stdout = open(outdir / "stdout.txt", "w")
-    sys.stderr = open(outdir / "stderr.txt", "w")
-
-    # TODO number of events will depend on what kind of event we are processing
-    events = 100000
+def run_single_particles(outdir, temp, events, skip, event, simulation, seeding):
     # single thread because we do multiprocessing
     numThreads = 1
 
-    with tempfile.TemporaryDirectory() as temp:
-        tp = Path(temp)
-        rnd = acts.examples.RandomNumbers(seed=42)
+    tp = Path(temp)
+    rnd = acts.examples.RandomNumbers(seed=42)
 
-        s = acts.examples.Sequencer(
-            events=events,
-            numThreads=numThreads,
-            logLevel=acts.logging.INFO,
-            trackFpes=False,
-        )
+    s = acts.examples.Sequencer(
+        events=events,
+        skip=skip,
+        numThreads=numThreads,
+        logLevel=acts.logging.INFO,
+        trackFpes=False,
+    )
 
-        for d in decorators:
-            s.addContextDecorator(d)
+    for d in decorators:
+        s.addContextDecorator(d)
 
-        eventType = addMyEventGen(
-            s,
-            event,
-            rnd=rnd,
-            outputDirRoot=tp,
-        )
+    eventType = addMyEventGen(
+        s,
+        event,
+        rnd=rnd,
+        outputDirRoot=tp,
+    )
 
-        addMySimulation(
-            s,
-            simulation,
-            trackingGeometry,
-            field,
-            rnd=rnd,
-            detector=detector,
-            preSelectParticles=ParticleSelectorConfig(),
-            postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
-            outputDirRoot=tp,
-        )
+    addMySimulation(
+        s,
+        simulation,
+        trackingGeometry,
+        field,
+        rnd=rnd,
+        detector=detector,
+        preSelectParticles=ParticleSelectorConfig(),
+        postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
+        outputDirRoot=tp,
+    )
 
-        addDigitization(
-            s,
-            trackingGeometry,
-            field,
-            digiConfigFile=digiConfig,
-            rnd=rnd,
-            outputDirRoot=tp,
-        )
+    addDigitization(
+        s,
+        trackingGeometry,
+        field,
+        digiConfigFile=digiConfig,
+        rnd=rnd,
+        outputDirRoot=tp,
+    )
 
-        addMySeeding(
-            s,
-            seeding,
-            trackingGeometry,
-            field,
-            rnd=rnd,
-            outputDirRoot=tp,
-        )
+    addMySeeding(
+        s,
+        seeding,
+        trackingGeometry,
+        field,
+        rnd=rnd,
+        outputDirRoot=tp,
+    )
 
-        addCKFTracks(
-            s,
-            trackingGeometry,
-            field,
-            TrackSelectorConfig(
-                pt=(500 * u.MeV, None),
-                loc0=(-4.0 * u.mm, 4.0 * u.mm),
-                nMeasurementsMin=6,
-            ),
-            outputDirRoot=tp,
-        )
+    addKalmanTracks(
+        s,
+        trackingGeometry,
+        field,
+        reverseFilteringMomThreshold=100 * u.TeV,
+    )
+    addTrajectoryWriters(
+        s,
+        name="kf",
+        trajectories="kfTrajectories",
+        outputDirRoot=tp,
+        writeStates=True,
+        writeSummary=True,
+        writeCKFperformance=True,
+        writeFinderPerformance=False,
+        writeFitterPerformance=False,
+    )
 
-        addAmbiguityResolution(
-            s,
-            AmbiguityResolutionConfig(
-                maximumSharedHits=3,
-                maximumIterations=10000,
-                nMeasurementsMin=7,
-            ),
-            outputDirRoot=tp,
-        )
+    addCKFTracks(
+        s,
+        trackingGeometry,
+        field,
+        outputDirRoot=tp,
+    )
 
-        addVertexFitting(
-            s,
-            field,
-            vertexFinder=VertexFinder.Iterative,
-            outputDirRoot=tp,
-        )
+    addAmbiguityResolution(
+        s,
+        AmbiguityResolutionConfig(
+            maximumSharedHits=3,
+            maximumIterations=10000,
+            nMeasurementsMin=7,
+        ),
+        outputDirRoot=tp,
+    )
 
-        s.run()
-        del s
+    addVertexFitting(
+        s,
+        field,
+        vertexFinder=VertexFinder.Iterative,
+        outputDirRoot=tp,
+    )
 
-        for stem in [
-            "particles",
-            "particles_initial",
-            "particles_final",
-            "hits",
-            "measurements",
-            "tracksummary_ckf",
-            "trackstates_ckf",
-            "performance_ckf",
-            "tracksummary_ambi",
-            "trackstates_ambi",
-            "performance_ambi",
-            "performance_ivf",
-        ]:
-            perf_file = tp / f"{stem}.root"
-            assert perf_file.exists(), "Performance file not found"
-            shutil.copy(perf_file, outdir / f"{stem}.root")
+    s.run()
+    del s
 
-    # TODO make this work even if there was an error before
-    sys.stdout, sys.stderr = stdbackup
+    for stem in [
+        "particles",
+        "particles_initial",
+        "particles_final",
+        "hits",
+        "measurements",
+        "tracksummary_ckf",
+        "trackstates_ckf",
+        "performance_ckf",
+        "tracksummary_ambi",
+        "trackstates_ambi",
+        "performance_ambi",
+        "tracksummary_kf",
+        "trackstates_kf",
+        "performance_kf",
+        "performance_ivf",
+    ]:
+        perf_file = tp / f"{stem}.root"
+        assert perf_file.exists(), "Performance file not found"
+        shutil.copy(perf_file, outdir / f"{stem}.root")
 
 
 def addMyEventGen(
@@ -344,6 +359,18 @@ def addMySeeding(
         seedingAlgorithm=seedingAlgorithm,
         truthSeedRanges=TruthSeedRanges(
             nHits=(7, None),
+        ),
+        particleSmearingSigmas=ParticleSmearingSigmas(
+            d0=20 * u.um,
+            d0PtA=30 * u.um,
+            d0PtB=0.3 / u.GeV,
+            z0=20 * u.um,
+            z0PtA=30 * u.um,
+            z0PtB=0.3 / u.GeV,
+            t0=0.0001 * u.ns,
+            phi=1 * u.degree,
+            theta=1 * u.degree,
+            pRel=0.05,
         ),
         initialSigmas=[0.1, 0.1, 0.002, 0.0001, 0.001, 1000],
         initialVarInflation=[1e3] * 6,
