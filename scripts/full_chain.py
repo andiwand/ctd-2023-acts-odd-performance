@@ -367,7 +367,7 @@ def addMySeeding(
             z0=20 * u.um,
             z0PtA=30 * u.um,
             z0PtB=0.3 / u.GeV,
-            t0=0.0001 * u.ns,
+            t0=1 * u.ns,
             phi=1 * u.degree,
             theta=1 * u.degree,
             pRel=0.05,
