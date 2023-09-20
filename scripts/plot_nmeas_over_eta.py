@@ -39,7 +39,7 @@ for file in args.tracksummary:
     )
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
 
-    plt.errorbar(eta_mid, mean, std, fmt="o", label=pt_label(file))
+    plt.errorbar(eta_mid, mean, std, fmt="o", label=file)
 
 plt.legend()
 plt.savefig(Path(__file__).parent.parent / "plots/efficiency_over_eta.png")

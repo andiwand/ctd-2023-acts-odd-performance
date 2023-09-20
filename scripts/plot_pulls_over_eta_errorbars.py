@@ -6,7 +6,6 @@ from matplotlib.transforms import Affine2D
 import uproot
 import awkward as ak
 import argparse
-import numpy as np
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
@@ -30,7 +29,6 @@ columns = [
 ]
 eta_range = (0, 3)
 pull_range = (-4, 4)
-std_range = (0, 4)
 eta_bins = 7
 
 fig = plt.figure(figsize=(16, 8))
@@ -39,10 +37,11 @@ axs = fig.subplots(1, 3, sharey=True)
 for i, file in enumerate(args.tracksummary):
     tracksummary = uproot.open(file)
     tracksummary = ak.to_dataframe(
-        tracksummary["tracksummary"].arrays(columns + ["t_eta"], library="ak"),
+        tracksummary["tracksummary"].arrays(columns + ["t_eta", "nMeasurements"], library="ak"),
         how="outer",
     )
     tracksummary = tracksummary.dropna()
+    tracksummary = tracksummary.query("nMeasurements >= 10")
 
     for j, (col, ax) in enumerate(
         zip(
@@ -51,6 +50,8 @@ for i, file in enumerate(args.tracksummary):
         )
     ):
         ax.set_title(param_label(col))
+        ax.set_xlim(eta_range[0], eta_range[1]+0.2)
+        ax.set_ylim(*pull_range)
 
         eta = tracksummary["t_eta"].values
         data = tracksummary[col].values

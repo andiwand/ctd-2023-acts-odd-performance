@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
 import argparse
-import numpy as np
 from scipy.stats import binned_statistic
 
 from mycommon.stats import smoothed_mean, smoothed_std
@@ -23,19 +22,19 @@ columns = [
     "pull_eTHETA_fit",
     "pull_eQOP_fit",
 ]
-eta_range = (-4, 4)
+eta_range = (-3, 3)
 pull_range = (-4, 4)
-std_range = (0, 4)
-eta_bins = 20
-pull_bins = 20
+eta_bins = 40
+pull_bins = 40
 
 for file in args.tracksummary:
     tracksummary = uproot.open(file)
     tracksummary = ak.to_dataframe(
-        tracksummary["tracksummary"].arrays(columns + ["t_eta"], library="ak"),
+        tracksummary["tracksummary"].arrays(columns + ["t_eta", "nMeasurements"], library="ak"),
         how="outer",
     )
     tracksummary = tracksummary.dropna()
+    tracksummary = tracksummary.query("nMeasurements >= 10")
 
     fig = plt.figure(file, figsize=(8, 6))
     subfigs = fig.subfigures(2, 3)
@@ -52,6 +51,8 @@ for file in args.tracksummary:
         )
 
         ax.set_title(col)
+        ax.set_xlim(eta_range[0], eta_range[1]+0.2)
+        ax.set_ylim(*pull_range)
 
         eta = tracksummary["t_eta"].values
         data = tracksummary[col].values

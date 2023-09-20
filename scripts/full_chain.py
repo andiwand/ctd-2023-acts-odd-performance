@@ -94,14 +94,13 @@ def main():
             events = 100000
             skip = 0
 
-            with tempfile.TemporaryDirectory() as temp:
-                # for debugging
-                #run_single_particles(outdir, temp, events, skip, event, simulation, seeding)
+            # for debugging
+            #run_single_particles(outdir, events, skip, event, simulation, seeding)
 
-                pool.apply_async(
-                    run_single_particles,
-                    args=(outdir, temp, events, skip, event, simulation, seeding),
-                )
+            pool.apply_async(
+                run_single_particles,
+                args=(outdir, events, skip, event, simulation, seeding),
+            )
 
         pool.close()
         pool.join()
@@ -111,126 +110,128 @@ def create_label(event, simulation, seeding):
     return f"{event}_{simulation}_{seeding}"
 
 
-def run_single_particles(outdir, temp, events, skip, event, simulation, seeding):
+def run_single_particles(outdir, events, skip, event, simulation, seeding):
     # single thread because we do multiprocessing
     numThreads = 1
 
-    tp = Path(temp)
-    rnd = acts.examples.RandomNumbers(seed=42)
+    with tempfile.TemporaryDirectory() as temp:
+        tp = Path(temp)
+        rnd = acts.examples.RandomNumbers(seed=42)
 
-    s = acts.examples.Sequencer(
-        events=events,
-        skip=skip,
-        numThreads=numThreads,
-        logLevel=acts.logging.INFO,
-        trackFpes=False,
-    )
+        s = acts.examples.Sequencer(
+            events=events,
+            skip=skip,
+            numThreads=numThreads,
+            trackFpes=False,
+        )
 
-    for d in decorators:
-        s.addContextDecorator(d)
+        for d in decorators:
+            s.addContextDecorator(d)
 
-    eventType = addMyEventGen(
-        s,
-        event,
-        rnd=rnd,
-        outputDirRoot=tp,
-    )
+        eventType = addMyEventGen(
+            s,
+            event,
+            rnd=rnd,
+            outputDirRoot=tp,
+        )
 
-    addMySimulation(
-        s,
-        simulation,
-        trackingGeometry,
-        field,
-        rnd=rnd,
-        detector=detector,
-        preSelectParticles=ParticleSelectorConfig(),
-        postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
-        outputDirRoot=tp,
-    )
+        addMySimulation(
+            s,
+            simulation,
+            trackingGeometry,
+            field,
+            rnd=rnd,
+            detector=detector,
+            preSelectParticles=ParticleSelectorConfig(),
+            postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
+            outputDirRoot=tp,
+        )
 
-    addDigitization(
-        s,
-        trackingGeometry,
-        field,
-        digiConfigFile=digiConfig,
-        rnd=rnd,
-        outputDirRoot=tp,
-    )
+        addDigitization(
+            s,
+            trackingGeometry,
+            field,
+            digiConfigFile=digiConfig,
+            rnd=rnd,
+            outputDirRoot=tp,
+        )
 
-    addMySeeding(
-        s,
-        seeding,
-        trackingGeometry,
-        field,
-        rnd=rnd,
-        outputDirRoot=tp,
-    )
+        addMySeeding(
+            s,
+            seeding,
+            trackingGeometry,
+            field,
+            rnd=rnd,
+            outputDirRoot=tp,
+        )
 
-    addKalmanTracks(
-        s,
-        trackingGeometry,
-        field,
-        reverseFilteringMomThreshold=100 * u.TeV,
-    )
-    addTrajectoryWriters(
-        s,
-        name="kf",
-        trajectories="kfTrajectories",
-        outputDirRoot=tp,
-        writeStates=True,
-        writeSummary=True,
-        writeCKFperformance=True,
-        writeFinderPerformance=False,
-        writeFitterPerformance=False,
-    )
+        addKalmanTracks(
+            s,
+            trackingGeometry,
+            field,
+            reverseFilteringMomThreshold=100 * u.TeV,
+            #logLevel=acts.logging.VERBOSE,
+        )
+        addTrajectoryWriters(
+            s,
+            name="kf",
+            trajectories="kfTrajectories",
+            outputDirRoot=tp,
+            writeStates=True,
+            writeSummary=True,
+            writeCKFperformance=True,
+            writeFinderPerformance=False,
+            writeFitterPerformance=False,
+        )
 
-    addCKFTracks(
-        s,
-        trackingGeometry,
-        field,
-        outputDirRoot=tp,
-    )
+        addCKFTracks(
+            s,
+            trackingGeometry,
+            field,
+            outputDirRoot=tp,
+            #logLevel=acts.logging.VERBOSE,
+        )
 
-    addAmbiguityResolution(
-        s,
-        AmbiguityResolutionConfig(
-            maximumSharedHits=3,
-            maximumIterations=10000,
-            nMeasurementsMin=7,
-        ),
-        outputDirRoot=tp,
-    )
+        addAmbiguityResolution(
+            s,
+            AmbiguityResolutionConfig(
+                maximumSharedHits=3,
+                maximumIterations=10000,
+                nMeasurementsMin=7,
+            ),
+            outputDirRoot=tp,
+        )
 
-    addVertexFitting(
-        s,
-        field,
-        vertexFinder=VertexFinder.Iterative,
-        outputDirRoot=tp,
-    )
+        addVertexFitting(
+            s,
+            field,
+            vertexFinder=VertexFinder.Iterative,
+            outputDirRoot=tp,
+        )
 
-    s.run()
-    del s
+        s.run()
+        del s
 
-    for stem in [
-        "particles",
-        "particles_initial",
-        "particles_final",
-        "hits",
-        "measurements",
-        "tracksummary_ckf",
-        "trackstates_ckf",
-        "performance_ckf",
-        "tracksummary_ambi",
-        "trackstates_ambi",
-        "performance_ambi",
-        "tracksummary_kf",
-        "trackstates_kf",
-        "performance_kf",
-        "performance_ivf",
-    ]:
-        perf_file = tp / f"{stem}.root"
-        assert perf_file.exists(), "Performance file not found"
-        shutil.copy(perf_file, outdir / f"{stem}.root")
+        for stem in [
+            "particles",
+            "particles_initial",
+            "particles_final",
+            "hits",
+            "measurements",
+            "tracksummary_ckf",
+            "trackstates_ckf",
+            "performance_ckf",
+            "tracksummary_ambi",
+            "trackstates_ambi",
+            "performance_ambi",
+            "tracksummary_kf",
+            "trackstates_kf",
+            "performance_kf",
+            "performance_ivf",
+        ]:
+            perf_file = tp / f"{stem}.root"
+            assert perf_file.exists(), "Performance file not found"
+            shutil.copy(perf_file, outdir / f"{stem}.root")
 
 
 def addMyEventGen(
