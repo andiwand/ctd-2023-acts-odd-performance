@@ -6,7 +6,7 @@ rule all:
     input:
         expand("data/{event_label}/reco/tracksummary_ckf.root", event_label=EVENT_LABELS),
 
-rule all_simulation:
+rule all_sim:
     input:
         expand("data/{event_label}/particles.root", event_label=EVENT_LABELS),
         expand("data/{event_label}/hits.root", event_label=EVENT_LABELS),
