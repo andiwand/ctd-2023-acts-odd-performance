@@ -37,7 +37,9 @@ axs = fig.subplots(1, 3, sharey=True)
 for i, file in enumerate(args.tracksummary):
     tracksummary = uproot.open(file)
     tracksummary = ak.to_dataframe(
-        tracksummary["tracksummary"].arrays(columns + ["t_eta", "nMeasurements"], library="ak"),
+        tracksummary["tracksummary"].arrays(
+            columns + ["t_eta", "nMeasurements"], library="ak"
+        ),
         how="outer",
     )
     tracksummary = tracksummary.dropna()
@@ -50,7 +52,7 @@ for i, file in enumerate(args.tracksummary):
         )
     ):
         ax.set_title(param_label(col))
-        ax.set_xlim(eta_range[0], eta_range[1]+0.2)
+        ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
         ax.set_ylim(*pull_range)
 
         eta = tracksummary["t_eta"].values

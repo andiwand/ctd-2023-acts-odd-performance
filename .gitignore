@@ -16,5 +16,6 @@
 **/__pycache__
 
 activate.sh
-data/*
-plots/*
+data*/
+plots/
+.snakemake/
