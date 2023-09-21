@@ -29,16 +29,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("outdir")
     parser.add_argument("event_label")
+    parser.add_argument("--skip", type=int, default=0, help="Skip N events")
+    parser.add_argument("--events", type=int, default=None, help="Overwrite number of events")
     args = parser.parse_args()
 
     event, simulation = split_event_label(args.event_label)
     event_label = create_event_label(event, simulation)
 
-    outdir = Path(args.outdir) / event_label
+    outdir = Path(args.outdir) / event_label / "slices"
     outdir.mkdir(parents=True, exist_ok=True)
 
-    events = get_number_of_events(event)
-    skip = 0
+    skip = args.skip
+    events = get_number_of_events(event) if args.events is None else args.events
 
     with tempfile.TemporaryDirectory() as temp:
         run_simulation(Path(temp), outdir, events, skip, event, simulation)
@@ -91,9 +93,10 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
         # "particles_final",
         "hits",
     ]:
-        perf_file = tp / f"{stem}.root"
-        assert perf_file.exists(), f"Performance file not found: {perf_file}"
-        shutil.copy(perf_file, outdir / f"{stem}.root")
+        source = tp / f"{stem}.root"
+        destination = outdir / f"{stem}_{skip}_{events}.root"
+        assert source.exists(), f"Performance file not found: {source}"
+        shutil.copy(source, destination)
 
 
 if __name__ == "__main__":
