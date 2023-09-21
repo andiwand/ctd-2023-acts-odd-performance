@@ -15,7 +15,10 @@ def list_events_simulations():
 
 
 def list_event_labels():
-    return [create_event_label(event, simulation) for event, simulation in list_events_simulations()]
+    return [
+        create_event_label(event, simulation)
+        for event, simulation in list_events_simulations()
+    ]
 
 
 def create_event_label(event, simulation):
@@ -37,4 +40,4 @@ def get_event_type(event):
 
 def get_number_of_events(event):
     event_type = get_event_type(event)
-    return 100000 if event_type == "single_particles" else 1
+    return 200000 if event_type == "single_particles" else 1
