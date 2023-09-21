@@ -8,8 +8,8 @@ rule all:
 
 rule all_simulation:
     input:
-        expand("data/{event_label}/reco/particles.root", event_label=EVENT_LABELS),
-        expand("data/{event_label}/reco/hits.root", event_label=EVENT_LABELS),
+        expand("data/{event_label}/particles.root", event_label=EVENT_LABELS),
+        expand("data/{event_label}/hits.root", event_label=EVENT_LABELS),
 
 rule simulation:
     output:
