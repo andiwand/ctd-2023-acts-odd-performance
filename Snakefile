@@ -22,6 +22,7 @@ def get_simulation_slices(wildcards):
     skip, events = get_skip_events(wildcards["event_label"])
     return (
         expand("data/{event_label}/slices/particles_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events) +
+        expand("data/{event_label}/slices/particles_initial_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events) +
         expand("data/{event_label}/slices/hits_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events)
     )
 
@@ -33,6 +34,7 @@ rule all:
 rule all_sim:
     input:
         expand("data/{event_label}/particles.root", event_label=EVENT_LABELS),
+        expand("data/{event_label}/particles_initial.root", event_label=EVENT_LABELS),
         expand("data/{event_label}/hits.root", event_label=EVENT_LABELS),
 
 rule simulation:
@@ -40,16 +42,19 @@ rule simulation:
         get_simulation_slices,
     output:
         "data/{event_label}/particles.root",
+        "data/{event_label}/particles_initial.root",
         "data/{event_label}/hits.root",
     shell:
         """
         hadd -f data/{wildcards.event_label}/particles.root data/{wildcards.event_label}/slices/particles_*.root
+        hadd -f data/{wildcards.event_label}/particles.root data/{wildcards.event_label}/slices/particles_initial_*.root
         hadd -f data/{wildcards.event_label}/hits.root data/{wildcards.event_label}/slices/hits_*.root
         """
 
 rule simulation_slice:
     output:
         "data/{event_label}/slices/particles_{skip}_{events}.root",
+        "data/{event_label}/slices/particles_initial_{skip}_{events}.root",
         "data/{event_label}/slices/hits_{skip}_{events}.root",
     shell:
         "python scripts/simulation.py --skip {wildcards.skip} --events {wildcards.events} data/ {wildcards.event_label}"
@@ -57,6 +62,7 @@ rule simulation_slice:
 rule reconstruction:
     input:
         "data/{event_label}/particles.root",
+        "data/{event_label}/particles_initial.root",
         "data/{event_label}/hits.root",
     output:
         "data/{event_label}/reco/tracksummary_ckf.root",

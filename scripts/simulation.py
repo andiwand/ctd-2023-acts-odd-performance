@@ -80,11 +80,12 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
             rho=(0.0, 24 * u.mm),
             absZ=(0.0, 1.0 * u.m),
             eta=(-3.0, 3.0),
-            pt=(150 * u.MeV, None),
+            pt=(700 * u.MeV, None),
             removeNeutral=True,
         ),
         postSelectParticles=ParticleSelectorConfig(
-            removeSecondaries=True,
+            pt=(700 * u.MeV, None),
+            removeNeutral=True,
         ),
         outputDirRoot=tp,
     )
@@ -97,7 +98,7 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
 
     for stem in [
         "particles",
-        # "particles_initial",
+        "particles_initial",
         # "particles_final",
         "hits",
     ]:
