@@ -1,22 +1,20 @@
-from mycommon.events import list_event_labels, get_event_type
+from mycommon.events import list_event_labels, get_event_type, get_number_of_events
 
 
 EVENT_LABELS = list_event_labels()
+RECO_THREADS = 4
 
-
-def get_events(event_type):
-    if event_type == "ttbar":
-        return 10
-    return 200000
 
 def get_events_per_slice(event_type):
-    if event_type == "ttbar":
+    if event_type == "single_particles":
+        return 10000
+    elif event_type == "ttbar":
         return 1
-    return 10000
+    raise ValueError(f"Unknown event type: {event_type}")
 
 def get_skip_events(event_label):
     event_type = get_event_type(event_label)
-    total = get_events(event_type)
+    total = get_number_of_events(event_type)
     step = get_events_per_slice(event_type)
     return range(0, total, step), step
 

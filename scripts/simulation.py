@@ -76,8 +76,16 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
         field,
         rnd=rnd,
         detector=detector,
-        preSelectParticles=ParticleSelectorConfig(),
-        postSelectParticles=ParticleSelectorConfig(removeSecondaries=True),
+        preSelectParticles=ParticleSelectorConfig(
+            rho=(0.0, 24 * u.mm),
+            absZ=(0.0, 1.0 * u.m),
+            eta=(-3.0, 3.0),
+            pt=(150 * u.MeV, None),
+            removeNeutral=True,
+        ),
+        postSelectParticles=ParticleSelectorConfig(
+            removeSecondaries=True,
+        ),
         outputDirRoot=tp,
     )
 

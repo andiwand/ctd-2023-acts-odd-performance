@@ -38,6 +38,10 @@ def get_event_type(event):
     return "single_particles"
 
 
-def get_number_of_events(event):
-    event_type = get_event_type(event)
-    return 200000 if event_type == "single_particles" else 1
+def get_number_of_events(event_type):
+    if event_type == "single_particles":
+        return 200000
+    elif event_type == "ttbar":
+        return 10
+    raise ValueError(f"Unknown event type: {event_type}")
+

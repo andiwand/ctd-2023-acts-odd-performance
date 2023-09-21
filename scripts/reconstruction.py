@@ -38,6 +38,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("outdir")
     parser.add_argument("event_label")
+    parser.add_argument("--threads", type=int, default=2, help="Number of threads")
     args = parser.parse_args()
 
     event, simulation = split_event_label(args.event_label)
@@ -51,12 +52,10 @@ def main():
     skip = 0
 
     with tempfile.TemporaryDirectory() as temp:
-        run_reconstruction(Path(temp), indir, outdir, events, skip, event)
+        run_reconstruction(args.threads, Path(temp), indir, outdir, events, skip, event)
 
 
-def run_reconstruction(tp, indir, outdir, events, skip, event):
-    numThreads = 2
-
+def run_reconstruction(numThreads, tp, indir, outdir, events, skip, event):
     rnd = acts.examples.RandomNumbers(seed=42)
 
     s = acts.examples.Sequencer(

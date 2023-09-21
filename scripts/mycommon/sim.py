@@ -84,7 +84,6 @@ def addMySimulation(
     preSelectParticles: Optional[ParticleSelectorConfig] = ParticleSelectorConfig(),
     postSelectParticles: Optional[ParticleSelectorConfig] = None,
     logLevel: Optional[acts.logging.Level] = None,
-    **kwargs,
 ) -> None:
     if algorithm == "fatras":
         addFatras(
@@ -99,7 +98,6 @@ def addMySimulation(
             outputDirCsv=outputDirCsv,
             outputDirRoot=outputDirRoot,
             logLevel=logLevel,
-            **kwargs,
         )
     elif algorithm == "geant4":
         addGeant4(
@@ -111,10 +109,11 @@ def addMySimulation(
             inputParticles=inputParticles,
             preSelectParticles=preSelectParticles,
             postSelectParticles=postSelectParticles,
+            killVolume=trackingGeometry.worldVolume,
+            killAfterTime=25 * u.ns,
             outputDirCsv=outputDirCsv,
             outputDirRoot=outputDirRoot,
             logLevel=logLevel,
-            **kwargs,
         )
     else:
         raise ValueError(f"unknown simulation algorithm: {algorithm}")
