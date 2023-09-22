@@ -62,7 +62,7 @@ rule simulation_slice:
         "data/{event_label}/slices/{skip}_{events}/stderr.txt",
     shell:
         """
-        mkdir -p data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}
+        mkdir -p data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events} || true
         python scripts/simulation.py {wildcards.event_label} --skip {wildcards.skip} --events {wildcards.events} \
           data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
           > data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stdout.txt \
@@ -80,7 +80,7 @@ rule reconstruction:
         "data/{event_label}/reco/stderr.txt",
     shell:
         """
-        mkdir -p data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/reco
+        mkdir -p data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/reco || true
         python scripts/reconstruction.py {wildcards.event_label} data/{wildcards.event_label} data/{wildcards.event_label}/reco \
           > data/{wildcards.event_label}/reco/stdout.txt \
           2> data/{wildcards.event_label}/reco/stderr.txt
