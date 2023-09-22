@@ -38,15 +38,16 @@ def main():
     parser.add_argument("event_label")
     parser.add_argument("indir")
     parser.add_argument("outdir")
-    parser.add_argument("--threads", type=int, default=2, help="Number of threads")
+    parser.add_argument("--threads", type=int, default=4, help="Number of threads")
     args = parser.parse_args()
 
     event, simulation = split_event_label(args.event_label)
+    event_type = get_event_type(event)
 
     indir = Path(args.indir)
     outdir = Path(args.outdir)
     skip = 0
-    events = get_number_of_events(event)
+    events = get_number_of_events(event_type)
 
     with tempfile.TemporaryDirectory() as temp:
         run_reconstruction(args.threads, Path(temp), event, indir, outdir, skip, events)

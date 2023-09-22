@@ -36,10 +36,11 @@ def main():
         parser.error("--skip requires --events")
 
     event, simulation = split_event_label(args.event_label)
+    event_type = get_event_type(event)
 
     outdir = Path(args.outdir)
     skip = args.skip
-    events = get_number_of_events(event) if args.events is None else args.events
+    events = get_number_of_events(event_type) if args.events is None else args.events
 
     with tempfile.TemporaryDirectory() as temp:
         run_simulation(Path(temp), event, outdir, events, skip, simulation)

@@ -80,7 +80,7 @@ rule reconstruction:
         "data/{event_label}/reco/stderr.txt",
     shell:
         """
-        mkdir -p data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/reco || true
+        mkdir -p data/{wildcards.event_label}/reco || true
         python scripts/reconstruction.py {wildcards.event_label} data/{wildcards.event_label} data/{wildcards.event_label}/reco \
           > data/{wildcards.event_label}/reco/stdout.txt \
           2> data/{wildcards.event_label}/reco/stderr.txt

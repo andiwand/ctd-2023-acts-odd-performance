@@ -44,4 +44,3 @@ def get_number_of_events(event_type):
     elif event_type == "ttbar":
         return 10
     raise ValueError(f"Unknown event type: {event_type}")
-
