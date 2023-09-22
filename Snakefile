@@ -20,10 +20,12 @@ def get_skip_events(event_label):
 
 def get_simulation_slices(wildcards):
     skip, events = get_skip_events(wildcards["event_label"])
-    return (
-        expand("data/{event_label}/slices/particles_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events) +
-        expand("data/{event_label}/slices/particles_initial_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events) +
-        expand("data/{event_label}/slices/hits_{skip}_{events}.root", event_label=wildcards["event_label"], skip=skip, events=events)
+    return expand(
+        "data/{event_label}/slices/{prefix}_{skip}_{events}.root",
+        event_label=wildcards["event_label"],
+        prefix=wildcards["prefix"],
+        skip=skip,
+        events=events,
     )
 
 
@@ -41,15 +43,11 @@ rule simulation:
     input:
         get_simulation_slices,
     output:
-        "data/{event_label}/particles.root",
-        "data/{event_label}/particles_initial.root",
-        "data/{event_label}/hits.root",
+        "data/{event_label}/{prefix}.root",
+    wildcard_constraints:
+        prefix="particles|particles_initial|hits",
     shell:
-        """
-        hadd -f data/{wildcards.event_label}/particles.root data/{wildcards.event_label}/slices/particles_*.root
-        hadd -f data/{wildcards.event_label}/particles_initial.root data/{wildcards.event_label}/slices/particles_initial_*.root
-        hadd -f data/{wildcards.event_label}/hits.root data/{wildcards.event_label}/slices/hits_*.root
-        """
+        "hadd -f {output} {input}"
 
 rule simulation_slice:
     output:
