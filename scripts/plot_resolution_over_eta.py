@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
@@ -17,6 +16,7 @@ myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tracksummary", nargs="+")
+parser.add_argument("--output")
 args = parser.parse_args()
 
 abs_eta_range = (0, 3)
@@ -55,5 +55,8 @@ plt.ylabel("$\sigma(d_0)$ [mm]")
 plt.xticks(np.linspace(0, 3, 7))
 plt.yticks(np.linspace(0, 0.3, 6))
 plt.legend()
-plt.savefig(Path(__file__).parent.parent / "plots/resolution_over_eta.png")
-plt.show()
+
+if args.output:
+    plt.savefig(args.output)
+else:
+    plt.show()

@@ -61,6 +61,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         skip=skip,
         numThreads=numThreads,
         trackFpes=False,
+        outputDir=tp,
     )
 
     for d in decorators:
@@ -70,21 +71,21 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         acts.examples.RootParticleReader(
             level=acts.logging.WARNING,
             particleCollection="particles",
-            filePath=str(indir / "particles.root"),
+            filePath=indir / "particles.root",
         )
     )
     s.addReader(
         acts.examples.RootParticleReader(
             level=acts.logging.WARNING,
             particleCollection="particles_input",
-            filePath=str(indir / "particles.root"),
+            filePath=indir / "particles.root",
         )
     )
     s.addReader(
         acts.examples.RootParticleReader(
             level=acts.logging.WARNING,
             particleCollection="particles_selected",
-            filePath=str(indir / "particles.root"),
+            filePath=indir / "particles.root",
         )
     )
 
@@ -93,7 +94,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
             level=acts.logging.WARNING,
             simHitCollection="simhits",
             treeName="hits",
-            filePath=str(indir / "hits.root"),
+            filePath=indir / "hits.root",
         )
     )
 
@@ -163,20 +164,22 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     del s
 
     outdir.mkdir(parents=True, exist_ok=True)
-    for stem in [
-        "tracksummary_ckf",
-        # "trackstates_ckf",
-        "performance_ckf",
-        "tracksummary_ambi",
-        # "trackstates_ambi",
-        "performance_ambi",
-        "tracksummary_kf",
-        # "trackstates_kf",
-        "performance_kf",
-    ] + (["performance_vertexing"] if get_event_type(event) == "ttbar" else []):
-        perf_file = tp / f"{stem}.root"
-        assert perf_file.exists(), f"Performance file not found: {perf_file}"
-        shutil.copy(perf_file, outdir / f"{stem}.root")
+    for file in [
+        "timing.tsv",
+        "tracksummary_ckf.root",
+        # "trackstates_ckf.root",
+        "performance_ckf.root",
+        "tracksummary_ambi.root",
+        # "trackstates_ambi.root",
+        "performance_ambi.root",
+        "tracksummary_kf.root",
+        # "trackstates_kf.root",
+        "performance_kf.root",
+    ] + (["performance_vertexing.root"] if get_event_type(event) == "ttbar" else []):
+        source = tp / file
+        destination = outdir / file
+        assert source.exists(), f"File not found: {source}"
+        shutil.copy(source, destination)
 
 
 if __name__ == "__main__":

@@ -59,6 +59,7 @@ def run_simulation(tp, event, outdir, events, skip, simulation):
         skip=skip,
         numThreads=numThreads,
         trackFpes=False,
+        outputDir=tp,
     )
 
     for d in decorators:
@@ -99,15 +100,16 @@ def run_simulation(tp, event, outdir, events, skip, simulation):
         shutil.copy(tp / "pythia8_particles.root", tp / "particles.root")
 
     outdir.mkdir(parents=True, exist_ok=True)
-    for stem in [
-        "particles",
-        "particles_initial",
-        # "particles_final",
-        "hits",
+    for file in [
+        "timing.tsv",
+        "particles.root",
+        "particles_initial.root",
+        # "particles_final.root",
+        "hits.root",
     ]:
-        source = tp / f"{stem}.root"
-        destination = outdir / f"{stem}.root"
-        assert source.exists(), f"Performance file not found: {source}"
+        source = tp / file
+        destination = outdir / file
+        assert source.exists(), f"File not found: {source}"
         shutil.copy(source, destination)
 
 

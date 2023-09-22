@@ -7,7 +7,6 @@ import awkward as ak
 import argparse
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.label import pt_label
 from scipy.stats import binned_statistic
 
 
@@ -15,6 +14,7 @@ myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tracksummary", nargs="+")
+parser.add_argument("--output")
 args = parser.parse_args()
 
 eta_range = (-3, 3)
@@ -42,5 +42,8 @@ for file in args.tracksummary:
     plt.errorbar(eta_mid, mean, std, fmt="o", label=file)
 
 plt.legend()
-plt.savefig(Path(__file__).parent.parent / "plots/efficiency_over_eta.png")
-plt.show()
+
+if args.output:
+    plt.savefig(args.output)
+else:
+    plt.show()

@@ -2,6 +2,9 @@ from mycommon.events import list_event_labels, get_event_type, get_number_of_eve
 
 
 EVENT_LABELS = list_event_labels()
+SINGLE_PARTICLES = ["mu", "pi", "e"]
+PT_VALUES = ["1GeV", "10GeV", "100GeV"]
+SIMULATIONS = ["fatras", "geant4"]
 RECO_THREADS = 4
 
 
@@ -31,13 +34,17 @@ def get_simulation_slices(wildcards):
 
 wildcard_constraints:
     event_label="|".join(EVENT_LABELS),
+    single_particle="|".join(SINGLE_PARTICLES),
+    pt="|".join(PT_VALUES),
+    simulation="|".join(SIMULATIONS),
     prefix="particles|particles_initial|hits",
     skip="[0-9]+",
     events="[0-9]+",
 
 rule all:
     input:
-        expand("data/{event_label}/reco/tracksummary_ckf.root", event_label=EVENT_LABELS),
+        expand("plots/{event_label}/pulls_over_eta_sausage.png", event_label=EVENT_LABELS),
+        expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
 rule all_sim:
     input:
@@ -84,4 +91,28 @@ rule reconstruction:
         python scripts/reconstruction.py {wildcards.event_label} data/{wildcards.event_label} data/{wildcards.event_label}/reco \
           > data/{wildcards.event_label}/reco/stdout.txt \
           2> data/{wildcards.event_label}/reco/stderr.txt
+        """
+
+rule plot_pulls_over_eta_sausage:
+    input:
+        "data/{event_label}/reco/tracksummary_ckf.root",
+    output:
+        "plots/{event_label}/pulls_over_eta_sausage.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.event_label} || true
+        python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
+        """
+
+rule plot_pulls_over_eta_errorbars:
+    input:
+        "data/{single_particle}_1GeV_{simulation}/reco/tracksummary_ckf.root",
+        "data/{single_particle}_10GeV_{simulation}/reco/tracksummary_ckf.root",
+        "data/{single_particle}_100GeV_{simulation}/reco/tracksummary_ckf.root",
+    output:
+        "plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
+        python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
         """

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 import uproot
@@ -17,6 +16,7 @@ myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tracksummary", nargs="+")
+parser.add_argument("--output")
 args = parser.parse_args()
 
 columns = [
@@ -91,5 +91,8 @@ for i, file in enumerate(args.tracksummary):
 fig.supxlabel(r"$|\eta|$")
 fig.supylabel(r"pull")
 fig.legend()
-fig.savefig(Path(__file__).parent.parent / "plots/pulls_over_eta_errorbars.png")
-plt.show()
+
+if args.output:
+    fig.savefig(args.output)
+else:
+    plt.show()

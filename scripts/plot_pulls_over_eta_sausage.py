@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import matplotlib.pyplot as plt
 import uproot
 import awkward as ak
@@ -12,6 +11,7 @@ from mycommon.stats import smoothed_mean, smoothed_std
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tracksummary", nargs="+")
+parser.add_argument("--output")
 args = parser.parse_args()
 
 columns = [
@@ -99,5 +99,8 @@ for file in args.tracksummary:
 fig.supxlabel(r"$|\eta|$")
 fig.supylabel(r"pull")
 fig.legend()
-fig.savefig(Path(__file__).parent.parent / "plots/pulls_over_eta_sausage.png")
-plt.show()
+
+if args.output:
+    fig.savefig(args.output)
+else:
+    plt.show()
