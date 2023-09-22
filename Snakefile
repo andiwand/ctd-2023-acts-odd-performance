@@ -47,7 +47,7 @@ rule simulation:
     shell:
         """
         hadd -f data/{wildcards.event_label}/particles.root data/{wildcards.event_label}/slices/particles_*.root
-        hadd -f data/{wildcards.event_label}/particles.root data/{wildcards.event_label}/slices/particles_initial_*.root
+        hadd -f data/{wildcards.event_label}/particles_initial.root data/{wildcards.event_label}/slices/particles_initial_*.root
         hadd -f data/{wildcards.event_label}/hits.root data/{wildcards.event_label}/slices/hits_*.root
         """
 
