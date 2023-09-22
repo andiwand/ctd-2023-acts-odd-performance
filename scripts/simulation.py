@@ -11,7 +11,6 @@ from acts.examples.simulation import (
 )
 
 from mycommon.events import (
-    create_event_label,
     split_event_label,
     get_number_of_events,
     get_event_type,
@@ -27,26 +26,28 @@ detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd(
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("outdir")
     parser.add_argument("event_label")
+    parser.add_argument("outdir")
     parser.add_argument("--skip", type=int, default=0, help="Skip N events")
     parser.add_argument("--events", type=int, default=None, help="Overwrite number of events")
     args = parser.parse_args()
 
+    if args.skip > 0 and args.events is None:
+        parser.error("--skip requires --events")
+
     event, simulation = split_event_label(args.event_label)
-    event_label = create_event_label(event, simulation)
 
-    outdir = Path(args.outdir) / event_label / "slices"
-    outdir.mkdir(parents=True, exist_ok=True)
-
+    outdir = Path(args.outdir)
     skip = args.skip
     events = get_number_of_events(event) if args.events is None else args.events
 
     with tempfile.TemporaryDirectory() as temp:
-        run_simulation(Path(temp), outdir, events, skip, event, simulation)
+        run_simulation(Path(temp), event, outdir, events, skip, simulation)
+
+    return 0
 
 
-def run_simulation(tp, outdir, events, skip, event, simulation):
+def run_simulation(tp, event, outdir, events, skip, simulation):
     # single thread because of G4
     numThreads = 1
 
@@ -96,6 +97,7 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
     if get_event_type(event) == "ttbar":
         shutil.copy(tp / "pythia8_particles.root", tp / "particles.root")
 
+    outdir.mkdir(parents=True, exist_ok=True)
     for stem in [
         "particles",
         "particles_initial",
@@ -103,7 +105,7 @@ def run_simulation(tp, outdir, events, skip, event, simulation):
         "hits",
     ]:
         source = tp / f"{stem}.root"
-        destination = outdir / f"{stem}_{skip}_{events}.root"
+        destination = outdir / f"{stem}.root"
         assert source.exists(), f"Performance file not found: {source}"
         shutil.copy(source, destination)
 

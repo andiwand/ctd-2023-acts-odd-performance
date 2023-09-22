@@ -20,7 +20,6 @@ from acts.examples.reconstruction import (
 )
 
 from mycommon.events import (
-    create_event_label,
     split_event_label,
     get_number_of_events,
     get_event_type,
@@ -36,26 +35,24 @@ detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd(
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("outdir")
     parser.add_argument("event_label")
+    parser.add_argument("indir")
+    parser.add_argument("outdir")
     parser.add_argument("--threads", type=int, default=2, help="Number of threads")
     args = parser.parse_args()
 
     event, simulation = split_event_label(args.event_label)
-    event_label = create_event_label(event, simulation)
 
-    indir = Path(args.outdir) / event_label
-    outdir = Path(args.outdir) / event_label / "reco"
-    outdir.mkdir(parents=True, exist_ok=True)
-
-    events = get_number_of_events(event)
+    indir = Path(args.indir)
+    outdir = Path(args.outdir)
     skip = 0
+    events = get_number_of_events(event)
 
     with tempfile.TemporaryDirectory() as temp:
-        run_reconstruction(args.threads, Path(temp), indir, outdir, events, skip, event)
+        run_reconstruction(args.threads, Path(temp), event, indir, outdir, skip, events)
 
 
-def run_reconstruction(numThreads, tp, indir, outdir, events, skip, event):
+def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     rnd = acts.examples.RandomNumbers(seed=42)
 
     s = acts.examples.Sequencer(
@@ -164,6 +161,7 @@ def run_reconstruction(numThreads, tp, indir, outdir, events, skip, event):
     s.run()
     del s
 
+    outdir.mkdir(parents=True, exist_ok=True)
     for stem in [
         "tracksummary_ckf",
         # "trackstates_ckf",

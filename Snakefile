@@ -21,13 +21,19 @@ def get_skip_events(event_label):
 def get_simulation_slices(wildcards):
     skip, events = get_skip_events(wildcards["event_label"])
     return expand(
-        "data/{event_label}/slices/{prefix}_{skip}_{events}.root",
+        "data/{event_label}/slices/{skip}_{events}/{prefix}.root",
         event_label=wildcards["event_label"],
         prefix=wildcards["prefix"],
         skip=skip,
         events=events,
     )
 
+
+wildcard_constraints:
+    event_label="|".join(EVENT_LABELS),
+    prefix="particles|particles_initial|hits",
+    skip="[0-9]+",
+    events="[0-9]+",
 
 rule all:
     input:
@@ -44,18 +50,23 @@ rule simulation:
         get_simulation_slices,
     output:
         "data/{event_label}/{prefix}.root",
-    wildcard_constraints:
-        prefix="particles|particles_initial|hits",
     shell:
         "hadd -f {output} {input}"
 
 rule simulation_slice:
     output:
-        "data/{event_label}/slices/particles_{skip}_{events}.root",
-        "data/{event_label}/slices/particles_initial_{skip}_{events}.root",
-        "data/{event_label}/slices/hits_{skip}_{events}.root",
+        "data/{event_label}/slices/{skip}_{events}/particles.root",
+        "data/{event_label}/slices/{skip}_{events}/particles_initial.root",
+        "data/{event_label}/slices/{skip}_{events}/hits.root",
+        "data/{event_label}/slices/{skip}_{events}/stdout.txt",
+        "data/{event_label}/slices/{skip}_{events}/stderr.txt",
     shell:
-        "python scripts/simulation.py --skip {wildcards.skip} --events {wildcards.events} data/ {wildcards.event_label}"
+        """
+        python scripts/simulation.py {wildcards.event_label} --skip {wildcards.skip} --events {wildcards.events} \
+          data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
+          > data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stdout.txt \
+          2> data/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stderr.txt
+        """
 
 rule reconstruction:
     input:
@@ -64,5 +75,11 @@ rule reconstruction:
         "data/{event_label}/hits.root",
     output:
         "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{event_label}/reco/stdout.txt",
+        "data/{event_label}/reco/stderr.txt",
     shell:
-        "python scripts/reconstruction.py data/ {wildcards.event_label} > data/{wildcards.event_label}/reco/output.txt"
+        """
+        python scripts/reconstruction.py {wildcards.event_label} data/{wildcards.event_label} data/{wildcards.event_label}/reco \
+          > data/{wildcards.event_label}/reco/stdout.txt \
+          2> data/{wildcards.event_label}/reco/stderr.txt
+        """
