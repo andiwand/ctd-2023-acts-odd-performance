@@ -1,19 +1,28 @@
 from pathlib import Path
 
 
+def split_path(file):
+    split = Path(file).parent.parent.name.split("_")
+    return split[0], split[1]
+
+
 def pt_label(file):
-    split = Path(file).parent.name.split("_")
+    split = split_path(file)
     return f"{split[1].replace('GeV', '')} GeV"
 
 
-def particle_pt_label(file):
+def particle_label(file):
     particle_map = {
         "mu": "$\mu$",
         "pi": "$\pi$",
         "e": "$e$",
     }
-    split = Path(file).parent.name.split("_")
-    return f"single {particle_map[split[0]]} {split[1].replace('GeV', '')} GeV"
+    split = split_path(file)
+    return f"{particle_map[split[0]]}"
+
+
+def particle_pt_label(file):
+    return f"single {particle_label(file)} {pt_label(file)} GeV"
 
 
 def param_label(param):

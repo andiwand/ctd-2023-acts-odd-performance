@@ -9,7 +9,7 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_mean, smoothed_std
-from mycommon.label import pt_label, param_label
+from mycommon.label import particle_label, pt_label, param_label
 
 
 myPlotStyle()
@@ -88,7 +88,8 @@ for i, file in enumerate(args.tracksummary):
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-fig.supxlabel(r"$|\eta|$")
+fig.suptitle(f"single {particle_label(args.tracksummary[0])} pulls over $\eta$")
+fig.supxlabel(r"$\eta$")
 fig.supylabel(r"pull")
 fig.legend()
 

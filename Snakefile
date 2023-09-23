@@ -31,6 +31,14 @@ def get_simulation_slices(wildcards):
         events=events,
     )
 
+def get_all_pt_variants(wildcards):
+    return expand(
+        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
+        single_particle=wildcards.single_particle,
+        pt=PT_VALUES,
+        simulation=wildcards.simulation
+    )
+
 
 wildcard_constraints:
     event_label="|".join(EVENT_LABELS),
@@ -43,8 +51,9 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("plots/{event_label}/pulls_over_eta_sausage.png", event_label=EVENT_LABELS),
+        expand("plots/{single_particle}_{simulation}/{pt}/pulls_over_eta_sausage.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, pt=PT_VALUES),
         expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/{single_particle}_{simulation}/resolution_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
 rule all_sim:
     input:
@@ -95,24 +104,33 @@ rule reconstruction:
 
 rule plot_pulls_over_eta_sausage:
     input:
-        "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
     output:
-        "plots/{event_label}/pulls_over_eta_sausage.png",
+        "plots/{single_particle}_{simulation}/{pt}/pulls_over_eta_sausage.png",
     shell:
         """
-        mkdir -p plots/{wildcards.event_label} || true
+        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation}/{wildcards.pt} || true
         python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
         """
 
 rule plot_pulls_over_eta_errorbars:
     input:
-        "data/{single_particle}_1GeV_{simulation}/reco/tracksummary_ckf.root",
-        "data/{single_particle}_10GeV_{simulation}/reco/tracksummary_ckf.root",
-        "data/{single_particle}_100GeV_{simulation}/reco/tracksummary_ckf.root",
+        get_all_pt_variants,
     output:
         "plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png",
     shell:
         """
         mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
+        """
+
+rule plot_resolution_over_eta:
+    input:
+        get_all_pt_variants,
+    output:
+        "plots/{single_particle}_{simulation}/resolution_over_eta.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
+        python scripts/plot_resolution_over_eta.py {input} --output {output}
         """
