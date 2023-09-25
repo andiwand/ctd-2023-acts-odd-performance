@@ -91,6 +91,7 @@ rule reconstruction:
         "data/{event_label}/particles_initial.root",
         "data/{event_label}/hits.root",
     output:
+        "data/{event_label}/reco/measurements.root",
         "data/{event_label}/reco/tracksummary_ckf.root",
         "data/{event_label}/reco/stdout.txt",
         "data/{event_label}/reco/stderr.txt",
@@ -133,4 +134,21 @@ rule plot_resolution_over_eta:
         """
         mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_resolution_over_eta.py {input} --output {output}
+        """
+
+rule plot_efficiency_over_eta:
+    input:
+        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
+        "data/{single_particle}_{pt}_{simulation}/particles.root",
+        "data/{single_particle}_{pt}_{simulation}/hits.root",
+    output:
+        "plots/{single_particle}_{simulation}/{pt}/efficiency_over_eta.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation}/{wildcards.pt} || true
+        python scripts/plot_efficiency_over_eta.py \
+          "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/reco/tracksummary_ckf.root" \
+          --particles "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/particles.root" \
+          --hits "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/hits.root" \
+          --output {output}
         """

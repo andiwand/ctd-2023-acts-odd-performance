@@ -166,6 +166,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     outdir.mkdir(parents=True, exist_ok=True)
     for file in [
         "timing.tsv",
+        "measurements.root",
         "tracksummary_ckf.root",
         # "trackstates_ckf.root",
         "performance_ckf.root",

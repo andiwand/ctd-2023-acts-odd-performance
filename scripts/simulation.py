@@ -29,7 +29,9 @@ def main():
     parser.add_argument("event_label")
     parser.add_argument("outdir")
     parser.add_argument("--skip", type=int, default=0, help="Skip N events")
-    parser.add_argument("--events", type=int, default=None, help="Overwrite number of events")
+    parser.add_argument(
+        "--events", type=int, default=None, help="Overwrite number of events"
+    )
     args = parser.parse_args()
 
     if args.skip > 0 and args.events is None:

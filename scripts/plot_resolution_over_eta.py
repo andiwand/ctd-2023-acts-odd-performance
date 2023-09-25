@@ -9,7 +9,7 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_std
-from mycommon.label import pt_label
+from mycommon.label import pt_label, particle_label
 
 
 myPlotStyle()
@@ -46,14 +46,16 @@ for file in args.tracksummary:
         plt.hist(d0[digi == i], bins=100, range=(-0.4, 0.4), histtype="step")
     """
 
-    plt.figure(0)
     plt.plot(abs_eta_mid, resolution_d0_binned, marker="o", label=pt_label(file))
 
-plt.title("Resolution of $d_0$ over $|\eta|$ for single $\mu$ events")
+plt.title(
+    f"Resolution of $d_0$ over $|\eta|$ for single {particle_label(args.tracksummary[0])} events"
+)
 plt.xlabel("$|\eta|$")
 plt.ylabel("$\sigma(d_0)$ [mm]")
-plt.xticks(np.linspace(0, 3, 7))
+plt.xticks(np.linspace(*abs_eta_range, 7))
 plt.yticks(np.linspace(0, 0.3, 6))
+plt.xlim(abs_eta_range)
 plt.legend()
 
 if args.output:
