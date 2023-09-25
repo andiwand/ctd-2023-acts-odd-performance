@@ -101,6 +101,8 @@ for tracksummary_file, particles_file, hits_file in zip(
         right_on=["true_event_id", "true_particle_id"],
     )
 
+    track_efficiency["track_efficiency"].fillna(0, inplace=True)
+
     track_efficiency["track_duplicate"] = (
         track_efficiency[["true_event_id", "true_particle_id"]]
         .duplicated(keep="first")
