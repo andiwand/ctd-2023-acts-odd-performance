@@ -5,6 +5,7 @@ EVENT_LABELS = list_event_labels()
 SINGLE_PARTICLES = ["mu", "pi", "e"]
 PT_VALUES = ["1GeV", "10GeV", "100GeV"]
 SIMULATIONS = ["fatras", "geant4"]
+PILEUP = [0, 60, 120, 200]
 RECO_THREADS = 4
 
 
@@ -51,10 +52,11 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("plots/{single_particle}_{simulation}/{pt}/pulls_over_eta_sausage.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, pt=PT_VALUES),
+        expand("plots/{event_label}/pulls_over_eta_sausage.png", event_label=EVENT_LABELS),
+        expand("plots/{event_label}/efficiency_over_eta.png", event_label=EVENT_LABELS),
+
         expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{single_particle}_{simulation}/resolution_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/{single_particle}_{simulation}/{pt}/efficiency_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, pt=PT_VALUES),
 
 rule all_sim:
     input:
@@ -139,17 +141,17 @@ rule plot_resolution_over_eta:
 
 rule plot_efficiency_over_eta:
     input:
-        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
-        "data/{single_particle}_{pt}_{simulation}/particles.root",
-        "data/{single_particle}_{pt}_{simulation}/hits.root",
+        "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{event_label}/particles.root",
+        "data/{event_label}/hits.root",
     output:
-        "plots/{single_particle}_{simulation}/{pt}/efficiency_over_eta.png",
+        "plots/{event_label}/efficiency_over_eta.png",
     shell:
         """
-        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation}/{wildcards.pt} || true
+        mkdir -p plots/{wildcards.event_label} || true
         python scripts/plot_efficiency_over_eta.py \
-          "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/reco/tracksummary_ckf.root" \
-          --particles "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/particles.root" \
-          --hits "data/{wildcards.single_particle}_{wildcards.pt}_{wildcards.simulation}/hits.root" \
+          "data/{wildcards.event_label}/reco/tracksummary_ckf.root" \
+          --particles "data/{wildcards.event_label}/particles.root" \
+          --hits "data/{wildcards.event_label}/hits.root" \
           --output {output}
         """
