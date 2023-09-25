@@ -108,12 +108,12 @@ rule reconstruction:
 
 rule plot_pulls_over_eta_sausage:
     input:
-        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
+        "data/{event_label}/reco/tracksummary_ckf.root",
     output:
-        "plots/{single_particle}_{simulation}/{pt}/pulls_over_eta_sausage.png",
+        "plots/{event_label}/pulls_over_eta_sausage.png",
     shell:
         """
-        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation}/{wildcards.pt} || true
+        mkdir -p plots/{wildcards.event_label} || true
         python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
         """
 
