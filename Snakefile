@@ -34,7 +34,7 @@ def get_simulation_slices(wildcards):
 
 def get_all_pt_variants(wildcards):
     return expand(
-        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ckf.root",
+        "data/{single_particle}_{pt}_{simulation}/reco/tracksummary_ambi.root",
         single_particle=wildcards.single_particle,
         pt=PT_VALUES,
         simulation=wildcards.simulation
@@ -96,6 +96,7 @@ rule reconstruction:
     output:
         "data/{event_label}/reco/measurements.root",
         "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{event_label}/reco/tracksummary_ambi.root",
         "data/{event_label}/reco/stdout.txt",
         "data/{event_label}/reco/stderr.txt",
     shell:
@@ -108,7 +109,7 @@ rule reconstruction:
 
 rule plot_pulls_over_eta_sausage:
     input:
-        "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{event_label}/reco/tracksummary_ambi.root",
     output:
         "plots/{event_label}/pulls_over_eta_sausage.png",
     shell:
@@ -141,7 +142,7 @@ rule plot_resolution_over_eta:
 
 rule plot_efficiency_over_eta:
     input:
-        "data/{event_label}/reco/tracksummary_ckf.root",
+        "data/{event_label}/reco/tracksummary_ambi.root",
         "data/{event_label}/particles.root",
         "data/{event_label}/hits.root",
     output:
@@ -150,7 +151,7 @@ rule plot_efficiency_over_eta:
         """
         mkdir -p plots/{wildcards.event_label} || true
         python scripts/plot_efficiency_over_eta.py \
-          "data/{wildcards.event_label}/reco/tracksummary_ckf.root" \
+          "data/{wildcards.event_label}/reco/tracksummary_ambi.root" \
           --particles "data/{wildcards.event_label}/particles.root" \
           --hits "data/{wildcards.event_label}/hits.root" \
           --output {output}

@@ -19,6 +19,7 @@ parser.add_argument("tracksummary", nargs="+")
 parser.add_argument("--particles", required=True, nargs="+")
 parser.add_argument("--hits", required=True, nargs="+")
 parser.add_argument("--output")
+parser.add_argument("--require-pt", type=float, default=0.9)
 parser.add_argument("--require-number-of-hits", type=int, default=7)
 parser.add_argument("--matching-ratio", type=float, default=0.5)
 args = parser.parse_args()
@@ -31,11 +32,17 @@ for tracksummary_file, particles_file, hits_file in zip(
 ):
     particles = ak.to_dataframe(
         uproot.open(particles_file)["particles"].arrays(
-            ["event_id", "particle_id", "eta", "pt"],
+            ["event_id", "particle_id", "eta", "pt", "vertex_primary"],
             library="ak",
         ),
         how="outer",
     ).dropna()
+
+    # apply truth cuts
+    # we only care about the first primary vertex which is the hard scatter for ttbar
+    particles = particles[particles["vertex_primary"] == 1]
+    # apply pt cut
+    particles = particles[particles["pt"] >= args.require_pt]
 
     hits = ak.to_dataframe(
         uproot.open(hits_file)["hits"].arrays(
@@ -59,10 +66,16 @@ for tracksummary_file, particles_file, hits_file in zip(
         left_on=["event_id", "particle_id"],
         right_on=["event_id", "particle_id"],
     )
-    particle_efficiency = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
+    particles_hits = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
         hit_count=pd.NamedAgg(column="volume_id", aggfunc="count"),
         eta=pd.NamedAgg(column="eta", aggfunc="first"),
+        pt=pd.NamedAgg(column="pt", aggfunc="first"),
+        vertex_primary=pd.NamedAgg(column="vertex_primary", aggfunc="first"),
     )
+    particles_hits.reset_index(inplace=True)
+
+    # calculate true efficiency
+    particle_efficiency = particles_hits.copy()
     particle_efficiency["efficiency"] = (
         particle_efficiency["hit_count"].values >= args.require_number_of_hits
     ).astype(float)
@@ -71,8 +84,6 @@ for tracksummary_file, particles_file, hits_file in zip(
         uproot.open(tracksummary_file)["tracksummary"].arrays(
             [
                 "event_nr",
-                "t_eta",
-                "t_pT",
                 "nMeasurements",
                 "majorityParticleId",
                 "nMajorityHits",
@@ -82,41 +93,55 @@ for tracksummary_file, particles_file, hits_file in zip(
         how="outer",
     ).dropna()
 
-    track_efficiency = tracksummary.copy()
-    track_efficiency["duplicate"] = (
-        track_efficiency[["event_nr", "majorityParticleId"]]
+    track_efficiency = pd.merge(
+        tracksummary.add_prefix("track_"),
+        particle_efficiency.add_prefix("true_"),
+        how="outer",
+        left_on=["track_event_nr", "track_majorityParticleId"],
+        right_on=["true_event_id", "true_particle_id"],
+    )
+
+    track_efficiency["track_duplicate"] = (
+        track_efficiency[["true_event_id", "true_particle_id"]]
         .duplicated(keep="first")
         .astype(float)
     )
-    track_efficiency["efficiency"] = (
-        (track_efficiency["nMeasurements"].values >= args.require_number_of_hits)
+    track_efficiency["track_efficiency"] = (
+        (track_efficiency["true_efficiency"].values == 1.0)
         & (
-            track_efficiency["nMajorityHits"].values
-            / track_efficiency["nMeasurements"].values
+            track_efficiency["track_nMeasurements"].values
+            >= args.require_number_of_hits
+        )
+        & (
+            track_efficiency["track_nMajorityHits"].values
+            / track_efficiency["track_nMeasurements"].values
             >= args.matching_ratio
         )
-        & (track_efficiency["duplicate"].values == 0)
+        & (track_efficiency["track_duplicate"].values == 0.0)
     ).astype(float)
 
-    particle_efficiency_binned, eta_edges, _ = binned_statistic(
-        particle_efficiency["eta"],
-        particle_efficiency["efficiency"],
+    track_efficiency_mean, eta_edges, _ = binned_statistic(
+        track_efficiency["true_eta"],
+        track_efficiency["track_efficiency"],
         bins=eta_bins,
         range=eta_range,
         statistic="mean",
     )
-    track_efficiency_binned, _, _ = binned_statistic(
-        track_efficiency["t_eta"],
-        track_efficiency["efficiency"],
+    track_efficiency_std, _, _ = binned_statistic(
+        track_efficiency["true_eta"],
+        track_efficiency["track_efficiency"],
         bins=eta_bins,
         range=eta_range,
-        statistic="mean",
+        statistic="std",
     )
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
+    eta_step = eta_edges[1] - eta_edges[0]
 
-    plt.plot(
-        eta_mid,
-        track_efficiency_binned / particle_efficiency_binned,
+    plt.errorbar(
+        x=eta_mid,
+        y=track_efficiency_mean,
+        yerr=track_efficiency_std,
+        xerr=eta_step / 2,
         marker="o",
         label=pt_label(tracksummary_file),
     )
