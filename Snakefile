@@ -54,6 +54,7 @@ rule all:
         expand("plots/{single_particle}_{simulation}/{pt}/pulls_over_eta_sausage.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, pt=PT_VALUES),
         expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{single_particle}_{simulation}/resolution_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/{single_particle}_{simulation}/{pt}/efficiency_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, pt=PT_VALUES),
 
 rule all_sim:
     input:
