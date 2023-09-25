@@ -9,7 +9,9 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.label import pt_label, event_type_label
+from mycommon.events import split_event_label
+from mycommon.label import get_event_variant_label, get_event_type_label
+from mycommon.paths import get_event_label_from_path
 
 
 myPlotStyle()
@@ -30,9 +32,12 @@ eta_bins = 25
 for tracksummary_file, particles_file, hits_file in zip(
     args.tracksummary, args.particles, args.hits
 ):
+    event_label = get_event_label_from_path(tracksummary_file)
+    event, _ = split_event_label(event_label)
+
     particles = ak.to_dataframe(
         uproot.open(particles_file)["particles"].arrays(
-            ["event_id", "particle_id", "eta", "pt", "vertex_primary"],
+            ["event_id", "particle_id", "q", "eta", "pt", "vertex_primary"],
             library="ak",
         ),
         how="outer",
@@ -43,6 +48,8 @@ for tracksummary_file, particles_file, hits_file in zip(
     particles = particles[particles["vertex_primary"] == 1]
     # apply pt cut
     particles = particles[particles["pt"] >= args.require_pt]
+    # filter for charged particles
+    particles = particles[particles["q"] != 0.0]
 
     hits = ak.to_dataframe(
         uproot.open(hits_file)["hits"].arrays(
@@ -145,12 +152,12 @@ for tracksummary_file, particles_file, hits_file in zip(
         xerr=eta_step * 0.4,
         fmt="",
         linestyle="",
-        label=pt_label(tracksummary_file),
+        label=get_event_variant_label(tracksummary_file),
     )
 
 plt.axhline(1, linestyle="--", color="gray")
 
-plt.title(f"Efficiency over $\eta$ for {event_type_label(args.tracksummary[0])} events")
+plt.title(f"Efficiency over $\eta$ for {get_event_type_label(event)} events")
 plt.xlabel("$\eta$")
 plt.ylabel("efficiency")
 plt.xticks(np.linspace(*eta_range, 7))

@@ -7,10 +7,7 @@ ttbar_pileups = [0, 60, 120, 200]
 events = [
     f"{p}_{pT}GeV" for p, pT in itertools.product(single_particles, single_particle_pts)
 ] + [f"ttbar_{pu}" for pu in ttbar_pileups]
-simulations = [
-    "fatras",
-    "geant4",
-]
+simulations = ["fatras", "geant4"]
 
 
 def list_single_particles():
@@ -55,6 +52,14 @@ def get_event_type(event):
     if event.startswith("ttbar_"):
         return "ttbar"
     return "single_particles"
+
+
+def get_event_details(event):
+    event_type = get_event_type(event)
+    split = event.split("_")
+    if event_type == "ttbar":
+        return int(split[1])
+    return split[0], int(split[1].replace("GeV", ""))
 
 
 def get_number_of_events(event_type):

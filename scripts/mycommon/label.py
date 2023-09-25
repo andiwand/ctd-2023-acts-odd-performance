@@ -1,34 +1,34 @@
-from pathlib import Path
+from mycommon.events import get_event_type, get_event_details
 
 
-def split_path(file):
-    split = Path(file).parent.parent.name.split("_")
-    return split[0], split[1]
+def get_event_variant_label(event):
+    event_type = get_event_type(event)
+    event_details = get_event_details(event)
+    if event_type == "ttbar":
+        return f"{event_details[0]} pileup"
+    return f"{event_details[1]} GeV"
 
 
-def pt_label(file):
-    split = split_path(file)
-    return f"{split[1].replace('GeV', '')} GeV"
-
-
-def particle_label(file):
+def get_single_particle_label(event):
     particle_map = {
         "mu": r"$\mu$",
         "pi": r"$\pi$",
         "e": r"$e$",
     }
-    split = split_path(file)
-    return f"{particle_map[split[0]]}"
+    event_type = get_event_type(event)
+    assert event_type == "single_particles", f"event type is {event_type}"
+    event_details = get_event_details(event)
+    return f"{particle_map[event_details[0]]}"
 
 
-def event_type_label(file):
-    split = split_path(file)
-    if split[0] == "ttbar":
-        return rf"$t\bar{{t}}$"
-    return f"single {particle_label(file)}"
+def get_event_type_label(event):
+    event_type = get_event_type(event)
+    if event_type == "ttbar":
+        return r"$t\bar{t}$"
+    return f"single {get_single_particle_label(event)}"
 
 
-def param_label(param):
+def get_param_label(param):
     param_map = {
         "pull_eLOC0_fit": r"$d_0$",
         "pull_eLOC1_fit": r"$z_0$",

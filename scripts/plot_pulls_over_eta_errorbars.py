@@ -9,7 +9,13 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_mean, smoothed_std
-from mycommon.label import particle_label, pt_label, param_label
+from mycommon.events import split_event_label
+from mycommon.label import (
+    get_event_variant_label,
+    get_event_type_label,
+    get_param_label,
+)
+from mycommon.paths import get_event_label_from_path
 
 
 myPlotStyle()
@@ -35,6 +41,9 @@ fig = plt.figure(figsize=(16, 8))
 axs = fig.subplots(1, 3, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
+    event_label = get_event_label_from_path(file)
+    event, _ = split_event_label(event_label)
+
     tracksummary = uproot.open(file)
     tracksummary = ak.to_dataframe(
         tracksummary["tracksummary"].arrays(
@@ -51,7 +60,7 @@ for i, file in enumerate(args.tracksummary):
             axs.flat,
         )
     ):
-        ax.set_title(param_label(col))
+        ax.set_title(get_param_label(col))
         ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
         ax.set_ylim(*pull_range)
 
@@ -81,14 +90,14 @@ for i, file in enumerate(args.tracksummary):
             yerr=std_binned,
             fmt="o",
             transform=trans,
-            label=pt_label(file) if j == 0 else None,
+            label=get_event_variant_label(event) if j == 0 else None,
         )
 
         ax.axhline(0, linestyle="--", color="gray")
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-fig.suptitle(f"single {particle_label(args.tracksummary[0])} pulls over $\eta$")
+fig.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
 fig.supxlabel(r"$\eta$")
 fig.supylabel(r"pull")
 fig.legend()

@@ -9,7 +9,9 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_std
-from mycommon.label import pt_label, event_type_label
+from mycommon.events import split_event_label
+from mycommon.label import get_event_variant_label, get_event_type_label
+from mycommon.paths import get_event_label_from_path
 
 
 myPlotStyle()
@@ -23,6 +25,9 @@ abs_eta_range = (0, 3)
 abs_eta_bins = 15
 
 for file in args.tracksummary:
+    event_label = get_event_label_from_path(file)
+    event, _ = split_event_label(event_label)
+
     tracksummary = uproot.open(file)
     tracksummary = ak.to_dataframe(
         tracksummary["tracksummary"].arrays(["t_eta", "res_eLOC0_fit"], library="ak"),
@@ -46,11 +51,14 @@ for file in args.tracksummary:
         plt.hist(d0[digi == i], bins=100, range=(-0.4, 0.4), histtype="step")
     """
 
-    plt.plot(abs_eta_mid, resolution_d0_binned, marker="o", label=pt_label(file))
+    plt.plot(
+        abs_eta_mid,
+        resolution_d0_binned,
+        marker="o",
+        label=get_event_variant_label(event),
+    )
 
-plt.title(
-    f"Resolution of $d_0$ over $|\eta|$ for {event_type_label(args.tracksummary[0])} events"
-)
+plt.title(f"Resolution of $d_0$ over $|\eta|$ for {get_event_type_label(event)} events")
 plt.xlabel("$|\eta|$")
 plt.ylabel("$\sigma(d_0)$ [mm]")
 plt.xticks(np.linspace(*abs_eta_range, 7))
