@@ -49,9 +49,12 @@ def split_event_label(event_label):
 
 
 def get_event_type(event):
-    if event.startswith("ttbar_"):
+    split = event.split("_")
+    if split[0] == "ttbar":
         return "ttbar"
-    return "single_particles"
+    if split[0] in single_particles:
+        return "single_particles"
+    raise ValueError(f"cannot determine event type: {event}")
 
 
 def get_event_details(event):
@@ -59,7 +62,9 @@ def get_event_details(event):
     split = event.split("_")
     if event_type == "ttbar":
         return int(split[1])
-    return split[0], int(split[1].replace("GeV", ""))
+    if event_type == "single_particles":
+        return split[0], int(split[1].replace("GeV", ""))
+    raise ValueError(f"unknown event type: {event_type}")
 
 
 def get_number_of_events(event_type):
@@ -67,4 +72,4 @@ def get_number_of_events(event_type):
         return 200000
     elif event_type == "ttbar":
         return 1000
-    raise ValueError(f"Unknown event type: {event_type}")
+    raise ValueError(f"unknown event type: {event_type}")
