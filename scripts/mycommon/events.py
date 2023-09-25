@@ -1,13 +1,32 @@
 import itertools
 
 
+single_particles = ["mu", "pi", "e"]
+single_particle_pts = [1, 10, 100]
+ttbar_pileups = [0, 60, 120, 200]
 events = [
-    f"{p}_{pT}GeV" for p, pT in itertools.product(["mu", "pi", "e"], [1, 10, 100])
-] + [f"ttbar_{pu}" for pu in [0, 60, 120, 200]]
+    f"{p}_{pT}GeV" for p, pT in itertools.product(single_particles, single_particle_pts)
+] + [f"ttbar_{pu}" for pu in ttbar_pileups]
 simulations = [
     "fatras",
     "geant4",
 ]
+
+
+def list_single_particles():
+    return single_particles
+
+
+def list_single_particle_pt_labels():
+    return [f"{pt}GeV" for pt in single_particle_pts]
+
+
+def list_ttbar_pileups():
+    return ttbar_pileups
+
+
+def list_simulations():
+    return simulations
 
 
 def list_events_simulations():
@@ -42,5 +61,5 @@ def get_number_of_events(event_type):
     if event_type == "single_particles":
         return 200000
     elif event_type == "ttbar":
-        return 10
+        return 1000
     raise ValueError(f"Unknown event type: {event_type}")

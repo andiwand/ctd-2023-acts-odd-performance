@@ -1,11 +1,19 @@
-from mycommon.events import list_event_labels, get_event_type, get_number_of_events
+from mycommon.events import (
+    list_single_particles,
+    list_single_particle_pt_labels,
+    list_ttbar_pileups,
+    list_simulations,
+    list_event_labels,
+    get_event_type,
+    get_number_of_events,
+)
 
 
+SINGLE_PARTICLES = list_single_particles()
+PT_VALUES = list_single_particle_pt_labels()
+PILEUP = list_ttbar_pileups()
+SIMULATIONS = list_simulations()
 EVENT_LABELS = list_event_labels()
-SINGLE_PARTICLES = ["mu", "pi", "e"]
-PT_VALUES = ["1GeV", "10GeV", "100GeV"]
-SIMULATIONS = ["fatras", "geant4"]
-PILEUP = [0, 60, 120, 200]
 RECO_THREADS = 4
 
 
@@ -13,7 +21,7 @@ def get_events_per_slice(event_type):
     if event_type == "single_particles":
         return 10000
     elif event_type == "ttbar":
-        return 1
+        return 10
     raise ValueError(f"Unknown event type: {event_type}")
 
 def get_skip_events(event_label):

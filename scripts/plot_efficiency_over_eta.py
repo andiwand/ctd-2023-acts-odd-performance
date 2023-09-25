@@ -143,8 +143,8 @@ for tracksummary_file, particles_file, hits_file in zip(
         y=track_efficiency_mean,
         yerr=track_efficiency_std,
         xerr=eta_step * 0.4,
-        fmt='',
-        linestyle='',
+        fmt="",
+        linestyle="",
         label=pt_label(tracksummary_file),
     )
 

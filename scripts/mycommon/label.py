@@ -24,7 +24,7 @@ def particle_label(file):
 def event_type_label(file):
     split = split_path(file)
     if split[0] == "ttbar":
-        return fr"$t\bar{{t}}$"
+        return rf"$t\bar{{t}}$"
     return f"single {particle_label(file)}"
 
 
