@@ -13,9 +13,9 @@ def pt_label(file):
 
 def particle_label(file):
     particle_map = {
-        "mu": "$\mu$",
-        "pi": "$\pi$",
-        "e": "$e$",
+        "mu": r"$\mu$",
+        "pi": r"$\pi$",
+        "e": r"$e$",
     }
     split = split_path(file)
     return f"{particle_map[split[0]]}"
@@ -24,7 +24,7 @@ def particle_label(file):
 def event_type_label(file):
     split = split_path(file)
     if split[0] == "ttbar":
-        return f"$t\bar{{t}}$"
+        return fr"$t\bar{{t}}$"
     return f"single {particle_label(file)}"
 
 
