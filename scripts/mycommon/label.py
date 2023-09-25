@@ -21,8 +21,11 @@ def particle_label(file):
     return f"{particle_map[split[0]]}"
 
 
-def particle_pt_label(file):
-    return f"single {particle_label(file)} {pt_label(file)} GeV"
+def event_type_label(file):
+    split = split_path(file)
+    if split[0] == "ttbar":
+        return f"$t\bar{{t}}$"
+    return f"single {particle_label(file)}"
 
 
 def param_label(param):

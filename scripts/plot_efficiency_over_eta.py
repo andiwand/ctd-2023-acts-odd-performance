@@ -9,7 +9,7 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.label import pt_label, particle_label
+from mycommon.label import pt_label, event_type_label
 
 
 myPlotStyle()
@@ -123,9 +123,7 @@ for tracksummary_file, particles_file, hits_file in zip(
 
 plt.axhline(1, linestyle="--", color="gray")
 
-plt.title(
-    f"Efficiency over $\eta$ for single {particle_label(args.tracksummary[0])} events"
-)
+plt.title(f"Efficiency over $\eta$ for {event_type_label(args.tracksummary[0])} events")
 plt.xlabel("$\eta$")
 plt.ylabel("efficiency")
 plt.xticks(np.linspace(*eta_range, 7))
