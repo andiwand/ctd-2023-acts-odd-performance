@@ -96,12 +96,11 @@ for tracksummary_file, particles_file, hits_file in zip(
     track_efficiency = pd.merge(
         tracksummary.add_prefix("track_"),
         particle_efficiency.add_prefix("true_"),
-        how="outer",
+        how="right",
         left_on=["track_event_nr", "track_majorityParticleId"],
         right_on=["true_event_id", "true_particle_id"],
     )
-
-    track_efficiency["true_efficiency"].fillna(0, inplace=True)
+    track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 
     track_efficiency["track_duplicate"] = (
         track_efficiency[["true_event_id", "true_particle_id"]]
