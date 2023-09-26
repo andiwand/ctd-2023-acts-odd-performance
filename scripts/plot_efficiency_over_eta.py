@@ -25,7 +25,7 @@ parser.add_argument("tracksummary", nargs="+")
 parser.add_argument("--particles", required=True, nargs="+")
 parser.add_argument("--hits", required=True, nargs="+")
 parser.add_argument("--output")
-parser.add_argument("--require-pt", type=float, default=0.9)
+parser.add_argument("--require-pt", type=float, default=0.99)
 parser.add_argument("--require-number-of-hits", type=int, default=7)
 parser.add_argument("--matching-ratio", type=float, default=0.5)
 args = parser.parse_args()
@@ -106,6 +106,12 @@ for tracksummary_file, particles_file, hits_file in zip(
         how="outer",
     ).dropna()
 
+    # apply reco cuts
+    # filter for track we care about
+    tracksummary = tracksummary[
+        (tracksummary["nMeasurements"].values >= args.require_number_of_hits)
+    ]
+
     track_efficiency = pd.merge(
         tracksummary.add_prefix("track_"),
         particle_efficiency.add_prefix("true_"),
@@ -114,11 +120,6 @@ for tracksummary_file, particles_file, hits_file in zip(
         right_on=["true_event_id", "true_particle_id"],
     )
     track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
-
-    # filter for track we care about
-    track_efficiency = track_efficiency[
-        (track_efficiency["track_nMeasurements"].values >= args.require_number_of_hits)
-    ]
 
     track_efficiency["track_duplicate"] = (
         track_efficiency[["true_event_id", "true_particle_id"]]
@@ -133,6 +134,19 @@ for tracksummary_file, particles_file, hits_file in zip(
         )
         & (track_efficiency["track_duplicate"].values == 0.0)
     ).astype(float)
+
+    track_efficiency = track_efficiency.groupby(
+        ["true_event_id", "true_particle_id"]
+    ).aggregate(
+        {
+            "true_eta": "first",
+            "true_pt": "first",
+            "true_hit_count": "first",
+            "track_efficiency": "max",
+            "track_duplicate": "sum",
+        }
+    )
+    track_efficiency.reset_index(inplace=True)
 
     track_efficiency_mean, eta_edges, _ = binned_statistic(
         track_efficiency["true_eta"],
