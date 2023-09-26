@@ -152,7 +152,7 @@ for tracksummary_file, particles_file, hits_file in zip(
         xerr=eta_step * 0.4,
         fmt="",
         linestyle="",
-        label=get_event_variant_label(tracksummary_file),
+        label=get_event_variant_label(event),
     )
 
 plt.axhline(1, linestyle="--", color="gray")
