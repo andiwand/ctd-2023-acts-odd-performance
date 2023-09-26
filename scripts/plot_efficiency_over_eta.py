@@ -12,7 +12,10 @@ from mycommon.plot_style import myPlotStyle
 from mycommon.events import split_event_label
 from mycommon.label import get_event_variant_label, get_event_type_label
 from mycommon.paths import get_event_label_from_path
-from mycommon.stats import create_clopper_pearson_interval
+from mycommon.stats import (
+    create_clopper_pearson_upper_bounds,
+    create_clopper_pearson_lower_bounds,
+)
 
 
 myPlotStyle()
@@ -138,12 +141,19 @@ for tracksummary_file, particles_file, hits_file in zip(
         range=eta_range,
         statistic="mean",
     )
-    track_efficiency_interval, _, _ = binned_statistic(
+    track_efficiency_upper, _, _ = binned_statistic(
         track_efficiency["true_eta"],
         track_efficiency["track_efficiency"],
         bins=eta_bins,
         range=eta_range,
-        statistic=create_clopper_pearson_interval(),
+        statistic=create_clopper_pearson_upper_bounds(),
+    )
+    track_efficiency_lower, _, _ = binned_statistic(
+        track_efficiency["true_eta"],
+        track_efficiency["track_efficiency"],
+        bins=eta_bins,
+        range=eta_range,
+        statistic=create_clopper_pearson_lower_bounds(),
     )
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
     eta_step = eta_edges[1] - eta_edges[0]
@@ -151,7 +161,10 @@ for tracksummary_file, particles_file, hits_file in zip(
     plt.errorbar(
         x=eta_mid,
         y=track_efficiency_mean,
-        yerr=track_efficiency_interval * 0.5,
+        yerr=(
+            track_efficiency_mean - track_efficiency_lower,
+            track_efficiency_upper - track_efficiency_mean,
+        ),
         xerr=eta_step * 0.4,
         fmt="",
         linestyle="",

@@ -107,10 +107,12 @@ rule reconstruction:
         "data/reco/{event_label}/tracksummary_ambi.root",
         "data/reco/{event_label}/stdout.txt",
         "data/reco/{event_label}/stderr.txt",
+    params:
+        threads=RECO_THREADS,
     shell:
         """
         mkdir -p data/reco/{wildcards.event_label} || true
-        python scripts/reconstruction.py {wildcards.event_label} data/sim/{wildcards.event_label} data/reco/{wildcards.event_label} \
+        python scripts/reconstruction.py {wildcards.event_label} data/sim/{wildcards.event_label} data/reco/{wildcards.event_label} --threads {threads} \
           > data/reco/{wildcards.event_label}/stdout.txt \
           2> data/reco/{wildcards.event_label}/stderr.txt
         """
