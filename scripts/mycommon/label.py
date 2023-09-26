@@ -5,8 +5,10 @@ def get_event_variant_label(event):
     event_type = get_event_type(event)
     event_details = get_event_details(event)
     if event_type == "ttbar":
-        return f"{event_details[0]} pileup"
-    return f"{event_details[1]} GeV"
+        return f"{event_details} pileup"
+    if event_type == "single_particles":
+        return f"{event_details[1]} GeV"
+    raise ValueError(f"unknown event type {event_type}")
 
 
 def get_single_particle_label(event):
