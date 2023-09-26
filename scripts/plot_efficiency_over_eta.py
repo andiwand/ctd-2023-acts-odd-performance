@@ -12,6 +12,7 @@ from mycommon.plot_style import myPlotStyle
 from mycommon.events import split_event_label
 from mycommon.label import get_event_variant_label, get_event_type_label
 from mycommon.paths import get_event_label_from_path
+from mycommon.stats import create_clopper_pearson_interval
 
 
 myPlotStyle()
@@ -86,6 +87,8 @@ for tracksummary_file, particles_file, hits_file in zip(
     particle_efficiency["efficiency"] = (
         particle_efficiency["hit_count"].values >= args.require_number_of_hits
     ).astype(float)
+    # drop true inefficiencies
+    particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0.0]
 
     tracksummary = ak.to_dataframe(
         uproot.open(tracksummary_file)["tracksummary"].arrays(
@@ -109,18 +112,18 @@ for tracksummary_file, particles_file, hits_file in zip(
     )
     track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 
+    # filter for track we care about
+    track_efficiency = track_efficiency[
+        (track_efficiency["track_nMeasurements"].values >= args.require_number_of_hits)
+    ]
+
     track_efficiency["track_duplicate"] = (
         track_efficiency[["true_event_id", "true_particle_id"]]
         .duplicated(keep="first")
         .astype(float)
     )
     track_efficiency["track_efficiency"] = (
-        (track_efficiency["true_efficiency"].values == 1.0)
-        & (
-            track_efficiency["track_nMeasurements"].values
-            >= args.require_number_of_hits
-        )
-        & (
+        (
             track_efficiency["track_nMajorityHits"].values
             / track_efficiency["track_nMeasurements"].values
             >= args.matching_ratio
@@ -135,12 +138,12 @@ for tracksummary_file, particles_file, hits_file in zip(
         range=eta_range,
         statistic="mean",
     )
-    track_efficiency_std, _, _ = binned_statistic(
+    track_efficiency_interval, _, _ = binned_statistic(
         track_efficiency["true_eta"],
         track_efficiency["track_efficiency"],
         bins=eta_bins,
         range=eta_range,
-        statistic="std",
+        statistic=create_clopper_pearson_interval(),
     )
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
     eta_step = eta_edges[1] - eta_edges[0]
@@ -148,7 +151,7 @@ for tracksummary_file, particles_file, hits_file in zip(
     plt.errorbar(
         x=eta_mid,
         y=track_efficiency_mean,
-        yerr=track_efficiency_std,
+        yerr=track_efficiency_interval * 0.5,
         xerr=eta_step * 0.4,
         fmt="",
         linestyle="",
@@ -157,9 +160,9 @@ for tracksummary_file, particles_file, hits_file in zip(
 
 plt.axhline(1, linestyle="--", color="gray")
 
-plt.title(f"Efficiency over $\eta$ for {get_event_type_label(event)} events")
+plt.title(f"Technical efficiency over $\eta$ for {get_event_type_label(event)} events")
 plt.xlabel("$\eta$")
-plt.ylabel("efficiency")
+plt.ylabel("technical efficiency")
 plt.xticks(np.linspace(*eta_range, 7))
 plt.xlim(eta_range)
 plt.legend()
