@@ -1,3 +1,4 @@
+import math
 from mycommon.events import (
     list_single_particles,
     list_single_particle_pt_labels,
@@ -14,8 +15,13 @@ PT_VALUES = list_single_particle_pt_labels()
 PILEUP = list_ttbar_pileups()
 SIMULATIONS = list_simulations()
 EVENT_LABELS = list_event_labels()
-RECO_THREADS = 4
 
+
+def get_reco_threads(wildcards):
+    event_type = get_event_type(wildcards["event_label"])
+    if event_type == "ttbar":
+        return int(math.ceil(workflow.cores * 0.5))
+    return int(math.ceil(workflow.cores * 0.1))
 
 def get_events_per_slice(event_type):
     if event_type == "single_particles":
@@ -107,8 +113,7 @@ rule reconstruction:
         "data/reco/{event_label}/tracksummary_ambi.root",
         "data/reco/{event_label}/stdout.txt",
         "data/reco/{event_label}/stderr.txt",
-    params:
-        threads=RECO_THREADS,
+    threads: get_reco_threads,
     shell:
         """
         mkdir -p data/reco/{wildcards.event_label} || true
