@@ -20,7 +20,7 @@ EVENT_LABELS = list_event_labels()
 def get_reco_threads(wildcards):
     event_type = get_event_type(wildcards["event_label"])
     if event_type == "ttbar":
-        return int(math.ceil(workflow.cores * 0.3))
+        return int(math.ceil(workflow.cores * 0.5))
     return int(math.ceil(workflow.cores * 0.1))
 
 def get_events_per_slice(event_type):
