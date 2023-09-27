@@ -81,7 +81,7 @@ for file in args.input:
 plt.title(f"Resolution of $d_0$ over $\eta$ for {get_event_type_label(event)} events")
 plt.xlabel("$\eta$")
 plt.ylabel("$\sigma(d_0)$ [mm]")
-plt.xticks(np.linspace(*eta_range, 15))
+plt.xticks(np.linspace(*eta_range, 10))
 plt.yticks(np.linspace(0, 0.3, 6))
 plt.xlim(eta_range)
 plt.legend()
