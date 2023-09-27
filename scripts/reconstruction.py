@@ -13,6 +13,7 @@ from acts.examples.reconstruction import (
     addKalmanTracks,
     addTruthTrackingGsf,
     addTrajectoryWriters,
+    TrackFindingConfig,
     addCKFTracks,
     addAmbiguityResolution,
     AmbiguityResolutionConfig,
@@ -162,6 +163,10 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         s,
         trackingGeometry,
         field,
+        frackFindingConfig=TrackFindingConfig(
+            chi2CutOff=15.0,
+            numMeasurementsCutOff=10,
+        ),
         # outputDirRoot=tp,
     )
 
