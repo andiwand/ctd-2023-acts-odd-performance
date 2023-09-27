@@ -28,15 +28,3 @@ def get_event_type_label(event):
     if event_type == "ttbar":
         return r"$t\bar{t}$"
     return f"single {get_single_particle_label(event)}"
-
-
-def get_param_label(param):
-    param_map = {
-        "pull_eLOC0_fit": r"$d_0$",
-        "pull_eLOC1_fit": r"$z_0$",
-        "pull_eT_fit": r"$t$",
-        "pull_ePHI_fit": r"$\phi$",
-        "pull_eTHETA_fit": r"$\theta$",
-        "pull_eQOP_fit": r"$\frac{q}{p}$",
-    }
-    return param_map[param]

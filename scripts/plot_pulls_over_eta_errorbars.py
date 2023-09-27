@@ -14,7 +14,6 @@ from mycommon.events import split_event_label
 from mycommon.label import (
     get_event_variant_label,
     get_event_type_label,
-    get_param_label,
 )
 from mycommon.paths import get_event_label_from_path
 
@@ -100,7 +99,7 @@ for i, file in enumerate(args.tracksummary):
             axs.flat,
         )
     ):
-        ax.set_title(get_param_label(col))
+        ax.set_title(pull_label)
         ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
         ax.set_ylim(*pull_range)
 
