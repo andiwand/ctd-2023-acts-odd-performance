@@ -11,6 +11,7 @@ from acts.examples.simulation import (
 )
 from acts.examples.reconstruction import (
     addKalmanTracks,
+    addTruthTrackingGsf,
     addTrajectoryWriters,
     addCKFTracks,
     addAmbiguityResolution,
@@ -54,6 +55,10 @@ def main():
 
 
 def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
+    event_type = get_event_type(event)
+    is_single_electrons = event.startswith("e_")
+    is_ttbar = event_type == "ttbar"
+
     rnd = acts.examples.RandomNumbers(seed=42)
 
     s = acts.examples.Sequencer(
@@ -135,11 +140,29 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         writeFitterPerformance=False,
     )
 
+    if is_single_electrons:
+        addTruthTrackingGsf(
+            s,
+            trackingGeometry,
+            field,
+        )
+        addTrajectoryWriters(
+            s,
+            name="gsf",
+            trajectories="gsf_trajectories",
+            outputDirRoot=tp,
+            writeStates=True,
+            writeSummary=True,
+            writeCKFperformance=True,
+            writeFinderPerformance=False,
+            writeFitterPerformance=False,
+        )
+
     addCKFTracks(
         s,
         trackingGeometry,
         field,
-        #outputDirRoot=tp,
+        # outputDirRoot=tp,
     )
 
     addAmbiguityResolution(
@@ -152,7 +175,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         outputDirRoot=tp,
     )
 
-    if get_event_type(event) == "ttbar":
+    if is_ttbar:
         addVertexFitting(
             s,
             field,
@@ -164,19 +187,31 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     del s
 
     outdir.mkdir(parents=True, exist_ok=True)
-    for file in [
-        "timing.tsv",
-        "measurements.root",
-        # "tracksummary_ckf.root",
-        # "trackstates_ckf.root",
-        # "performance_ckf.root",
-        "tracksummary_ambi.root",
-        # "trackstates_ambi.root",
-        "performance_ambi.root",
-        "tracksummary_kf.root",
-        # "trackstates_kf.root",
-        "performance_kf.root",
-    ] + (["performance_vertexing.root"] if get_event_type(event) == "ttbar" else []):
+    for file in (
+        [
+            "timing.tsv",
+            "measurements.root",
+            # "tracksummary_ckf.root",
+            # "trackstates_ckf.root",
+            # "performance_ckf.root",
+            "tracksummary_ambi.root",
+            # "trackstates_ambi.root",
+            "performance_ambi.root",
+            "tracksummary_kf.root",
+            # "trackstates_kf.root",
+            "performance_kf.root",
+        ]
+        + (
+            [
+                "tracksummary_gsf.root",
+                # "trackstates_gsf.root",
+                "performance_gsf.root",
+            ]
+            if is_single_electrons
+            else []
+        )
+        + (["performance_vertexing.root"] if is_ttbar else [])
+    ):
         source = tp / file
         destination = outdir / file
         assert source.exists(), f"File not found: {source}"

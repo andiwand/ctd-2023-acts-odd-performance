@@ -1,23 +1,40 @@
 import numpy as np
 import scipy.stats
+from scipy.optimize import curve_fit
 
 
 def smoothed_mean(data):
-    return smoothed_mean_std(data)[0]
+    (m, s), cov = smoothed_mean_std(data)
+    return m
 
 
 def smoothed_std(data):
-    return smoothed_mean_std(data)[1]
+    (m, s), cov = smoothed_mean_std(data)
+    return s
+
+
+def smoothed_std_std(data):
+    (m, s), cov = smoothed_mean_std(data)
+    return cov[1, 1] ** 0.5
 
 
 def smoothed_mean_std(data):
+    def fit1(data):
+        def gauss(x, m, s):
+            return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
+
+        binned, edges = np.histogram(data, bins=int(len(data) ** 0.5), density=True)
+        centers = (edges[1:] + edges[:-1]) / 2
+        params, cov = curve_fit(gauss, centers, binned)
+        return params, cov
+
     def fit2(data):
-        return np.mean(data), np.std(data)
+        return (np.mean(data), np.std(data)), None
 
     for _ in range(3):
-        m, s = fit2(data)
+        (m, s), cov = fit1(data)
         data = data[np.abs(data - np.median(data)) < 3 * s]
-    return m, s
+    return (m, s), cov
 
 
 def clopper_pearson(k, n, alpha=0.32):

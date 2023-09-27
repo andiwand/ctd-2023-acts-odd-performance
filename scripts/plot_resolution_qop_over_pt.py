@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import smoothed_std
+from mycommon.stats import smoothed_std, smoothed_std_std
 from mycommon.events import split_event_label
 from mycommon.label import get_event_variant_label, get_event_type_label
 from mycommon.paths import get_event_label_from_path
@@ -55,15 +55,21 @@ for file in args.input:
 
     eta, res_qop = get_data(file)
 
-    resolution_qop_binned, pt_edges, _ = binned_statistic(
+    qop_std, pt_edges, _ = binned_statistic(
         eta, res_qop, bins=pt_bins, range=pt_range, statistic=smoothed_std
     )
+    qop_std_std, pt_edges, _ = binned_statistic(
+        eta, res_qop, bins=pt_bins, range=pt_range, statistic=smoothed_std_std
+    )
     pt_mid = 0.5 * (pt_edges[:-1] + pt_edges[1:])
+    pt_step = pt_edges[1] - pt_edges[0]
 
     plt.plot(
-        pt_mid,
-        resolution_qop_binned,
-        marker="o",
+        x=pt_mid,
+        y=qop_std,
+        yerr=qop_std_std,
+        xerr=pt_step * 0.4,
+        fmt="",
         linestyle="",
         label=get_event_variant_label(event),
     )
