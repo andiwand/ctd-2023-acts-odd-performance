@@ -19,24 +19,22 @@ def get_data(file):
     if str(file).endswith(".root"):
         tracksummary = uproot.open(file)
         tracksummary = ak.to_dataframe(
-            tracksummary["tracksummary"].arrays(
-                ["t_eta", "res_eLOC0_fit"], library="ak"
-            ),
+            tracksummary["tracksummary"].arrays(["t_pT", "res_eQOP_fit"], library="ak"),
             how="outer",
         ).dropna()
 
-        eta = tracksummary["t_eta"].values
-        d0 = tracksummary["res_eLOC0_fit"].values
+        pt = tracksummary["t_pT"].values
+        res_qop = tracksummary["res_eQOP_fit"].values
 
-        return eta, d0
+        return pt, res_qop
 
     if str(file).endswith(".csv"):
         data = pd.read_csv(file).dropna()
 
-        eta = data["true_eta"].values
-        d0 = data["track_res_eLOC0_fit"].values
+        pt = data["true_pt"].values
+        res_qop = data["track_res_eQOP_fit"].values
 
-        return eta, d0
+        return pt, res_qop
 
     raise ValueError(f"unknown file type: {file}")
 
@@ -48,42 +46,35 @@ parser.add_argument("input", nargs="+")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-eta_range = (-3, 3)
-eta_bins = 31
+pt_range = (0, 100)
+pt_bins = 31
 
 for file in args.input:
     event_label = get_event_label_from_path(file)
     event, _ = split_event_label(event_label)
 
-    eta, d0 = get_data(file)
+    eta, res_qop = get_data(file)
 
-    resolution_d0_binned, eta_edges, _ = binned_statistic(
-        eta, d0, bins=eta_bins, range=eta_range, statistic=smoothed_std
+    resolution_qop_binned, pt_edges, _ = binned_statistic(
+        eta, res_qop, bins=pt_bins, range=pt_range, statistic=smoothed_std
     )
-    eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
-
-    # debugging distribution of eta bins
-    """
-    digi = np.digitize(eta, eta_edges)
-    for i in range(eta_bins):
-        f = plt.figure(f"{i} = {eta_edges[i]:.2f} < |eta| < {eta_edges[i+1]:.2f}")
-        plt.hist(d0[digi == i], bins=100, range=(-0.4, 0.4), histtype="step")
-    """
+    pt_mid = 0.5 * (pt_edges[:-1] + pt_edges[1:])
 
     plt.plot(
-        eta_mid,
-        resolution_d0_binned,
+        pt_mid,
+        resolution_qop_binned,
         marker="o",
         linestyle="",
         label=get_event_variant_label(event),
     )
 
-plt.title(f"Resolution of $d_0$ over $\eta$ for {get_event_type_label(event)} events")
-plt.xlabel("$\eta$")
-plt.ylabel("$\sigma(d_0)$ [mm]")
-plt.xticks(np.linspace(*eta_range, 10))
-plt.yticks(np.linspace(0, 0.3, 6))
-plt.xlim(eta_range)
+plt.title(
+    rf"Resolution of $\frac{{q}}{{p}}$ over $p_T$ for {get_event_type_label(event)} events"
+)
+plt.xlabel(r"$p_T$")
+plt.ylabel(r"$\sigma(d_0)$ [mm]")
+plt.xticks(np.linspace(*pt_range, 10))
+plt.xlim(pt_range)
 plt.legend()
 
 if args.output:

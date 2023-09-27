@@ -54,6 +54,13 @@ def get_all_pt_variants(wildcards):
         simulation=wildcards.simulation
     )
 
+def get_all_ttbar_variants(wildcards):
+    return expand(
+        "data/reco/ttbar_{pileup}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        pileup=PILEUP,
+        simulation=wildcards.simulation
+    )
+
 
 wildcard_constraints:
     event_label="|".join(EVENT_LABELS),
@@ -67,10 +74,13 @@ wildcard_constraints:
 rule all:
     input:
         expand("plots/{event_label}/pulls_over_eta_sausage.png", event_label=EVENT_LABELS),
-        expand("plots/{event_label}/efficiency_over_eta.png", event_label=EVENT_LABELS),
 
         expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/{single_particle}_{simulation}/resolution_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/{single_particle}_{simulation}/resolution_d0_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/{single_particle}_{simulation}/efficiency_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+
+        expand("plots/ttbar_{simulation}/resolution_qop_over_pt.png", simulation=SIMULATIONS),
+        expand("plots/ttbar_{simulation}/efficiency_over_eta.png", simulation=SIMULATIONS),
 
 rule all_sim:
     input:
@@ -143,7 +153,7 @@ rule plot_pulls_over_eta_sausage:
         python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
         """
 
-rule plot_pulls_over_eta_errorbars:
+rule plot_single_particle_pulls_over_eta_errorbars:
     input:
         get_all_pt_variants,
     output:
@@ -154,24 +164,46 @@ rule plot_pulls_over_eta_errorbars:
         python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
         """
 
-rule plot_resolution_over_eta:
+rule plot_single_particle_resolution_d0_over_eta:
     input:
         get_all_pt_variants,
     output:
-        "plots/{single_particle}_{simulation}/resolution_over_eta.png",
+        "plots/{single_particle}_{simulation}/resolution_d0_over_eta.png",
     shell:
         """
         mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_resolution_over_eta.py {input} --output {output}
         """
 
-rule plot_efficiency_over_eta:
+rule plot_single_particle_efficiency_over_eta:
     input:
-        "data/reco/{event_label}/truth_matched_tracksummary_ambi.csv",
+        get_all_pt_variants,
     output:
-        "plots/{event_label}/efficiency_over_eta.png",
+        "plots/{single_particle}_{simulation}/efficiency_over_eta.png",
     shell:
         """
-        mkdir -p plots/{wildcards.event_label} || true
+        mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        """
+
+rule plot_ttbar_efficiency_over_eta:
+    input:
+        get_all_ttbar_variants,
+    output:
+        "plots/ttbar_{simulation}/efficiency_over_eta.png",
+    shell:
+        """
+        mkdir -p plots/ttbar_{wildcards.simulation} || true
+        python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        """
+
+rule plot_ttbar_resolution_qop_over_pt:
+    input:
+        get_all_ttbar_variants,
+    output:
+        "plots/ttbar_{simulation}/resolution_qop_over_pt.png",
+    shell:
+        """
+        mkdir -p plots/ttbar_{wildcards.simulation} || true
+        python scripts/plot_resolution_qop_over_pt.py {input} --output {output}
         """
