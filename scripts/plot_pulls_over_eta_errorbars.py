@@ -18,6 +18,52 @@ from mycommon.label import (
 from mycommon.paths import get_event_label_from_path
 
 
+def get_data(file):
+    if str(file).endswith(".root"):
+        columns = [
+            "pull_eLOC0_fit",
+            "pull_eLOC1_fit",
+            # "pull_eT_fit",
+            # "pull_ePHI_fit",
+            # "pull_eTHETA_fit",
+            "pull_eQOP_fit",
+        ]
+
+        tracksummary = uproot.open(file)
+        tracksummary = ak.to_dataframe(
+            tracksummary["tracksummary"].arrays(
+                columns + ["t_eta", "nMeasurements"], library="ak"
+            ),
+            how="outer",
+        )
+        tracksummary = tracksummary.dropna()
+        tracksummary = tracksummary.query("nMeasurements >= 10")
+
+        eta = tracksummary["t_eta"].values
+        pulls = [tracksummary[col].values for col in columns]
+
+        return eta, pulls
+
+    if str(file).endswith(".csv"):
+        columns = [
+            "track_pull_eLOC0_fit",
+            "track_pull_eLOC1_fit",
+            # "track_pull_eT_fit",
+            # "track_pull_ePHI_fit",
+            # "track_pull_eTHETA_fit",
+            "track_pull_eQOP_fit",
+        ]
+
+        data = pd.read_csv(file)
+
+        eta = data["true_eta"].values
+        pulls = [data[col].values for col in columns]
+
+        return eta, pulls
+
+    raise ValueError(f"unknown file type: {file}")
+
+
 myPlotStyle()
 
 parser = argparse.ArgumentParser()
@@ -25,38 +71,31 @@ parser.add_argument("tracksummary", nargs="+")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-columns = [
-    "pull_eLOC0_fit",
-    "pull_eLOC1_fit",
-    # "pull_eT_fit",
-    # "pull_ePHI_fit",
-    # "pull_eTHETA_fit",
-    "pull_eQOP_fit",
-]
 eta_range = (0, 3)
 pull_range = (-4, 4)
 eta_bins = 7
 
-fig = plt.figure(figsize=(16, 8))
-axs = fig.subplots(1, 3, sharey=True)
+pull_labels = [
+    r"$d_0$",
+    r"$z_0$",
+    # r"$t$",
+    # r"$\phi$",
+    # r"$\theta$",
+    r"$\frac{q}{p}$",
+]
+
+axs = plt.subplots(1, 3, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
     event_label = get_event_label_from_path(file)
     event, _ = split_event_label(event_label)
 
-    tracksummary = uproot.open(file)
-    tracksummary = ak.to_dataframe(
-        tracksummary["tracksummary"].arrays(
-            columns + ["t_eta", "nMeasurements"], library="ak"
-        ),
-        how="outer",
-    )
-    tracksummary = tracksummary.dropna()
-    tracksummary = tracksummary.query("nMeasurements >= 10")
+    eta, pulls = get_data(file)
 
-    for j, (col, ax) in enumerate(
+    for j, (pull_label, pull, ax) in enumerate(
         zip(
-            columns,
+            pull_labels,
+            pulls,
             axs.flat,
         )
     ):
@@ -64,19 +103,16 @@ for i, file in enumerate(args.tracksummary):
         ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
         ax.set_ylim(*pull_range)
 
-        eta = tracksummary["t_eta"].values
-        data = tracksummary[col].values
-
         mean_binned, eta_edges, _ = binned_statistic(
             eta,
-            data,
+            pull,
             bins=eta_bins,
             range=eta_range,
             statistic=smoothed_mean,
         )
         std_binned, _, _ = binned_statistic(
             eta,
-            data,
+            pull,
             bins=eta_bins,
             range=eta_range,
             statistic=smoothed_std,
@@ -97,12 +133,12 @@ for i, file in enumerate(args.tracksummary):
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-fig.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
-fig.supxlabel(r"$\eta$")
-fig.supylabel(r"pull")
-fig.legend()
+plt.title(f"{get_event_type_label(event)} pulls over $\eta$")
+plt.xlabel(r"$\eta$")
+plt.ylabel(r"pull")
+plt.legend()
 
 if args.output:
-    fig.savefig(args.output)
+    plt.savefig(args.output)
 else:
     plt.show()

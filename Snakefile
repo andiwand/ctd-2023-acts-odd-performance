@@ -48,7 +48,7 @@ def get_simulation_slices(wildcards):
 
 def get_all_pt_variants(wildcards):
     return expand(
-        "data/reco/{single_particle}_{pt}_{simulation}/tracksummary_ambi.root",
+        "data/reco/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
         single_particle=wildcards.single_particle,
         pt=PT_VALUES,
         simulation=wildcards.simulation
@@ -122,9 +122,21 @@ rule reconstruction:
           2> data/reco/{wildcards.event_label}/stderr.txt
         """
 
-rule plot_pulls_over_eta_sausage:
+rule truth_matching:
     input:
         "data/reco/{event_label}/tracksummary_ambi.root",
+        "data/sim/{event_label}/particles.root",
+        "data/sim/{event_label}/hits.root",
+    output:
+        "data/reco/{event_label}/truth_matched_tracksummary_ambi.csv",
+    shell:
+        """
+        python scripts/truth_matching.py {input} {output}
+        """
+
+rule plot_pulls_over_eta_sausage:
+    input:
+        "data/reco/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
         "plots/{event_label}/pulls_over_eta_sausage.png",
     shell:
@@ -157,17 +169,11 @@ rule plot_resolution_over_eta:
 
 rule plot_efficiency_over_eta:
     input:
-        "data/reco/{event_label}/tracksummary_ambi.root",
-        "data/sim/{event_label}/particles.root",
-        "data/sim/{event_label}/hits.root",
+        "data/reco/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
         "plots/{event_label}/efficiency_over_eta.png",
     shell:
         """
         mkdir -p plots/{wildcards.event_label} || true
-        python scripts/plot_efficiency_over_eta.py \
-          "data/reco/{wildcards.event_label}/tracksummary_ambi.root" \
-          --particles "data/sim/{wildcards.event_label}/particles.root" \
-          --hits "data/sim/{wildcards.event_label}/hits.root" \
-          --output {output}
+        python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
