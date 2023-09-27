@@ -163,7 +163,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         s,
         trackingGeometry,
         field,
-        frackFindingConfig=TrackFindingConfig(
+        trackFindingConfig=TrackFindingConfig(
             chi2CutOff=15.0,
             numMeasurementsCutOff=10,
         ),
