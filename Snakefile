@@ -172,7 +172,7 @@ rule plot_single_particle_resolution_d0_over_eta:
     shell:
         """
         mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot_resolution_over_eta.py {input} --output {output}
+        python scripts/plot_resolution_d0_over_eta.py {input} --output {output}
         """
 
 rule plot_single_particle_efficiency_over_eta:
