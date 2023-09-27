@@ -14,8 +14,14 @@ from acts.examples.simulation import (
     ParticleSelectorConfig,
 )
 
-
 u = acts.UnitConstants
+
+
+simulations = ["fatras", "geant4"]
+
+
+def list_simulations():
+    return simulations
 
 
 def addMyEventGen(

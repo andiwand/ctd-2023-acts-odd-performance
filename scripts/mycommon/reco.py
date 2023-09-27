@@ -13,11 +13,28 @@ u = acts.UnitConstants
 
 seedings = [
     "truth_smeared",
+    "truth_estimated",
+    "default",
 ]
 
 
 def list_seedings():
     return list(seedings)
+
+
+def list_reco_labels():
+    return [create_reco_label(seeding) for seeding in seedings]
+
+
+def create_reco_label(seeding):
+    return f"{seeding}"
+
+
+def split_reco_label(reco_label):
+    for seeding in list_seedings():
+        if reco_label == create_reco_label(seeding):
+            return seeding
+    raise ValueError(f"unknown reco label {reco_label}")
 
 
 def addMySeeding(
