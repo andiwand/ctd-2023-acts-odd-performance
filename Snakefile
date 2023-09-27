@@ -237,3 +237,14 @@ rule plot_ttbar_resolution_qop_over_pt:
         mkdir -p plots/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
         python scripts/plot_resolution_qop_over_pt.py {input} --output {output}
         """
+
+rule plot_inefficiencies:
+    input:
+        "data/reco/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+    output:
+        "plots/{reco_label}/{event_label}/inefficiencies.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/plot_inefficiencies.py {input} --output {output}
+        """

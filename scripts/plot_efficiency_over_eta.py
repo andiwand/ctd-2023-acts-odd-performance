@@ -8,7 +8,7 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.events import split_event_label
-from mycommon.label import get_event_variant_label, get_event_type_label
+from mycommon.label import get_event_variant_label, get_event_label
 from mycommon.paths import get_event_label_from_path
 from mycommon.stats import (
     create_clopper_pearson_upper_bounds,
@@ -81,9 +81,7 @@ for file in args.input:
     eta_step = eta_edges[1] - eta_edges[0]
 
     label = (
-        get_event_variant_label(event)
-        if is_same_event_type
-        else get_event_type_label(event)
+        get_event_variant_label(event) if is_same_event_type else get_event_label(event)
     )
     plt.errorbar(
         x=eta_mid,
