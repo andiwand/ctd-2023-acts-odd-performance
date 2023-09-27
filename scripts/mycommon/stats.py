@@ -26,7 +26,7 @@ def smoothed_gauss_fit_naive(data):
         m, s = fit(data)
         data = data[np.abs(data - np.median(data)) < 3 * s]
 
-    return m, s
+    return (m, s), np.zeros((2, 2))
 
 
 def smoothed_gauss_fit(data):
@@ -52,8 +52,7 @@ def smoothed_gauss_fit(data):
         return solve(data)
     except Exception as e:
         print(f"Falling back to naive mean/std. Error: {e}")
-        m, s = smoothed_gauss_fit_naive(data)
-        return (m, s), None
+        return smoothed_gauss_fit_naive(data)
 
 
 def clopper_pearson(k, n, alpha=0.32):
