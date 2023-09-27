@@ -128,7 +128,6 @@ rule reconstruction:
         "data/sim/{event_label}/particles_initial.root",
         "data/sim/{event_label}/hits.root",
     output:
-        "data/reco/{event_label}/measurements.root",
         "data/reco/{event_label}/tracksummary_ambi.root",
     threads: get_reco_threads,
     shell:

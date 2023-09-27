@@ -109,7 +109,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         field,
         digiConfigFile=digiConfig,
         rnd=rnd,
-        outputDirRoot=tp,
+        # outputDirRoot=tp,
     )
 
     addMySeeding(
@@ -119,7 +119,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         field,
         rnd=rnd,
         geoSelectionConfigFile=seedingSel,
-        outputDirRoot=tp,
+        # outputDirRoot=tp,
     )
 
     addKalmanTracks(
@@ -190,7 +190,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     for file in (
         [
             "timing.tsv",
-            "measurements.root",
+            # "measurements.root",
             # "tracksummary_ckf.root",
             # "trackstates_ckf.root",
             # "performance_ckf.root",
