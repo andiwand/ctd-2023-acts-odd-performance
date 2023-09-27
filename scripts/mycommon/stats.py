@@ -4,21 +4,21 @@ from scipy.optimize import curve_fit
 
 
 def smoothed_mean(data):
-    (m, s), cov = smoothed_mean_std(data)
+    (m, s), cov = smoothed_gauss_fit(data)
     return m
 
 
 def smoothed_std(data):
-    (m, s), cov = smoothed_mean_std(data)
+    (m, s), cov = smoothed_gauss_fit(data)
     return s
 
 
 def smoothed_std_std(data):
-    (m, s), cov = smoothed_mean_std(data)
+    (m, s), cov = smoothed_gauss_fit(data)
     return cov[1, 1] ** 0.5
 
 
-def smoothed_mean_std_naive(data):
+def smoothed_gauss_fit_naive(data):
     def fit(data):
         return np.mean(data), np.std(data)
 
@@ -29,7 +29,7 @@ def smoothed_mean_std_naive(data):
     return m, s
 
 
-def smoothed_mean_std(data):
+def smoothed_gauss_fit(data):
     def fit(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
@@ -52,7 +52,8 @@ def smoothed_mean_std(data):
         return solve(data)
     except Exception as e:
         print(f"Falling back to naive mean/std. Error: {e}")
-        return smoothed_mean_std_naive(data), None
+        m, s = smoothed_gauss_fit_naive(data)
+        return (m, s), None
 
 
 def clopper_pearson(k, n, alpha=0.32):
