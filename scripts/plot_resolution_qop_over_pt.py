@@ -47,7 +47,7 @@ parser.add_argument("--output")
 args = parser.parse_args()
 
 pt_range = (0, 100)
-pt_bins = 31
+pt_bins = 10
 
 for file in args.input:
     event_label = get_event_label_from_path(file)
