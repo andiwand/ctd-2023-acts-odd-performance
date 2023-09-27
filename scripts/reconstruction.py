@@ -114,7 +114,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
 
     addMySeeding(
         s,
-        "truth_smeared",
+        "truth_estimated",
         trackingGeometry,
         field,
         rnd=rnd,

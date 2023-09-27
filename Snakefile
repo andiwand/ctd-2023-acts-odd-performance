@@ -54,6 +54,14 @@ def get_all_pt_variants(wildcards):
         simulation=wildcards.simulation
     )
 
+def get_all_flavor_variants(wildcards):
+    return expand(
+        "data/reco/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        single_particle=SINGLE_PARTICLES,
+        pt=wildcards.pt,
+        simulation=wildcards.simulation
+    )
+
 def get_all_ttbar_variants(wildcards):
     return expand(
         "data/reco/ttbar_{pileup}_{simulation}/truth_matched_tracksummary_ambi.csv",
@@ -78,6 +86,8 @@ rule all:
         expand("plots/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{single_particle}_{simulation}/resolution_d0_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{single_particle}_{simulation}/efficiency_over_eta.png", single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+
+        expand("plots/single_particles_{pt}_{simulation}/efficiency_over_eta.png", pt=PT_VALUES, simulation=SIMULATIONS),
 
         expand("plots/ttbar_{simulation}/resolution_qop_over_pt.png", simulation=SIMULATIONS),
         expand("plots/ttbar_{simulation}/efficiency_over_eta.png", simulation=SIMULATIONS),
@@ -182,6 +192,17 @@ rule plot_single_particle_efficiency_over_eta:
     shell:
         """
         mkdir -p plots/{wildcards.single_particle}_{wildcards.simulation} || true
+        python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        """
+
+rule plot_cross_single_particle_efficiency_over_eta:
+    input:
+        get_all_flavor_variants,
+    output:
+        "plots/single_particles_{pt}_{simulation}/efficiency_over_eta.png",
+    shell:
+        """
+        mkdir -p plots/single_particles_{wildcards.pt}_{wildcards.simulation} || true
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 

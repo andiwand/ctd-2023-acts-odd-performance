@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 particles = ak.to_dataframe(
     uproot.open(args.particles)["particles"].arrays(
-        ["event_id", "particle_id", "q", "eta", "pt", "vertex_primary"],
+        ["event_id", "particle_id", "q", "phi", "eta", "pt", "vertex_primary"],
         library="ak",
     ),
     how="outer",
@@ -71,8 +71,9 @@ particles_hits = pd.merge(
     right_on=["event_id", "particle_id"],
 )
 particles_hits = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
-    hit_count=pd.NamedAgg(column="volume_id", aggfunc="count"),
+    hits=pd.NamedAgg(column="volume_id", aggfunc="count"),
     q=pd.NamedAgg(column="q", aggfunc="first"),
+    phi=pd.NamedAgg(column="phi", aggfunc="first"),
     eta=pd.NamedAgg(column="eta", aggfunc="first"),
     pt=pd.NamedAgg(column="pt", aggfunc="first"),
     vertex_primary=pd.NamedAgg(column="vertex_primary", aggfunc="first"),
@@ -82,7 +83,7 @@ particles_hits.reset_index(inplace=True)
 # calculate true efficiency
 particle_efficiency = particles_hits.copy()
 particle_efficiency["efficiency"] = (
-    particle_efficiency["hit_count"].values >= args.require_number_of_hits
+    particle_efficiency["hits"].values >= args.require_number_of_hits
 ).astype(int)
 # drop true inefficiencies
 particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0.0]
@@ -158,9 +159,11 @@ track_efficiency[
         "true_event_id",
         "true_particle_id",
         "true_q",
+        "true_phi",
         "true_eta",
         "true_pt",
         "true_vertex_primary",
+        "true_hits",
         "track_duplicate",
         "track_efficiency",
         "track_nMeasurements",

@@ -16,6 +16,16 @@ from mycommon.stats import (
 )
 
 
+def check_same_event_type(input):
+    def get_event_from_path(file):
+        event_label = get_event_label_from_path(file)
+        event, _ = split_event_label(event_label)
+        return event
+
+    event_types = [get_event_from_path(file) for file in input]
+    return len(set(event_types)) == 1
+
+
 def get_data(file):
     if str(file).endswith(".csv"):
         data = pd.read_csv(file)
@@ -37,6 +47,8 @@ args = parser.parse_args()
 
 eta_range = (-3, 3)
 eta_bins = 25
+
+is_same_event_type = check_same_event_type(args.input)
 
 for file in args.input:
     event_label = get_event_label_from_path(file)
@@ -68,6 +80,11 @@ for file in args.input:
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
     eta_step = eta_edges[1] - eta_edges[0]
 
+    label = (
+        get_event_variant_label(event)
+        if is_same_event_type
+        else get_event_type_label(event)
+    )
     plt.errorbar(
         x=eta_mid,
         y=track_efficiency_mean,
@@ -78,12 +95,17 @@ for file in args.input:
         xerr=eta_step * 0.4,
         fmt="",
         linestyle="",
-        label=get_event_variant_label(event),
+        label=label,
     )
 
 plt.axhline(1, linestyle="--", color="gray")
 
-plt.title(f"Technical efficiency over $\eta$ for {get_event_type_label(event)} events")
+if is_same_event_type:
+    plt.title(
+        f"Technical efficiency over $\eta$ for {get_event_variant_label(event)} events"
+    )
+else:
+    plt.title(f"Technical efficiency over $\eta$")
 plt.xlabel("$\eta$")
 plt.ylabel("technical efficiency")
 plt.xticks(np.linspace(*eta_range, 7))

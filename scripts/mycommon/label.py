@@ -28,3 +28,7 @@ def get_event_type_label(event):
     if event_type == "ttbar":
         return r"$t\bar{t}$"
     return f"single {get_single_particle_label(event)}"
+
+
+def get_event_label(event):
+    return f"{get_event_type_label(event)} with {get_event_variant_label(event)}"
