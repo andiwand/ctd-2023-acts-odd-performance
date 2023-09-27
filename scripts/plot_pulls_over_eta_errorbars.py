@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 import uproot
 import awkward as ak
-import pandas as pd
 import argparse
 from scipy.stats import binned_statistic
 
@@ -83,7 +82,8 @@ pull_labels = [
     r"$\frac{q}{p}$",
 ]
 
-_, axs = plt.subplots(1, 3, sharey=True)
+fig = plt.figure(figsize=(16, 8))
+axs = fig.subplots(1, 3, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
     event_label = get_event_label_from_path(file)
@@ -132,12 +132,12 @@ for i, file in enumerate(args.tracksummary):
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-plt.title(f"{get_event_type_label(event)} pulls over $\eta$")
-plt.xlabel(r"$\eta$")
-plt.ylabel(r"pull")
-plt.legend()
+fig.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
+fig.supxlabel(r"$\eta$")
+fig.supylabel(r"pull")
+fig.legend()
 
 if args.output:
-    plt.savefig(args.output)
+    fig.savefig(args.output)
 else:
     plt.show()
