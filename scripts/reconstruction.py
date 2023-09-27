@@ -139,14 +139,14 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
         s,
         trackingGeometry,
         field,
-        outputDirRoot=tp,
+        #outputDirRoot=tp,
     )
 
     addAmbiguityResolution(
         s,
         AmbiguityResolutionConfig(
             maximumSharedHits=3,
-            maximumIterations=10000,
+            maximumIterations=100000,
             nMeasurementsMin=3,
         ),
         outputDirRoot=tp,
