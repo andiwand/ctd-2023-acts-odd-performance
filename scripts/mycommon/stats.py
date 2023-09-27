@@ -50,8 +50,8 @@ def smoothed_mean_std(data):
 
     try:
         return solve(data)
-    except ValueError:
-        print("Falling back to naive mean/std")
+    except Exception as e:
+        print(f"Falling back to naive mean/std. Error: {e}")
         return smoothed_mean_std_naive(data)
 
 
