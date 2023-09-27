@@ -60,7 +60,7 @@ def addMySeeding(
         rnd=rnd,
         seedingAlgorithm=seedingAlgorithm,
         truthSeedRanges=TruthSeedRanges(
-            nHits=(7, None),
+            nHits=(3, None),
         ),
         particleSmearingSigmas=ParticleSmearingSigmas(
             d0=20 * u.um,
@@ -70,11 +70,10 @@ def addMySeeding(
             z0PtA=30 * u.um,
             z0PtB=0.3 / u.GeV,
             t0=1 * u.ns,
-            phi=1 * u.degree,
-            theta=1 * u.degree,
-            pRel=0.05,
+            phi=0.1 * u.degree,
+            theta=0.1 * u.degree,
+            pRel=0.01,
         ),
-        initialSigmas=[0.1, 0.1, 0.002, 0.0001, 0.001, 1000],
         initialVarInflation=[1e3] * 6,
         geoSelectionConfigFile=geoSelectionConfigFile,
         outputDirRoot=outputDirRoot,
