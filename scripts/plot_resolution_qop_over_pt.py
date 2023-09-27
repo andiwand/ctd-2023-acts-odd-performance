@@ -64,7 +64,7 @@ for file in args.input:
     pt_mid = 0.5 * (pt_edges[:-1] + pt_edges[1:])
     pt_step = pt_edges[1] - pt_edges[0]
 
-    plt.plot(
+    plt.errorbar(
         x=pt_mid,
         y=qop_std,
         yerr=qop_std_std,
