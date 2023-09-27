@@ -167,9 +167,9 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
     for file in [
         "timing.tsv",
         "measurements.root",
-        "tracksummary_ckf.root",
+        # "tracksummary_ckf.root",
         # "trackstates_ckf.root",
-        "performance_ckf.root",
+        # "performance_ckf.root",
         "tracksummary_ambi.root",
         # "trackstates_ambi.root",
         "performance_ambi.root",
