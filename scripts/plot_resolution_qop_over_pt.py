@@ -73,7 +73,7 @@ plt.title(
 )
 plt.xlabel(r"$p_T$")
 plt.ylabel(r"$\sigma(\frac{{q}}{{p}})$ [mm]")
-plt.xticks(np.linspace(*pt_range, 10))
+plt.xticks(np.linspace(*pt_range, 11))
 plt.xlim(pt_range)
 plt.legend()
 
