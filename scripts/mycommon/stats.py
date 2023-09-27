@@ -18,8 +18,19 @@ def smoothed_std_std(data):
     return cov[1, 1] ** 0.5
 
 
+def smoothed_mean_std_naive(data):
+    def fit(data):
+        return np.mean(data), np.std(data)
+
+    for _ in range(3):
+        m, s = fit(data)
+        data = data[np.abs(data - np.median(data)) < 3 * s]
+
+    return m, s
+
+
 def smoothed_mean_std(data):
-    def fit1(data):
+    def fit(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
 
@@ -33,17 +44,17 @@ def smoothed_mean_std(data):
         params, cov = curve_fit(gauss, centers, binned)
         return params, cov
 
-    def fit2(data):
-        return (np.mean(data), np.std(data)), None
+    def solve(data):
+        for _ in range(3):
+            (m, s), cov = fit(data)
+            data = data[np.abs(data - m) < 3 * s]
+        return (m, s), cov
 
     try:
-        for _ in range(3):
-            (m, s), cov = fit1(data)
-            data = data[np.abs(data - m) < 3 * s]
+        return solve(data)
     except ValueError:
-        print("Falling back to mean/std")
-        (m, s), cov = fit2(data)
-    return (m, s), cov
+        print("Falling back to naive mean/std")
+        return smoothed_mean_std_naive(data)
 
 
 def clopper_pearson(k, n, alpha=0.32):
