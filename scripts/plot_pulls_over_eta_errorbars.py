@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 import uproot
 import awkward as ak
+import pandas as pd
 import argparse
 from scipy.stats import binned_statistic
 
