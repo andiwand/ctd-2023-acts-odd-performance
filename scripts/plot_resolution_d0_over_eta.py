@@ -49,7 +49,7 @@ parser.add_argument("--output")
 args = parser.parse_args()
 
 eta_range = (-3, 3)
-eta_bins = 15
+eta_bins = 25
 
 for file in args.input:
     event_label = get_event_label_from_path(file)

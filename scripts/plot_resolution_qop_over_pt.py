@@ -46,7 +46,7 @@ parser.add_argument("input", nargs="+")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-pt_range = (0, 100)
+pt_range = (0, 70)
 pt_bins = 10
 
 for file in args.input:
