@@ -23,17 +23,26 @@ def smoothed_mean_std(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
 
-        binned, edges = np.histogram(data, bins=int(len(data) ** 0.5), density=True)
-        centers = (edges[1:] + edges[:-1]) / 2
+        if len(data) < 10:
+            raise ValueError("Not enough data to fit a Gaussian")
+
+        binned, edges = np.histogram(
+            data, bins=max(50, int(len(data) ** 0.5)), density=True
+        )
+        centers = 0.5 * (edges[1:] + edges[:-1])
         params, cov = curve_fit(gauss, centers, binned)
         return params, cov
 
     def fit2(data):
         return (np.mean(data), np.std(data)), None
 
-    for _ in range(3):
-        (m, s), cov = fit1(data)
-        data = data[np.abs(data - np.median(data)) < 3 * s]
+    try:
+        for _ in range(3):
+            (m, s), cov = fit1(data)
+            data = data[np.abs(data - m) < 3 * s]
+    except ValueError:
+        print("Falling back to mean/std")
+        (m, s), cov = fit2(data)
     return (m, s), cov
 
 
