@@ -37,9 +37,7 @@ def smoothed_mean_std(data):
         if len(data) < 10:
             raise ValueError("Not enough data to fit a Gaussian")
 
-        binned, edges = np.histogram(
-            data, bins=max(50, int(len(data) ** 0.5)), density=True
-        )
+        binned, edges = np.histogram(data, bins=int(len(data) ** 0.5), density=True)
         centers = 0.5 * (edges[1:] + edges[:-1])
         params, cov = curve_fit(gauss, centers, binned)
         return params, cov
