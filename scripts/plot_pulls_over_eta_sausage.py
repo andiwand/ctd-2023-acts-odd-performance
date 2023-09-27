@@ -27,8 +27,7 @@ def get_data(file):
                 columns + ["t_eta", "nMeasurements"], library="ak"
             ),
             how="outer",
-        )
-        tracksummary = tracksummary.dropna()
+        ).dropna()
         tracksummary = tracksummary.query("nMeasurements >= 10")
 
         eta = tracksummary["t_eta"].values
@@ -46,7 +45,7 @@ def get_data(file):
             "track_pull_eQOP_fit",
         ]
 
-        data = pd.read_csv(file)
+        data = pd.read_csv(file).dropna()
 
         eta = data["true_eta"].values
         pulls = [data[col].values for col in columns]

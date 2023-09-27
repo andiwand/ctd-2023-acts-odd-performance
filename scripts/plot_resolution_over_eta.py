@@ -23,8 +23,7 @@ def get_data(file):
                 ["t_eta", "res_eLOC0_fit"], library="ak"
             ),
             how="outer",
-        )
-        tracksummary = tracksummary.dropna()
+        ).dropna()
 
         eta = tracksummary["t_eta"].values
         d0 = tracksummary["res_eLOC0_fit"].values
@@ -32,7 +31,7 @@ def get_data(file):
         return eta, d0
 
     if str(file).endswith(".csv"):
-        data = pd.read_csv(file)
+        data = pd.read_csv(file).dropna()
 
         eta = data["true_eta"].values
         d0 = data["track_res_eLOC0_fit"].values

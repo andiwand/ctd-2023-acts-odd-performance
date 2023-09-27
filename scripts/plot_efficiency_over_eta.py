@@ -18,7 +18,7 @@ from mycommon.stats import (
 
 def get_data(file):
     if str(file).endswith(".csv"):
-        data = pd.read_csv(file)
+        data = pd.read_csv(file).dropna()
 
         eta = data["true_eta"].values
         track_efficiency = data["track_efficiency"].values
