@@ -111,8 +111,6 @@ rule reconstruction:
         "data/reco/{event_label}/measurements.root",
         "data/reco/{event_label}/tracksummary_ckf.root",
         "data/reco/{event_label}/tracksummary_ambi.root",
-        "data/reco/{event_label}/stdout.txt",
-        "data/reco/{event_label}/stderr.txt",
     threads: get_reco_threads,
     shell:
         """
