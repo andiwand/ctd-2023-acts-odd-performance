@@ -52,7 +52,7 @@ def smoothed_mean_std(data):
         return solve(data)
     except Exception as e:
         print(f"Falling back to naive mean/std. Error: {e}")
-        return smoothed_mean_std_naive(data)
+        return smoothed_mean_std_naive(data), None
 
 
 def clopper_pearson(k, n, alpha=0.32):
