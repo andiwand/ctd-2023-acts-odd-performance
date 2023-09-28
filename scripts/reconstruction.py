@@ -13,6 +13,7 @@ from acts.examples.reconstruction import (
     addKalmanTracks,
     addTruthTrackingGsf,
     addTrajectoryWriters,
+    TrackSelectorConfig,
     TrackFindingConfig,
     addCKFTracks,
     addAmbiguityResolution,
@@ -169,6 +170,14 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         s,
         trackingGeometry,
         field,
+        TrackSelectorConfig(
+            pt=0.9 * u.GeV,
+            absEta=(None, 3.1),
+            loc0=(-4.0 * u.mm, 4.0 * u.mm),
+            nMeasurementsMin=7,
+        )
+        if is_ttbar
+        else TrackSelectorConfig(),
         trackFindingConfig=TrackFindingConfig(
             chi2CutOff=15.0,
             numMeasurementsCutOff=10,
@@ -181,6 +190,12 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         AmbiguityResolutionConfig(
             maximumSharedHits=3,
             maximumIterations=100000,
+            nMeasurementsMin=7,
+        )
+        if is_ttbar
+        else AmbiguityResolutionConfig(
+            maximumSharedHits=3,
+            maximumIterations=10000,
             nMeasurementsMin=3,
         ),
         outputDirRoot=tp,
