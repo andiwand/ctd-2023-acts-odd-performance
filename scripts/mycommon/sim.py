@@ -76,6 +76,8 @@ def addMyEventGen(
             outputDirRoot=outputDirRoot,
         )
 
+        return
+
     raise ValueError(f"unknown event type: {event_type}")
 
 
