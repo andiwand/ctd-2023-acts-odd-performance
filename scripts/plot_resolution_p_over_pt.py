@@ -11,7 +11,7 @@ from scipy.stats import binned_statistic
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_std, smoothed_std_std
 from mycommon.events import split_event_label
-from mycommon.label import get_event_variant_label, get_event_type_label
+from mycommon.label import get_event_type_label
 from mycommon.paths import get_event_label_from_path
 
 
@@ -37,8 +37,8 @@ def get_data(file):
         data = pd.read_csv(file).dropna()
 
         true_pt = data["true_pt"].values
-        true_q = tracksummary["true_q"].values
-        true_p = tracksummary["true_p"].values
+        true_q = data["true_q"].values
+        true_p = data["true_p"].values
         track_qop = data["track_eQOP_fit"].values
         res_p = true_q / track_qop - true_p
 
@@ -54,7 +54,7 @@ parser.add_argument("input", nargs="+")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-pt_range = (0, 70)
+pt_range = (1, 100)
 pt_bins = 10
 
 for file in args.input:
@@ -79,13 +79,13 @@ for file in args.input:
         xerr=pt_step * 0.4,
         fmt="",
         linestyle="",
-        label=get_event_variant_label(event),
+        label=get_event_type_label(event),
     )
 
-plt.title(rf"Resolution of $p$ over $p_T$ for {get_event_type_label(event)} events")
+plt.title(rf"Resolution of $p$ over $p_T$")
 plt.xlabel(r"$p_T$")
 plt.ylabel(r"$\sigma(p)$ [GeV]")
-plt.xticks(np.linspace(*pt_range, 11))
+plt.xticks(np.linspace(0, pt_range[1], 11))
 plt.xlim(pt_range)
 plt.legend()
 

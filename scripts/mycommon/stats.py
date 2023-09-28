@@ -48,6 +48,9 @@ def smoothed_gauss_fit(data):
             data = data[np.abs(data - m) < 3 * s]
         return (m, s), cov
 
+    if len(data) == 0:
+        return (0, 0), np.zeros((2, 2))
+
     try:
         return solve(data)
     except Exception as e:
