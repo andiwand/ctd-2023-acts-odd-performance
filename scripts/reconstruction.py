@@ -171,13 +171,13 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         trackingGeometry,
         field,
         trackSelectorConfig=TrackSelectorConfig(
-            pt=0.9 * u.GeV,
+            pt=(0.9 * u.GeV, None),
             absEta=(None, 3.1),
             loc0=(-4.0 * u.mm, 4.0 * u.mm),
             nMeasurementsMin=7,
         )
         if is_ttbar
-        else None,
+        else TrackSelectorConfig(),
         trackFindingConfig=TrackFindingConfig(
             chi2CutOff=15.0,
             numMeasurementsCutOff=10,
