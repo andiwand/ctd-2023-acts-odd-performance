@@ -78,7 +78,7 @@ plt.title(
     rf"Resolution of $\frac{{q}}{{p}}$ over $p_T$ for {get_event_type_label(event)} events"
 )
 plt.xlabel(r"$p_T$")
-plt.ylabel(r"$\sigma(\frac{{q}}{{p}})$ [mm]")
+plt.ylabel(r"$\sigma(\frac{{q}}{{p}})$ [\frac{{1}}{{GeV}}]")
 plt.xticks(np.linspace(*pt_range, 11))
 plt.xlim(pt_range)
 plt.legend()
