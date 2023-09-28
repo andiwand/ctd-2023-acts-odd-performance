@@ -112,7 +112,7 @@ rule all:
         expand("plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
         expand("plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS),
+        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_p_over_pt.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS),
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
@@ -241,15 +241,15 @@ rule plot_ttbar_efficiency_over_eta:
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
-rule plot_cross_single_particle_resolution_qop_over_pt:
+rule plot_cross_single_particle_resolution_p_over_pt:
     input:
         get_all_pt_range_variants,
     output:
-        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png",
+        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_p_over_pt.png",
     shell:
         """
         mkdir -p plots/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
-        python scripts/plot_resolution_qop_over_pt.py {input} --output {output}
+        python scripts/plot_resolution_p_over_pt.py {input} --output {output}
         """
 
 rule plot_inefficiencies:

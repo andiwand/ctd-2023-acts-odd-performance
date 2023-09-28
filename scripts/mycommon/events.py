@@ -1,12 +1,11 @@
 import itertools
 
-from mycommon.sim import list_simulations
-
 
 single_particles = ["mu", "pi", "e"]
 single_particle_pts = [1, 10, 100]
 single_particle_pt_ranges = ["1-100GeV"]
 ttbar_pileups = [0, 60, 120, 200]
+simulations = ["fatras", "geant4"]
 
 
 def list_single_particles():
@@ -39,6 +38,10 @@ def list_events():
         ]
         + [f"ttbar_{pu}" for pu in ttbar_pileups]
     )
+
+
+def list_simulations():
+    return simulations
 
 
 def list_events_simulations():

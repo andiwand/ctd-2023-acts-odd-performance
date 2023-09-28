@@ -19,22 +19,30 @@ def get_data(file):
     if str(file).endswith(".root"):
         tracksummary = uproot.open(file)
         tracksummary = ak.to_dataframe(
-            tracksummary["tracksummary"].arrays(["t_pT", "res_eQOP_fit"], library="ak"),
+            tracksummary["tracksummary"].arrays(
+                ["t_pT", "t_charge", "t_p", "eQOP_fit"], library="ak"
+            ),
             how="outer",
         ).dropna()
 
-        pt = tracksummary["t_pT"].values
-        res_qop = tracksummary["res_eQOP_fit"].values
+        true_pt = tracksummary["t_pT"].values
+        true_q = tracksummary["t_charge"].values
+        true_p = tracksummary["t_p"].values
+        track_qop = tracksummary["eQOP_fit"].values
+        res_p = true_q / track_qop - true_p
 
-        return pt, res_qop
+        return true_pt, res_p
 
     if str(file).endswith(".csv"):
         data = pd.read_csv(file).dropna()
 
-        pt = data["true_pt"].values
-        res_qop = data["track_res_eQOP_fit"].values
+        true_pt = data["true_pt"].values
+        true_q = tracksummary["true_q"].values
+        true_p = tracksummary["true_p"].values
+        track_qop = data["track_eQOP_fit"].values
+        res_p = true_q / track_qop - true_p
 
-        return pt, res_qop
+        return true_pt, res_p
 
     raise ValueError(f"unknown file type: {file}")
 
@@ -53,32 +61,30 @@ for file in args.input:
     event_label = get_event_label_from_path(file)
     event, _ = split_event_label(event_label)
 
-    eta, res_qop = get_data(file)
+    true_pt, res_p = get_data(file)
 
-    qop_std, pt_edges, _ = binned_statistic(
-        eta, res_qop, bins=pt_bins, range=pt_range, statistic=smoothed_std
+    p_std, pt_edges, _ = binned_statistic(
+        true_pt, res_p, bins=pt_bins, range=pt_range, statistic=smoothed_std
     )
-    qop_std_std, pt_edges, _ = binned_statistic(
-        eta, res_qop, bins=pt_bins, range=pt_range, statistic=smoothed_std_std
+    p_std_std, pt_edges, _ = binned_statistic(
+        true_pt, res_p, bins=pt_bins, range=pt_range, statistic=smoothed_std_std
     )
     pt_mid = 0.5 * (pt_edges[:-1] + pt_edges[1:])
     pt_step = pt_edges[1] - pt_edges[0]
 
     plt.errorbar(
         x=pt_mid,
-        y=qop_std,
-        yerr=qop_std_std,
+        y=p_std,
+        yerr=p_std_std,
         xerr=pt_step * 0.4,
         fmt="",
         linestyle="",
         label=get_event_variant_label(event),
     )
 
-plt.title(
-    rf"Resolution of $\frac{{q}}{{p}}$ over $p_T$ for {get_event_type_label(event)} events"
-)
+plt.title(rf"Resolution of $p$ over $p_T$ for {get_event_type_label(event)} events")
 plt.xlabel(r"$p_T$")
-plt.ylabel(r"$\sigma(\frac{{q}}{{p}})$ [\frac{{1}}{{GeV}}]")
+plt.ylabel(r"$\sigma(p)$ [GeV]")
 plt.xticks(np.linspace(*pt_range, 11))
 plt.xlim(pt_range)
 plt.legend()

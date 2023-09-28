@@ -19,13 +19,6 @@ from mycommon.events import get_event_type, get_event_details
 u = acts.UnitConstants
 
 
-simulations = ["fatras", "geant4"]
-
-
-def list_simulations():
-    return simulations
-
-
 def addMyEventGen(
     s: acts.examples.Sequencer,
     event: str,

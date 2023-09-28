@@ -34,7 +34,7 @@ args = parser.parse_args()
 
 particles = ak.to_dataframe(
     uproot.open(args.particles)["particles"].arrays(
-        ["event_id", "particle_id", "q", "phi", "eta", "pt", "vertex_primary"],
+        ["event_id", "particle_id", "q", "phi", "eta", "p", "pt", "vertex_primary"],
         library="ak",
     ),
     how="outer",
@@ -75,6 +75,7 @@ particles_hits = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
     q=pd.NamedAgg(column="q", aggfunc="first"),
     phi=pd.NamedAgg(column="phi", aggfunc="first"),
     eta=pd.NamedAgg(column="eta", aggfunc="first"),
+    p=pd.NamedAgg(column="pt", aggfunc="first"),
     pt=pd.NamedAgg(column="pt", aggfunc="first"),
     vertex_primary=pd.NamedAgg(column="vertex_primary", aggfunc="first"),
 )
@@ -161,6 +162,7 @@ track_efficiency[
         "true_q",
         "true_phi",
         "true_eta",
+        "true_p",
         "true_pt",
         "true_vertex_primary",
         "true_hits",
