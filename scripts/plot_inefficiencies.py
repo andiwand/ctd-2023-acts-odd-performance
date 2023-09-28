@@ -71,7 +71,7 @@ axes[1, 0].hist2d(
     cmap="Reds",
 )
 axes[1, 0].set_xlabel(r"$\phi$")
-axes[1, 0].set_ylabel(r"# true hits")
+axes[1, 0].set_ylabel(r"# measurements")
 axes[1, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[1, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[1, 0])
@@ -85,7 +85,7 @@ axes[2, 0].hist2d(
     cmap="Reds",
 )
 axes[2, 0].set_xlabel(r"$\phi$")
-axes[2, 0].set_ylabel(r"# measurements")
+axes[2, 0].set_ylabel(r"# tack states")
 axes[2, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[2, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[2, 0])
@@ -99,7 +99,7 @@ axes[0, 1].hist2d(
     cmap="Reds",
 )
 axes[0, 1].set_xlabel(r"$\eta$")
-axes[0, 1].set_ylabel(r"# measurements")
+axes[0, 1].set_ylabel(r"# true hits")
 axes[0, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[0, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[0, 1])
@@ -113,7 +113,7 @@ axes[1, 1].hist2d(
     cmap="Reds",
 )
 axes[1, 1].set_xlabel(r"$\eta$")
-axes[1, 1].set_ylabel(r"# track states")
+axes[1, 1].set_ylabel(r"# measurements")
 axes[1, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[1, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[1, 1])
