@@ -14,6 +14,8 @@ from acts.examples.simulation import (
     ParticleSelectorConfig,
 )
 
+from mycommon.events import get_event_type, get_event_details
+
 u = acts.UnitConstants
 
 
@@ -35,9 +37,10 @@ def addMyEventGen(
         stddev=acts.Vector4(10 * u.um, 10 * u.um, 50 * u.mm, 1 * u.ns),
     )
 
-    # generate special events on top
+    event_type = get_event_type(event)
+    event_details = get_event_details(event)
 
-    if event.startswith("ttbar_"):
+    if event_type == "ttbar":
         pu = int(event.split("_")[1])
 
         addPythia8(
@@ -51,30 +54,36 @@ def addMyEventGen(
 
         return
 
-    # generate single particles
+    if event_type == "single_particles":
+        particle_label, pt_label = event_details
 
-    if event.startswith("mu_"):
-        particle = acts.PdgParticle.eMuon
-    elif event.startswith("pi_"):
-        particle = acts.PdgParticle.ePionPlus
-    elif event.startswith("e_"):
-        particle = acts.PdgParticle.eElectron
-    else:
-        raise ValueError(f"unknown event: {event}")
+        if particle_label == "mu":
+            particle = acts.PdgParticle.eMuon
+        elif particle_label == "pi":
+            particle = acts.PdgParticle.ePionPlus
+        elif particle_label == "e":
+            particle = acts.PdgParticle.eElectron
+        else:
+            raise ValueError(f"unknown particle label: {particle_label}")
 
-    pT = float(event.split("_")[1].replace("GeV", ""))
+        if isinstance(pt_label, tuple):
+            momentum_config = MomentumConfig(pt_label[0], pt_label[1], transverse=True)
+        else:
+            momentum_config = MomentumConfig(pt_label, pt_label, transverse=True)
 
-    addParticleGun(
-        s,
-        ParticleConfig(1, particle, randomizeCharge=True),
-        MomentumConfig(pT, pT, transverse=True),
-        EtaConfig(-3.0, 3.0, uniform=True),
-        PhiConfig(0.0 * u.degree, 360.0 * u.degree),
-        vtxGen=vtxGen,
-        multiplicity=1,
-        rnd=rnd,
-        outputDirRoot=outputDirRoot,
-    )
+        addParticleGun(
+            s,
+            ParticleConfig(1, particle, randomizeCharge=True),
+            momentum_config,
+            EtaConfig(-3.0, 3.0, uniform=True),
+            PhiConfig(0.0 * u.degree, 360.0 * u.degree),
+            vtxGen=vtxGen,
+            multiplicity=1,
+            rnd=rnd,
+            outputDirRoot=outputDirRoot,
+        )
+
+    raise ValueError(f"unknown event type: {event_type}")
 
 
 def addMySimulation(

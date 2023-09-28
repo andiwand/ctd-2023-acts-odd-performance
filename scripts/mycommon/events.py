@@ -5,6 +5,7 @@ from mycommon.sim import list_simulations
 
 single_particles = ["mu", "pi", "e"]
 single_particle_pts = [1, 10, 100]
+single_particle_pt_ranges = ["1-100GeV"]
 ttbar_pileups = [0, 60, 120, 200]
 
 
@@ -16,15 +17,28 @@ def list_single_particle_pt_labels():
     return [f"{pt}GeV" for pt in single_particle_pts]
 
 
+def list_single_particle_pt_range_labels():
+    return single_particle_pt_ranges
+
+
 def list_ttbar_pileups():
     return ttbar_pileups
 
 
 def list_events():
-    return [
-        f"{p}_{pT}GeV"
-        for p, pT in itertools.product(single_particles, single_particle_pts)
-    ] + [f"ttbar_{pu}" for pu in ttbar_pileups]
+    return (
+        [
+            f"{p}_{pT}GeV"
+            for p, pT in itertools.product(single_particles, single_particle_pts)
+        ]
+        + [
+            f"{p}_{pT_range}"
+            for p, pT_range in itertools.product(
+                single_particles, single_particle_pt_ranges
+            )
+        ]
+        + [f"ttbar_{pu}" for pu in ttbar_pileups]
+    )
 
 
 def list_events_simulations():
@@ -62,9 +76,15 @@ def get_event_details(event):
     event_type = get_event_type(event)
     split = event.split("_")
     if event_type == "ttbar":
-        return int(split[1])
+        pileup = int(split[1])
+        return pileup
     if event_type == "single_particles":
-        return split[0], int(split[1].replace("GeV", ""))
+        particle, pt = split[0], split[1]
+        if pt.contains("-"):
+            pt_range = list(map(int, pt.split("-")))
+            return particle, (pt_range[0], pt_range[1])
+        pt = int(pt.replace("GeV", ""))
+        return particle, pt
     raise ValueError(f"unknown event type: {event_type}")
 
 

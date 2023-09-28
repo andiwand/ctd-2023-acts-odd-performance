@@ -2,6 +2,7 @@ import math
 from mycommon.events import (
     list_single_particles,
     list_single_particle_pt_labels,
+    list_single_particle_pt_range_labels,
     list_ttbar_pileups,
     list_simulations,
     list_event_labels,
@@ -18,6 +19,7 @@ from mycommon.reco import (
 
 SINGLE_PARTICLES = list_single_particles()
 PT_VALUES = list_single_particle_pt_labels()
+PT_RANGES = list_single_particle_pt_range_labels()
 PILEUP = list_ttbar_pileups()
 SIMULATIONS = list_simulations()
 EVENT_LABELS = list_event_labels()
@@ -62,6 +64,15 @@ def get_all_pt_variants(wildcards):
         simulation=wildcards.simulation
     )
 
+def get_all_pt_range_variants(wildcards):
+    return expand(
+        "data/reco/{reco_label}/{single_particle}_{pt_range}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        reco_label=wildcards.reco_label,
+        single_particle=SINGLE_PARTICLES,
+        pt_range=PT_RANGES,
+        simulation=wildcards.simulation
+    )
+
 def get_all_flavor_variants(wildcards):
     return expand(
         "data/reco/{reco_label}/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
@@ -84,6 +95,7 @@ wildcard_constraints:
     event_label="|".join(EVENT_LABELS),
     single_particle="|".join(SINGLE_PARTICLES),
     pt="|".join(PT_VALUES),
+    pt_range="|".join(PT_RANGES),
     simulation="|".join(SIMULATIONS),
     reco="|".join(RECO_LABELS),
     prefix="particles|particles_initial|hits",
@@ -100,8 +112,8 @@ rule all:
         expand("plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
         expand("plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
+        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS),
 
-        expand("plots/{reco_label}/ttbar_{simulation}/resolution_qop_over_pt.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
 rule all_sim:
@@ -229,14 +241,14 @@ rule plot_ttbar_efficiency_over_eta:
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
-rule plot_ttbar_resolution_qop_over_pt:
+rule plot_cross_single_particle_resolution_qop_over_pt:
     input:
-        get_all_ttbar_variants,
+        get_all_pt_range_variants,
     output:
-        "plots/{reco_label}/ttbar_{simulation}/resolution_qop_over_pt.png",
+        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
+        mkdir -p plots/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
         python scripts/plot_resolution_qop_over_pt.py {input} --output {output}
         """
 
