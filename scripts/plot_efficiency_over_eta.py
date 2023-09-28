@@ -8,7 +8,11 @@ from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
 from mycommon.events import split_event_label, get_event_type
-from mycommon.label import get_event_variant_label, get_event_label, get_event_type_label
+from mycommon.label import (
+    get_event_variant_label,
+    get_event_label,
+    get_event_type_label,
+)
 from mycommon.paths import get_event_label_from_path
 from mycommon.stats import (
     create_clopper_pearson_upper_bounds,

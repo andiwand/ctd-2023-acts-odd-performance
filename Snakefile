@@ -103,6 +103,7 @@ rule all:
     input:
         expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("plots/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("plots/{reco_label}/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
         expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_d0_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
@@ -257,4 +258,15 @@ rule plot_inefficiencies:
         """
         mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/plot_inefficiencies.py {input} --output {output}
+        """
+
+rule plot_particles:
+    input:
+        "data/sim/{event_label}/particles.root",
+    output:
+        "plots/{reco_label}/{event_label}/particles.png",
+    shell:
+        """
+        mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/plot_particles.py {input} --output {output}
         """
