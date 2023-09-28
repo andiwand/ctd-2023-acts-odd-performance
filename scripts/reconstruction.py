@@ -171,7 +171,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         trackingGeometry,
         field,
         trackSelectorConfig=TrackSelectorConfig(
-            pt=(0.9 * u.GeV, None),
+            pt=(0.5 * u.GeV, None),
             absEta=(None, 3.1),
             loc0=(-4.0 * u.mm, 4.0 * u.mm),
             nMeasurementsMin=7,

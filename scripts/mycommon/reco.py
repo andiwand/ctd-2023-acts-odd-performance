@@ -3,10 +3,11 @@ from typing import Optional, Union
 
 import acts
 from acts.examples.reconstruction import (
-    addSeeding,
     TruthSeedRanges,
     ParticleSmearingSigmas,
     SeedingAlgorithm,
+    SeedFinderConfigArg,
+    addSeeding,
 )
 
 u = acts.UnitConstants
@@ -14,7 +15,7 @@ u = acts.UnitConstants
 seedings = [
     "truth_smeared",
     "truth_estimated",
-    "default",
+    # "default",
 ]
 
 
@@ -75,6 +76,17 @@ def addMySeeding(
             phi=0.1 * u.degree,
             theta=0.1 * u.degree,
             pRel=0.01,
+        ),
+        seedFinderConfigArg=SeedFinderConfigArg(
+            r=(33 * u.mm, 200 * u.mm),
+            deltaR=(1 * u.mm, 60 * u.mm),
+            collisionRegion=(-250 * u.mm, 250 * u.mm),
+            z=(-2000 * u.mm, 2000 * u.mm),
+            maxSeedsPerSpM=1,
+            sigmaScattering=5,
+            radLengthPerSeed=0.1,
+            minPt=0.5 * u.GeV,
+            impactMax=3 * u.mm,
         ),
         initialVarInflation=[1e3] * 6,
         geoSelectionConfigFile=geoSelectionConfigFile,

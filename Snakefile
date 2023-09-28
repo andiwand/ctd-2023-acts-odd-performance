@@ -165,6 +165,7 @@ rule truth_matching:
         "data/sim/{event_label}/hits.root",
     output:
         "data/reco/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+    threads: 2,
     shell:
         """
         python scripts/truth_matching.py {input} {output}
