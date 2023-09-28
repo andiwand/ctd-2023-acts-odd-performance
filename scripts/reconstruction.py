@@ -54,13 +54,16 @@ def main():
     events = get_number_of_events(event_type)
 
     with tempfile.TemporaryDirectory() as temp:
-        run_reconstruction(args.threads, Path(temp), event, seeding, indir, outdir, skip, events)
+        run_reconstruction(
+            args.threads, Path(temp), event, seeding, indir, outdir, skip, events
+        )
 
 
 def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, events):
     event_type = get_event_type(event)
     is_single_electrons = event.startswith("e_")
     is_ttbar = event_type == "ttbar"
+    is_truth_seeding = seeding.startswith("truth_")
 
     rnd = acts.examples.RandomNumbers(seed=42)
 
@@ -125,25 +128,26 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         # outputDirRoot=tp,
     )
 
-    addKalmanTracks(
-        s,
-        trackingGeometry,
-        field,
-        reverseFilteringMomThreshold=100 * u.TeV,
-    )
-    addTrajectoryWriters(
-        s,
-        name="kf",
-        trajectories="kfTrajectories",
-        outputDirRoot=tp,
-        writeStates=True,
-        writeSummary=True,
-        writeCKFperformance=True,
-        writeFinderPerformance=False,
-        writeFitterPerformance=False,
-    )
+    if is_truth_seeding:
+        addKalmanTracks(
+            s,
+            trackingGeometry,
+            field,
+            reverseFilteringMomThreshold=100 * u.TeV,
+        )
+        addTrajectoryWriters(
+            s,
+            name="kf",
+            trajectories="kfTrajectories",
+            outputDirRoot=tp,
+            writeStates=True,
+            writeSummary=True,
+            writeCKFperformance=True,
+            writeFinderPerformance=False,
+            writeFitterPerformance=False,
+        )
 
-    if is_single_electrons:
+    if is_single_electrons and is_truth_seeding:
         addTruthTrackingGsf(
             s,
             trackingGeometry,
@@ -204,17 +208,23 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             "tracksummary_ambi.root",
             # "trackstates_ambi.root",
             "performance_ambi.root",
-            "tracksummary_kf.root",
-            # "trackstates_kf.root",
-            "performance_kf.root",
         ]
+        + (
+            [
+                "tracksummary_kf.root",
+                # "trackstates_kf.root",
+                "performance_kf.root",
+            ]
+            if is_truth_seeding
+            else []
+        )
         + (
             [
                 "tracksummary_gsf.root",
                 # "trackstates_gsf.root",
                 "performance_gsf.root",
             ]
-            if is_single_electrons
+            if is_single_electrons and is_truth_seeding
             else []
         )
         + (["performance_vertexing.root"] if is_ttbar else [])
