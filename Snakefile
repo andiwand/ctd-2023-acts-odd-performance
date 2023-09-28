@@ -7,7 +7,6 @@ from mycommon.events import (
     list_simulations,
     list_event_labels,
     get_event_type,
-    get_number_of_events,
 )
 from mycommon.reco import (
     list_reco_labels,
@@ -29,21 +28,31 @@ def get_reco_threads(wildcards):
         return int(math.ceil(workflow.cores * 0.3))
     return int(math.ceil(workflow.cores * 0.1))
 
-def get_events_per_slice(event_type):
+def get_number_of_events(wildcards):
+    event_label = wildcards["event_label"]
+    event_type = get_event_type(event_label)
     if event_type == "single_particles":
-        return 10000
+        return int(200000 * config["event_scale"])
     elif event_type == "ttbar":
-        return 100
+        return int(1000 * config["event_scale"])
+    raise ValueError(f"unknown event type: {event_type}")
+
+def get_events_per_slice(wildcards):
+    event_label = wildcards["event_label"]
+    event_type = get_event_type(event_label)
+    if event_type == "single_particles":
+        return int(10000 * config["event_scale"])
+    elif event_type == "ttbar":
+        return int(100 * config["event_scale"])
     raise ValueError(f"Unknown event type: {event_type}")
 
-def get_skip_events(event_label):
-    event_type = get_event_type(event_label)
-    total = get_number_of_events(event_type)
-    step = get_events_per_slice(event_type)
+def get_skip_events(wildcards):
+    total = get_number_of_events(wildcards)
+    step = get_events_per_slice(wildcards)
     return range(0, total, step), step
 
 def get_simulation_slices(wildcards):
-    skip, events = get_skip_events(wildcards["event_label"])
+    skip, events = get_skip_events(wildcards)
     return expand(
         "data/sim/{event_label}/slices/{skip}_{events}/{prefix}.root",
         event_label=wildcards["event_label"],
@@ -91,6 +100,8 @@ def get_all_ttbar_variants(wildcards):
     )
 
 
+configfile: "config.yaml"
+
 wildcard_constraints:
     event_label="|".join(EVENT_LABELS),
     single_particle="|".join(SINGLE_PARTICLES),
@@ -137,7 +148,9 @@ rule simulation_slice:
         "data/sim/{event_label}/slices/{skip}_{events}/particles_initial.root",
         "data/sim/{event_label}/slices/{skip}_{events}/hits.root",
     shell:
+        # somehow geant4 is crashing when running multiple instances in parallel
         """
+        sleep $((RANDOM % 5))
         mkdir -p data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events} || true
         python scripts/simulation.py {wildcards.event_label} --skip {wildcards.skip} --events {wildcards.events} \
           data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
@@ -152,12 +165,16 @@ rule reconstruction:
         "data/sim/{event_label}/hits.root",
     output:
         "data/reco/{reco_label}/{event_label}/tracksummary_ambi.root",
+    params:
+        skip=0,
+        events=get_number_of_events,
     threads: get_reco_threads,
     shell:
         """
         mkdir -p data/reco/{wildcards.event_label} || true
         python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
-          data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} --threads {threads} \
+          data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} \
+          --skip {params.skip} --events {params.events} --threads {threads} \
           > data/reco/{wildcards.reco_label}/{wildcards.event_label}/stdout.txt \
           2> data/reco/{wildcards.reco_label}/{wildcards.event_label}/stderr.txt
         """

@@ -12,7 +12,6 @@ from acts.examples.simulation import (
 
 from mycommon.events import (
     split_event_label,
-    get_number_of_events,
     get_event_type,
 )
 from mycommon.detector import get_odd
@@ -28,21 +27,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("event_label")
     parser.add_argument("outdir")
-    parser.add_argument("--skip", type=int, default=0, help="Skip N events")
-    parser.add_argument(
-        "--events", type=int, default=None, help="Overwrite number of events"
-    )
+    parser.add_argument("--skip", type=int, required=True, help="Skip number of events")
+    parser.add_argument("--events", type=int, required=True, help="Number of events")
     args = parser.parse_args()
 
-    if args.skip > 0 and args.events is None:
-        parser.error("--skip requires --events")
-
     event, simulation = split_event_label(args.event_label)
-    event_type = get_event_type(event)
 
     outdir = Path(args.outdir)
     skip = args.skip
-    events = get_number_of_events(event_type) if args.events is None else args.events
+    events = args.events
 
     with tempfile.TemporaryDirectory() as temp:
         run_simulation(Path(temp), event, outdir, events, skip, simulation)
