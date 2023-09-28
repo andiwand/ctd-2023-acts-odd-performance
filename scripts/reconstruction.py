@@ -170,14 +170,14 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         s,
         trackingGeometry,
         field,
-        TrackSelectorConfig(
+        trackSelectorConfig=TrackSelectorConfig(
             pt=0.9 * u.GeV,
             absEta=(None, 3.1),
             loc0=(-4.0 * u.mm, 4.0 * u.mm),
             nMeasurementsMin=7,
         )
         if is_ttbar
-        else TrackSelectorConfig(),
+        else None,
         trackFindingConfig=TrackFindingConfig(
             chi2CutOff=15.0,
             numMeasurementsCutOff=10,
@@ -187,7 +187,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
 
     addAmbiguityResolution(
         s,
-        AmbiguityResolutionConfig(
+        config=AmbiguityResolutionConfig(
             maximumSharedHits=3,
             maximumIterations=100000,
             nMeasurementsMin=7,
