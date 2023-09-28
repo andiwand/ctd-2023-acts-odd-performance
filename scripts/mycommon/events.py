@@ -83,10 +83,11 @@ def get_event_details(event):
         return pileup
     if event_type == "single_particles":
         particle, pt = split[0], split[1]
+        pt = pt.replace("GeV", "")
         if "-" in pt:
             pt_range = list(map(int, pt.split("-")))
             return particle, (pt_range[0], pt_range[1])
-        pt = int(pt.replace("GeV", ""))
+        pt = int(pt)
         return particle, pt
     raise ValueError(f"unknown event type: {event_type}")
 

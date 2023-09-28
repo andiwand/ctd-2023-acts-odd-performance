@@ -132,8 +132,6 @@ rule simulation_slice:
         "data/sim/{event_label}/slices/{skip}_{events}/particles.root",
         "data/sim/{event_label}/slices/{skip}_{events}/particles_initial.root",
         "data/sim/{event_label}/slices/{skip}_{events}/hits.root",
-        "data/sim/{event_label}/slices/{skip}_{events}/stdout.txt",
-        "data/sim/{event_label}/slices/{skip}_{events}/stderr.txt",
     shell:
         """
         mkdir -p data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events} || true
