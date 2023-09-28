@@ -7,8 +7,8 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.events import split_event_label
-from mycommon.label import get_event_variant_label, get_event_label
+from mycommon.events import split_event_label, get_event_type
+from mycommon.label import get_event_variant_label, get_event_label, get_event_type_label
 from mycommon.paths import get_event_label_from_path
 from mycommon.stats import (
     create_clopper_pearson_upper_bounds,
@@ -17,12 +17,13 @@ from mycommon.stats import (
 
 
 def check_same_event_type(input):
-    def get_event_from_path(file):
+    def get_event_type_from_path(file):
         event_label = get_event_label_from_path(file)
         event, _ = split_event_label(event_label)
-        return event
+        event_type = get_event_type(event)
+        return event_type
 
-    event_types = [get_event_from_path(file) for file in input]
+    event_types = [get_event_type_from_path(file) for file in input]
     return len(set(event_types)) == 1
 
 
@@ -100,7 +101,7 @@ plt.axhline(1, linestyle="--", color="gray")
 
 if is_same_event_type:
     plt.title(
-        f"Technical efficiency over $\eta$ for {get_event_variant_label(event)} events"
+        f"Technical efficiency over $\eta$ for {get_event_type_label(event)} events"
     )
 else:
     plt.title(f"Technical efficiency over $\eta$")
