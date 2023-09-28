@@ -80,10 +80,13 @@ def get_all_flavor_variants(wildcards):
     )
 
 def get_all_ttbar_variants(wildcards):
+    pileup = list(PILEUP)
+    pileup.remove(0)
+
     return expand(
         "data/reco/{reco_label}/ttbar_{pileup}_{simulation}/truth_matched_tracksummary_ambi.csv",
         reco_label=wildcards.reco_label,
-        pileup=PILEUP,
+        pileup=pileup,
         simulation=wildcards.simulation
     )
 

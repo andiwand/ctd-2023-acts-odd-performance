@@ -94,7 +94,7 @@ def get_event_details(event):
 
 def get_number_of_events(event_type):
     if event_type == "single_particles":
-        return 20000
+        return 200000
     elif event_type == "ttbar":
-        return 100
+        return 1000
     raise ValueError(f"unknown event type: {event_type}")
