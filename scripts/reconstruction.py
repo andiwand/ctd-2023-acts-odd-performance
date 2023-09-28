@@ -27,7 +27,7 @@ from mycommon.events import (
     get_event_type,
 )
 from mycommon.detector import get_odd
-from mycommon.reco import addMySeeding
+from mycommon.reco import split_reco_label, addMySeeding
 
 
 u = acts.UnitConstants
@@ -38,6 +38,7 @@ detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd(
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("event_label")
+    parser.add_argument("reco_label")
     parser.add_argument("indir")
     parser.add_argument("outdir")
     parser.add_argument("--threads", type=int, default=4, help="Number of threads")
@@ -45,6 +46,7 @@ def main():
 
     event, simulation = split_event_label(args.event_label)
     event_type = get_event_type(event)
+    seeding = split_reco_label(args.reco_label)
 
     indir = Path(args.indir)
     outdir = Path(args.outdir)
@@ -52,10 +54,10 @@ def main():
     events = get_number_of_events(event_type)
 
     with tempfile.TemporaryDirectory() as temp:
-        run_reconstruction(args.threads, Path(temp), event, indir, outdir, skip, events)
+        run_reconstruction(args.threads, Path(temp), event, seeding, indir, outdir, skip, events)
 
 
-def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
+def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, events):
     event_type = get_event_type(event)
     is_single_electrons = event.startswith("e_")
     is_ttbar = event_type == "ttbar"
@@ -115,7 +117,7 @@ def run_reconstruction(numThreads, tp, event, indir, outdir, skip, events):
 
     addMySeeding(
         s,
-        "truth_estimated",
+        seeding,
         trackingGeometry,
         field,
         rnd=rnd,

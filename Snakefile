@@ -93,6 +93,7 @@ wildcard_constraints:
 rule all:
     input:
         expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("plots/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
         expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_d0_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
@@ -144,7 +145,8 @@ rule reconstruction:
     shell:
         """
         mkdir -p data/reco/{wildcards.event_label} || true
-        python scripts/reconstruction.py {wildcards.event_label} data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} --threads {threads} \
+        python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
+          data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} --threads {threads} \
           > data/reco/{wildcards.reco_label}/{wildcards.event_label}/stdout.txt \
           2> data/reco/{wildcards.reco_label}/{wildcards.event_label}/stderr.txt
         """

@@ -50,6 +50,8 @@ def addMySeeding(
         seedingAlgorithm = SeedingAlgorithm.TruthSmeared
     elif algortihm == "truth_estimated":
         seedingAlgorithm = SeedingAlgorithm.TruthEstimated
+    elif algortihm == "default":
+        seedingAlgorithm = SeedingAlgorithm.Default
     else:
         raise ValueError(f"unknown seeding algorithm: {algortihm}")
 
