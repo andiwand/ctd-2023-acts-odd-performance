@@ -93,7 +93,11 @@ tracksummary = ak.to_dataframe(
     uproot.open(args.tracksummary)["tracksummary"].arrays(
         [
             "event_nr",
+            "nStates",
             "nMeasurements",
+            "nOutliers",
+            "nHoles",
+            "nSharedHits",
             "chi2Sum",
             "majorityParticleId",
             "nMajorityHits",
@@ -168,7 +172,11 @@ track_efficiency[
         "true_hits",
         "track_duplicate",
         "track_efficiency",
+        "track_nStates",
         "track_nMeasurements",
+        "track_nOutliers",
+        "track_nHoles",
+        "track_nSharedHits",
         "track_chi2Sum",
         "track_nMajorityHits",
         "track_eLOC0_fit",

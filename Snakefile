@@ -9,9 +9,6 @@ from mycommon.events import (
     get_event_type,
     get_number_of_events,
 )
-from mycommon.sim import (
-    list_simulations,
-)
 from mycommon.reco import (
     list_reco_labels,
 )

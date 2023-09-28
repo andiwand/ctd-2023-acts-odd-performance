@@ -18,10 +18,11 @@ def get_data(file):
         phi = data["true_phi"].values
         eta = data["true_eta"].values
         true_hits = data["true_hits"].values
+        track_states = data["track_nStates"].values
         track_hits = data["track_nMeasurements"].values
         track_efficiency = data["track_efficiency"].values
 
-        return phi, eta, true_hits, track_hits, track_efficiency
+        return phi, eta, track_states, true_hits, track_hits, track_efficiency
 
     raise ValueError(f"unknown file type: {file}")
 
@@ -43,9 +44,9 @@ hit_bins = 25
 event_label = get_event_label_from_path(args.input)
 event, _ = split_event_label(event_label)
 
-phi, eta, true_hits, track_hits, track_efficiency = get_data(args.input)
+phi, eta, true_hits, track_states, track_hits, track_efficiency = get_data(args.input)
 
-axes = plt.gcf().subplots(2, 2, sharey=True)
+axes = plt.gcf().subplots(3, 2, sharey=True)
 
 _, _, _, im = axes[0, 0].hist2d(
     phi,
@@ -56,7 +57,7 @@ _, _, _, im = axes[0, 0].hist2d(
     cmap="Reds",
 )
 axes[0, 0].set_xlabel(r"$\phi$")
-axes[0, 0].set_ylabel(r"")
+axes[0, 0].set_ylabel(r"# true hits")
 axes[0, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[0, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[0, 0])
@@ -70,10 +71,24 @@ axes[1, 0].hist2d(
     cmap="Reds",
 )
 axes[1, 0].set_xlabel(r"$\phi$")
-axes[1, 0].set_ylabel(r"")
+axes[1, 0].set_ylabel(r"# true hits")
 axes[1, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[1, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[1, 0])
+
+axes[2, 0].hist2d(
+    phi,
+    track_states,
+    weights=1 - track_efficiency,
+    bins=(phi_range, hit_bins),
+    range=(phi_range, hit_range),
+    cmap="Reds",
+)
+axes[2, 0].set_xlabel(r"$\phi$")
+axes[2, 0].set_ylabel(r"# measurements")
+axes[2, 0].set_xticks(np.linspace(*phi_range, 7))
+axes[2, 0].set_xlim(phi_range)
+plt.colorbar(im, ax=axes[2, 0])
 
 axes[0, 1].hist2d(
     eta,
@@ -84,7 +99,7 @@ axes[0, 1].hist2d(
     cmap="Reds",
 )
 axes[0, 1].set_xlabel(r"$\eta$")
-axes[0, 1].set_ylabel(r"")
+axes[0, 1].set_ylabel(r"# measurements")
 axes[0, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[0, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[0, 1])
@@ -98,10 +113,24 @@ axes[1, 1].hist2d(
     cmap="Reds",
 )
 axes[1, 1].set_xlabel(r"$\eta$")
-axes[1, 1].set_ylabel(r"")
+axes[1, 1].set_ylabel(r"# track states")
 axes[1, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[1, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[1, 1])
+
+axes[2, 1].hist2d(
+    eta,
+    track_states,
+    weights=1 - track_efficiency,
+    bins=(eta_bins, hit_bins),
+    range=(eta_range, hit_range),
+    cmap="Reds",
+)
+axes[2, 1].set_xlabel(r"$\eta$")
+axes[2, 1].set_ylabel(r"# track states")
+axes[2, 1].set_xticks(np.linspace(*eta_range, 7))
+axes[2, 1].set_xlim(eta_range)
+plt.colorbar(im, ax=axes[2, 1])
 
 plt.suptitle(f"Inefficiency over $\eta$ for {get_event_label(event)}")
 
