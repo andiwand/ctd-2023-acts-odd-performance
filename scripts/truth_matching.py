@@ -75,7 +75,7 @@ particles_hits = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
     q=pd.NamedAgg(column="q", aggfunc="first"),
     phi=pd.NamedAgg(column="phi", aggfunc="first"),
     eta=pd.NamedAgg(column="eta", aggfunc="first"),
-    p=pd.NamedAgg(column="pt", aggfunc="first"),
+    p=pd.NamedAgg(column="p", aggfunc="first"),
     pt=pd.NamedAgg(column="pt", aggfunc="first"),
     vertex_primary=pd.NamedAgg(column="vertex_primary", aggfunc="first"),
 )
