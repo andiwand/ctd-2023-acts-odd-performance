@@ -101,8 +101,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             rho=(0.0, 24 * u.mm),
             absZ=(0.0, 1.0 * u.m),
             eta=(-3.0, 3.0),
-            # 0.9 to ensure 1.0 GeV particles are included
-            pt=(0.9 * u.GeV, None),
+            pt=(1.0 * u.GeV, None),
             removeNeutral=True,
         ),
         "particles_input",

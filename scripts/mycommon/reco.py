@@ -115,8 +115,7 @@ def addMySeeding(
         rnd=rnd,
         seedingAlgorithm=seedingAlgorithm,
         truthSeedRanges=TruthSeedRanges(
-            # 0.9 to ensure 1.0 GeV particles are included
-            pt=(0.9 * u.GeV, None),
+            pt=(1.0 * u.GeV, None),
             eta=(-3.0, 3.0),
             nHits=(3, None),
         ),

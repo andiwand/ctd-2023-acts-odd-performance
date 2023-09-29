@@ -44,7 +44,7 @@ def addMyEventGen(
             beam=acts.PdgParticle.eProton,
             cmsEnergy=14 * u.TeV,
             hardProcess=["Top:qqbar2ttbar = on"],
-            hardProcess=["SoftQCD:all = on"],
+            pileupProcess=["SoftQCD:all = on"],
             vtxGen=vtxGen,
             outputDirRoot=outputDirRoot,
         )
