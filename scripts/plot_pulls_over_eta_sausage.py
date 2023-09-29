@@ -131,8 +131,8 @@ for pull_label, pull, subfig in zip(
 
     plt.colorbar(im, ax=subfig.get_axes())
 
-plt.supxlabel(r"$|\eta|$")
-plt.supylabel(r"pull")
+plt.gcf().supxlabel(r"$|\eta|$")
+plt.gcf().supylabel(r"pull")
 plt.legend()
 
 if args.output:
