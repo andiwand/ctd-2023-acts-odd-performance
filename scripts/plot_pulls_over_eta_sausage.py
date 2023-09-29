@@ -133,7 +133,6 @@ for pull_label, pull, subfig in zip(
 
 plt.gcf().supxlabel(r"$|\eta|$")
 plt.gcf().supylabel(r"pull")
-plt.legend()
 
 if args.output:
     plt.savefig(args.output)
