@@ -8,6 +8,8 @@ import argparse
 import acts
 from acts.examples.simulation import (
     addDigitization,
+    addParticleSelection,
+    ParticleSelectorConfig,
 )
 from acts.examples.reconstruction import (
     addKalmanTracks,
@@ -80,25 +82,10 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
     s.addReader(
         acts.examples.RootParticleReader(
             level=acts.logging.WARNING,
-            particleCollection="particles",
-            filePath=indir / "particles.root",
-        )
-    )
-    s.addReader(
-        acts.examples.RootParticleReader(
-            level=acts.logging.WARNING,
             particleCollection="particles_input",
             filePath=indir / "particles.root",
         )
     )
-    s.addReader(
-        acts.examples.RootParticleReader(
-            level=acts.logging.WARNING,
-            particleCollection="particles_selected",
-            filePath=indir / "particles.root",
-        )
-    )
-
     s.addReader(
         acts.examples.RootSimHitReader(
             level=acts.logging.WARNING,
@@ -107,6 +94,20 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             filePath=indir / "hits.root",
         )
     )
+
+    addParticleSelection(
+        s,
+        ParticleSelectorConfig(
+            rho=(0.0, 24 * u.mm),
+            absZ=(0.0, 1.0 * u.m),
+            eta=(-3.0, 3.0),
+            pt=(1 * u.GeV, None),
+            removeNeutral=True,
+        ),
+        "particles_input",
+        "particles_selected",
+    )
+    s.addWhiteboardAlias("particles", "particles_selected")
 
     addDigitization(
         s,

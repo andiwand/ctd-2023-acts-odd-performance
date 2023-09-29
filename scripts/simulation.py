@@ -75,16 +75,12 @@ def run_simulation(tp, event, outdir, events, skip, simulation):
         rnd=rnd,
         detector=detector,
         preSelectParticles=ParticleSelectorConfig(
+            # these cuts are necessary because of pythia
             rho=(0.0, 24 * u.mm),
             absZ=(0.0, 1.0 * u.m),
-            eta=(-3.0, 3.0),
-            pt=(1 * u.GeV, None),
-            removeNeutral=True,
-        ),
-        postSelectParticles=ParticleSelectorConfig(
-            eta=(-3.0, 3.0),
-            pt=(1 * u.GeV, None),
-            removeNeutral=True,
+            # these cuts should not be necessary for sim
+            # eta=(-3.0, 3.0),
+            # pt=(1 * u.GeV, None),
         ),
         outputDirRoot=tp,
     )
