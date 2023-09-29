@@ -1,2 +1,0 @@
-python scripts/plot_resolution_over_eta.py data/mu_1GeV_geant4_truth_smeared/tracksummary_ckf.root data/mu_10GeV_geant4_truth_smeared/tracksummary_c
-kf.root data/mu_100GeV_geant4_truth_smeared/tracksummary_ckf.root

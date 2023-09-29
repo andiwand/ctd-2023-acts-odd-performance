@@ -101,7 +101,8 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             rho=(0.0, 24 * u.mm),
             absZ=(0.0, 1.0 * u.m),
             eta=(-3.0, 3.0),
-            pt=(1 * u.GeV, None),
+            # 0.9 to ensure 1.0 GeV particles are included
+            pt=(0.9 * u.GeV, None),
             removeNeutral=True,
         ),
         "particles_input",
@@ -125,7 +126,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         field,
         rnd=rnd,
         geoSelectionConfigFile=seedingSel,
-        # outputDirRoot=tp,
+        outputDirRoot="/home/andreas/cern/ctd/2023/acts-odd-performance/data/reco/truth_smeared/mu_1GeV_geant4",
     )
 
     if is_truth_seeding:
