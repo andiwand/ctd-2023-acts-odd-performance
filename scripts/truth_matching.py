@@ -52,9 +52,9 @@ particles = particles[particles["pt"] >= args.require_pt * u.GeV]
 # filter for charged particles
 particles = particles[particles["q"] != 0.0]
 # filter particles originating from the beampipe
-particles = particles[particles["v_z"].abs() < args.require_max_absz * u.m]
+particles = particles[particles["vz"].abs() < args.require_max_absz * u.m]
 particles = particles[
-    np.hypot(particles["v_x"], particles["v_x"]) < args.require_max_r * u.mm
+    np.hypot(particles["vx"], particles["vx"]) < args.require_max_r * u.mm
 ]
 
 hits = ak.to_dataframe(
