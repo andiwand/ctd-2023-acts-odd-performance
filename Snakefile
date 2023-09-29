@@ -20,6 +20,8 @@ PILEUP = list_ttbar_pileups()
 SIMULATIONS = list_simulations()
 EVENT_LABELS = list_event_labels()
 RECO_LABELS = list_reco_labels()
+RES_X = ["eta", "pt"]
+RES_Y = ["d0", "z0", "qop"]
 
 
 def get_reco_threads(wildcards):
@@ -112,6 +114,8 @@ wildcard_constraints:
     prefix="particles|particles_initial|hits",
     skip="[0-9]+",
     events="[0-9]+",
+    res_x="|".join(RES_X),
+    res_y="|".join(RES_Y),
 
 rule all:
     input:
@@ -120,11 +124,11 @@ rule all:
         expand("plots/{reco_label}/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
         expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_d0_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=RES_X, res_y=RES_Y),
         expand("plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
         expand("plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS),
+        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_X, res_y=RES_Y),
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
@@ -214,15 +218,15 @@ rule plot_single_particle_pulls_over_eta_errorbars:
         python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
         """
 
-rule plot_single_particle_resolution_d0_over_eta:
+rule plot_single_particle_resolution:
     input:
         get_all_pt_variants,
     output:
-        "plots/{reco_label}/{single_particle}_{simulation}/resolution_d0_over_eta.png",
+        "plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png",
     shell:
         """
         mkdir -p plots/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot_resolution_d0_over_eta.py {input} --output {output}
+        python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
 rule plot_single_particle_efficiency_over_eta:
@@ -258,15 +262,15 @@ rule plot_ttbar_efficiency_over_eta:
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
-rule plot_cross_single_particle_resolution_qop_over_pt:
+rule plot_cross_single_particle_resolution:
     input:
         get_all_pt_range_variants,
     output:
-        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_qop_over_pt.png",
+        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png",
     shell:
         """
         mkdir -p plots/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
-        python scripts/plot_resolution_qop_over_pt.py {input} --output {output}
+        python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
 rule plot_inefficiencies:

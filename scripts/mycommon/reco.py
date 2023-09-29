@@ -151,7 +151,7 @@ def addMySeeding(
             1 / u.GeV,
             1 * u.ns,
         ],
-        initialVarInflation=[1.] * 6,
+        initialVarInflation=[1.0] * 6,
         geoSelectionConfigFile=geoSelectionConfigFile,
         outputDirRoot=outputDirRoot,
     )
