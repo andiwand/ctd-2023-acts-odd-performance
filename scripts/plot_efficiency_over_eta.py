@@ -7,7 +7,7 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.events import split_event_label, get_event_type
+from mycommon.events import split_event_label
 from mycommon.label import (
     get_event_variant_label,
     get_event_label,
@@ -21,13 +21,12 @@ from mycommon.stats import (
 
 
 def check_same_event_type(input):
-    def get_event_type_from_path(file):
+    def get_event_type_label_from_path(file):
         event_label = get_event_label_from_path(file)
         event, _ = split_event_label(event_label)
-        event_type = get_event_type(event)
-        return event_type
+        return get_event_type_label(event)
 
-    event_types = [get_event_type_from_path(file) for file in input]
+    event_types = [get_event_type_label_from_path(file) for file in input]
     return len(set(event_types)) == 1
 
 

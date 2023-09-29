@@ -9,4 +9,4 @@ def myPlotStyle():
 
     matplotlib.rc("font", **font)
 
-    plt.figure(figsize=(12, 8), dpi=80)
+    plt.figure(figsize=(16, 9), dpi=80)

@@ -61,14 +61,16 @@ def addMyEventGen(
 
         if isinstance(pt_label, tuple):
             momentum_config = MomentumConfig(pt_label[0], pt_label[1], transverse=True)
+            eta_config = EtaConfig(-3.0, 3.0, uniform=False)
         else:
             momentum_config = MomentumConfig(pt_label, pt_label, transverse=True)
+            eta_config = EtaConfig(-3.0, 3.0, uniform=True)
 
         addParticleGun(
             s,
             ParticleConfig(1, particle, randomizeCharge=True),
             momentum_config,
-            EtaConfig(-3.0, 3.0, uniform=True),
+            eta_config,
             PhiConfig(0.0 * u.degree, 360.0 * u.degree),
             vtxGen=vtxGen,
             multiplicity=1,

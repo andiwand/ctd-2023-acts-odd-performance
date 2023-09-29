@@ -22,7 +22,7 @@ def get_data(file):
         track_hits = data["track_nMeasurements"].values
         track_efficiency = data["track_efficiency"].values
 
-        return phi, eta, track_states, true_hits, track_hits, track_efficiency
+        return phi, eta, true_hits, track_states, track_hits, track_efficiency
 
     raise ValueError(f"unknown file type: {file}")
 
@@ -62,7 +62,7 @@ axes[0, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[0, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[0, 0])
 
-axes[1, 0].hist2d(
+_, _, _, im = axes[1, 0].hist2d(
     phi,
     track_hits,
     weights=1 - track_efficiency,
@@ -76,7 +76,7 @@ axes[1, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[1, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[1, 0])
 
-axes[2, 0].hist2d(
+_, _, _, im = axes[2, 0].hist2d(
     phi,
     track_states,
     weights=1 - track_efficiency,
@@ -90,7 +90,7 @@ axes[2, 0].set_xticks(np.linspace(*phi_range, 7))
 axes[2, 0].set_xlim(phi_range)
 plt.colorbar(im, ax=axes[2, 0])
 
-axes[0, 1].hist2d(
+_, _, _, im = axes[0, 1].hist2d(
     eta,
     true_hits,
     weights=1 - track_efficiency,
@@ -104,7 +104,7 @@ axes[0, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[0, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[0, 1])
 
-axes[1, 1].hist2d(
+_, _, _, im = axes[1, 1].hist2d(
     eta,
     track_hits,
     weights=1 - track_efficiency,
@@ -118,7 +118,7 @@ axes[1, 1].set_xticks(np.linspace(*eta_range, 7))
 axes[1, 1].set_xlim(eta_range)
 plt.colorbar(im, ax=axes[1, 1])
 
-axes[2, 1].hist2d(
+_, _, _, im = axes[2, 1].hist2d(
     eta,
     track_states,
     weights=1 - track_efficiency,

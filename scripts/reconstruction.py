@@ -141,7 +141,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             name="kf",
             trajectories="kfTrajectories",
             outputDirRoot=tp,
-            writeStates=True,
+            writeStates=False,
             writeSummary=True,
             writeCKFperformance=True,
             writeFinderPerformance=False,
@@ -159,7 +159,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             name="gsf",
             trajectories="gsf_trajectories",
             outputDirRoot=tp,
-            writeStates=True,
+            writeStates=False,
             writeSummary=True,
             writeCKFperformance=True,
             writeFinderPerformance=False,
@@ -190,7 +190,18 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             maximumIterations=100000000,
             nMeasurementsMin=7,
         ),
+        # outputDirRoot=tp,
+    )
+    addTrajectoryWriters(
+        s,
+        name="ambi",
+        trajectories="trajectories",
         outputDirRoot=tp,
+        writeStates=False,
+        writeSummary=True,
+        writeCKFperformance=True,
+        writeFinderPerformance=False,
+        writeFitterPerformance=False,
     )
 
     if is_ttbar:
