@@ -83,8 +83,7 @@ pull_labels = [
     r"$\frac{q}{p}$",
 ]
 
-fig = plt.figure(figsize=(16, 8))
-axs = fig.subplots(1, 3, sharey=True)
+axs = plt.subplots(1, 3, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
     event_label = get_event_label_from_path(file)
@@ -133,12 +132,12 @@ for i, file in enumerate(args.tracksummary):
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-fig.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
-fig.supxlabel(r"$\eta$")
-fig.supylabel(r"pull")
-fig.legend()
+plt.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
+plt.supxlabel(r"$\eta$")
+plt.supylabel(r"pull")
+plt.legend()
 
 if args.output:
-    fig.savefig(args.output)
+    plt.savefig(args.output)
 else:
     plt.show()

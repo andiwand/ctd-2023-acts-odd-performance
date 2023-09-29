@@ -56,7 +56,7 @@ def get_data(file):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("input", nargs="+")
+parser.add_argument("input")
 parser.add_argument("--output")
 args = parser.parse_args()
 
@@ -74,70 +74,68 @@ pull_labels = [
     r"$\frac{q}{p}$",
 ]
 
-for file in args.input:
-    eta, pulls = get_data(file)
+eta, pulls = get_data(args.input)
 
-    fig = plt.figure(file, figsize=(8, 6))
-    subfigs = fig.subfigures(2, 3)
+subfigs = plt.gcf().subfigures(2, 3)
 
-    for pull_label, pull, subfig in zip(
-        pull_labels,
-        pulls,
-        subfigs.flat,
-    ):
-        ax, ax_mean, ax_std = subfig.subplots(
-            3,
-            1,
-            gridspec_kw={"height_ratios": [5, 1, 1], "hspace": 0},
-            sharex=True,
-        )
+for pull_label, pull, subfig in zip(
+    pull_labels,
+    pulls,
+    subfigs.flat,
+):
+    ax, ax_mean, ax_std = subfig.subplots(
+        3,
+        1,
+        gridspec_kw={"height_ratios": [5, 1, 1], "hspace": 0},
+        sharex=True,
+    )
 
-        ax.set_title(pull_label)
-        ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
-        ax.set_ylim(*pull_range)
+    ax.set_title(pull_label)
+    ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
+    ax.set_ylim(*pull_range)
 
-        h, eta_edges, data_edges, im = ax.hist2d(
-            eta,
-            pull,
-            range=(eta_range, pull_range),
-            bins=(eta_bins, pull_bins),
-            density=True,
-            cmap="Oranges",
-        )
-        eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
+    h, eta_edges, data_edges, im = ax.hist2d(
+        eta,
+        pull,
+        range=(eta_range, pull_range),
+        bins=(eta_bins, pull_bins),
+        density=True,
+        cmap="Oranges",
+    )
+    eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
 
-        mean_binned, _, other_digi = binned_statistic(
-            eta,
-            pull,
-            bins=eta_bins,
-            range=eta_range,
-            statistic=smoothed_mean,
-        )
-        std_binned, _, _ = binned_statistic(
-            eta,
-            pull,
-            bins=eta_bins,
-            range=eta_range,
-            statistic=smoothed_std,
-        )
+    mean_binned, _, other_digi = binned_statistic(
+        eta,
+        pull,
+        bins=eta_bins,
+        range=eta_range,
+        statistic=smoothed_mean,
+    )
+    std_binned, _, _ = binned_statistic(
+        eta,
+        pull,
+        bins=eta_bins,
+        range=eta_range,
+        statistic=smoothed_std,
+    )
 
-        ax.plot(eta_mid, mean_binned, linestyle="-", color="black", label="fit")
-        ax.plot(eta_mid, mean_binned - std_binned, linestyle="--", color="black")
-        ax.plot(eta_mid, mean_binned + std_binned, linestyle="--", color="black")
+    ax.plot(eta_mid, mean_binned, linestyle="-", color="black", label="fit")
+    ax.plot(eta_mid, mean_binned - std_binned, linestyle="--", color="black")
+    ax.plot(eta_mid, mean_binned + std_binned, linestyle="--", color="black")
 
-        ax_mean.plot(eta_mid, mean_binned, linestyle="-", color="black")
-        ax_mean.axhline(0, linestyle="--", color="gray")
+    ax_mean.plot(eta_mid, mean_binned, linestyle="-", color="black")
+    ax_mean.axhline(0, linestyle="--", color="gray")
 
-        ax_std.plot(eta_mid, std_binned, linestyle="-", color="black")
-        ax_std.axhline(1, linestyle="--", color="gray")
+    ax_std.plot(eta_mid, std_binned, linestyle="-", color="black")
+    ax_std.axhline(1, linestyle="--", color="gray")
 
-        fig.colorbar(im, ax=subfig.get_axes())
+    plt.colorbar(im, ax=subfig.get_axes())
 
-fig.supxlabel(r"$|\eta|$")
-fig.supylabel(r"pull")
-fig.legend()
+plt.supxlabel(r"$|\eta|$")
+plt.supylabel(r"pull")
+plt.legend()
 
 if args.output:
-    fig.savefig(args.output)
+    plt.savefig(args.output)
 else:
     plt.show()
