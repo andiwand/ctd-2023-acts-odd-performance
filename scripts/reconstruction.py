@@ -13,24 +13,20 @@ from acts.examples.reconstruction import (
     addKalmanTracks,
     addTruthTrackingGsf,
     addTrajectoryWriters,
-    TrackSelectorConfig,
-    TrackFindingConfig,
     addCKFTracks,
     addAmbiguityResolution,
-    AmbiguityResolutionConfig,
     VertexFinder,
     addVertexFitting,
 )
+
+u = acts.UnitConstants
 
 from mycommon.events import (
     split_event_label,
     get_event_type,
 )
 from mycommon.detector import get_odd
-from mycommon.reco import split_reco_label, addMySeeding
-
-
-u = acts.UnitConstants
+from mycommon.reco import split_reco_label, addMySeeding, get_reco_config
 
 detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
 
@@ -65,6 +61,8 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
     is_single_electrons = event.startswith("e_")
     is_ttbar = event_type == "ttbar"
     is_truth_seeding = seeding.startswith("truth_")
+
+    reco_config = get_reco_config(event, seeding)
 
     rnd = acts.examples.RandomNumbers(seed=42)
 
@@ -134,7 +132,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             s,
             trackingGeometry,
             field,
-            reverseFilteringMomThreshold=100 * u.TeV,
+            reverseFilteringMomThreshold=float("inf"),
         )
         addTrajectoryWriters(
             s,
@@ -170,26 +168,14 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         s,
         trackingGeometry,
         field,
-        trackSelectorConfig=TrackSelectorConfig(
-            pt=(0.5 * u.GeV, None),
-            absEta=(None, 3.1),
-            loc0=(-4.0 * u.mm, 4.0 * u.mm),
-            nMeasurementsMin=7,
-        ),
-        trackFindingConfig=TrackFindingConfig(
-            chi2CutOff=15.0,
-            numMeasurementsCutOff=10,
-        ),
+        trackSelectorConfig=reco_config.track_selector_config,
+        trackFindingConfig=reco_config.track_finding_config,
         # outputDirRoot=tp,
     )
 
     addAmbiguityResolution(
         s,
-        config=AmbiguityResolutionConfig(
-            maximumSharedHits=3,
-            maximumIterations=100000000,
-            nMeasurementsMin=7,
-        ),
+        config=reco_config.ambi_config,
         # outputDirRoot=tp,
     )
     addTrajectoryWriters(

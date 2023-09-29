@@ -171,7 +171,7 @@ rule reconstruction:
     threads: get_reco_threads,
     shell:
         """
-        mkdir -p data/reco/{wildcards.event_label} || true
+        mkdir -p data/reco/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
           data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} \
           --skip {params.skip} --events {params.events} --threads {threads} \

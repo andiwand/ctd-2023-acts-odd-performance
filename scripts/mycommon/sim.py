@@ -38,10 +38,14 @@ def addMyEventGen(
 
         addPythia8(
             s,
-            hardProcess=["Top:qqbar2ttbar=on"],
-            npileup=pu,
-            vtxGen=vtxGen,
             rnd=rnd,
+            nhard=1,
+            npileup=pu,
+            beam=acts.PdgParticle.eProton,
+            cmsEnergy=14 * u.TeV,
+            hardProcess=["Top:qqbar2ttbar = on"],
+            hardProcess=["SoftQCD:all = on"],
+            vtxGen=vtxGen,
             outputDirRoot=outputDirRoot,
         )
 

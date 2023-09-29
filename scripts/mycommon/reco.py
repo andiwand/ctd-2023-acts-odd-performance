@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Optional, Union
+from collections import namedtuple
 
 import acts
 from acts.examples.reconstruction import (
@@ -8,15 +9,27 @@ from acts.examples.reconstruction import (
     SeedingAlgorithm,
     SeedFinderConfigArg,
     addSeeding,
+    TrackSelectorConfig,
+    TrackFindingConfig,
+    AmbiguityResolutionConfig,
 )
 
 u = acts.UnitConstants
+
+from mycommon.events import get_event_type
+
 
 seedings = [
     "truth_smeared",
     "truth_estimated",
     # "default",
 ]
+
+RecoConfig = namedtuple(
+    "RecoCuts",
+    ["track_selector_config", "track_finding_config", "ambi_config"],
+    defaults=[TrackSelectorConfig(), TrackFindingConfig(), AmbiguityResolutionConfig()],
+)
 
 
 def list_seedings():
@@ -36,6 +49,45 @@ def split_reco_label(reco_label):
         if reco_label == create_reco_label(seeding):
             return seeding
     raise ValueError(f"unknown reco label {reco_label}")
+
+
+def get_reco_config(event, seeding) -> RecoConfig:
+    event_type = get_event_type(event)
+
+    if event_type == "single_particles":
+        return RecoConfig(
+            track_selector_config=TrackSelectorConfig(),
+            track_finding_config=TrackFindingConfig(
+                chi2CutOff=15.0,
+                numMeasurementsCutOff=10,
+            ),
+            ambi_config=AmbiguityResolutionConfig(
+                maximumSharedHits=3,
+                maximumIterations=100000000,
+                nMeasurementsMin=3,
+            ),
+        )
+
+    if event_type == "ttbar":
+        return RecoConfig(
+            track_selector_config=TrackSelectorConfig(
+                pt=(0.5 * u.GeV, None),
+                absEta=(None, 3.5),
+                loc0=(-4.0 * u.mm, 4.0 * u.mm),
+                nMeasurementsMin=7,
+            ),
+            track_finding_config=TrackFindingConfig(
+                chi2CutOff=15.0,
+                numMeasurementsCutOff=10,
+            ),
+            ambi_config=AmbiguityResolutionConfig(
+                maximumSharedHits=3,
+                maximumIterations=100000000,
+                nMeasurementsMin=7,
+            ),
+        )
+
+    raise ValueError(f"unknown event type {event_type}")
 
 
 def addMySeeding(
@@ -89,11 +141,11 @@ def addMySeeding(
             impactMax=3 * u.mm,
         ),
         initialSigmas=[
-            25 * u.um,
-            100 * u.um,
+            1 * u.mm,
+            1 * u.mm,
             1 * u.degree,
             1 * u.degree,
-            0.1 / u.GeV,
+            1 / u.GeV,
             1 * u.ns,
         ],
         initialVarInflation=[1e3] * 6,
