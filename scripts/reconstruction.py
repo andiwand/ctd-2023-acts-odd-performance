@@ -126,7 +126,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         field,
         rnd=rnd,
         geoSelectionConfigFile=seedingSel,
-        outputDirRoot="/home/andreas/cern/ctd/2023/acts-odd-performance/data/reco/truth_smeared/mu_1GeV_geant4",
+        # outputDirRoot=tp,
     )
 
     if is_truth_seeding:
