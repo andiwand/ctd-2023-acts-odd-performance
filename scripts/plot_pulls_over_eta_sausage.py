@@ -7,6 +7,7 @@ import pandas as pd
 import argparse
 from scipy.stats import binned_statistic
 
+from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_mean, smoothed_std
 
 
@@ -54,6 +55,8 @@ def get_data(file):
 
     raise ValueError(f"unknown file type: {file}")
 
+
+myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("input")
