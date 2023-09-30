@@ -115,7 +115,8 @@ def addMySeeding(
         rnd=rnd,
         seedingAlgorithm=seedingAlgorithm,
         truthSeedRanges=TruthSeedRanges(
-            pt=(1.0 * u.GeV, None),
+            # using something close to 1 to include for sure
+            pt=(0.999 * u.GeV, None),
             eta=(-3.0, 3.0),
             nHits=(3, None),
         ),

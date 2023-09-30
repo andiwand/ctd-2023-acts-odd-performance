@@ -79,12 +79,13 @@ x_bins = {
 }[args.x]
 x_label = {
     "eta": r"$\eta$",
-    "pt": r"$p_T$ [GeV]",
+    "pt": r"$p_T$",
 }[args.x]
 x_unit = {
     "eta": r"",
     "pt": r" [GeV]",
 }[args.x]
+
 y_label = {
     "d0": r"$d_0$",
     "z0": r"$z_0$",
@@ -132,8 +133,8 @@ for file in args.input:
 plt.title(
     rf"Resolution of $d_0$ over {x_label} for {get_event_type_label(event)} events"
 )
-plt.xlabel(rf"{x_label} {x_unit}")
-plt.ylabel(rf"{y_label} {y_unit}")
+plt.xlabel(rf"{x_label}{x_unit}")
+plt.ylabel(rf"{y_label}{y_unit}")
 if args.x == "eta":
     plt.xticks(np.linspace(*x_range, 7))
     plt.xlim(x_range)

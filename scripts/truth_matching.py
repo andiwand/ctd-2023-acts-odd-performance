@@ -54,7 +54,7 @@ particles = particles[particles["q"] != 0.0]
 # filter particles originating from the beampipe
 particles = particles[particles["vz"].abs() < args.require_max_absz * u.m]
 particles = particles[
-    np.hypot(particles["vx"], particles["vx"]) < args.require_max_r * u.mm
+    np.hypot(particles["vx"], particles["vy"]) < args.require_max_r * u.mm
 ]
 
 hits = ak.to_dataframe(
