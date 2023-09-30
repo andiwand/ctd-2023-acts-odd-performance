@@ -76,6 +76,24 @@ x_range = {
 x_bins = {
     "eta": 25,
     "pt": 10,
+}[args.x]
+x_label = {
+    "eta": r"$\eta$",
+    "pt": r"$p_T$ [GeV]",
+}[args.x]
+x_unit = {
+    "eta": r"",
+    "pt": r" [GeV]",
+}[args.x]
+y_label = {
+    "d0": r"$d_0$",
+    "z0": r"$z_0$",
+    "qop": r"$\frac{q}{p}$",
+}[args.y]
+y_unit = {
+    "d0": r" [mm]",
+    "z0": r" [mm]",
+    "qop": r" [$\frac{1}{GeV}$]",
 }[args.y]
 
 for file in args.input:
@@ -85,11 +103,15 @@ for file in args.input:
     data = get_data(file)
 
     std, x_edges, _ = binned_statistic(
-        data[args.x], data[args.y], bins=x_bins, range=x_range, statistic=smoothed_std
+        data[args.x],
+        data[f"res_{args.y}"],
+        bins=x_bins,
+        range=x_range,
+        statistic=smoothed_std,
     )
     std_std, _, _ = binned_statistic(
         data[args.x],
-        data[args.y],
+        data[f"res_{args.y}"],
         bins=x_bins,
         range=x_range,
         statistic=smoothed_std_std,
@@ -107,9 +129,11 @@ for file in args.input:
         label=get_event_variant_label(event),
     )
 
-plt.title(rf"Resolution of $d_0$ over $\eta$ for {get_event_type_label(event)} events")
-plt.xlabel(r"$\eta$")
-plt.ylabel(r"$\sigma(d_0)$ [mm]")
+plt.title(
+    rf"Resolution of $d_0$ over {x_label} for {get_event_type_label(event)} events"
+)
+plt.xlabel(rf"{x_label} {x_unit}")
+plt.ylabel(rf"{y_label} {y_unit}")
 if args.x == "eta":
     plt.xticks(np.linspace(*x_range, 7))
     plt.xlim(x_range)
