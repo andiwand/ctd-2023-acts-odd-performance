@@ -12,17 +12,11 @@ u = acts.UnitConstants
 
 
 def aggregate_tracks(group):
-    if len(group) == 1:
-        return group
-
     best_idx = group[
         group["track_nMeasurements"] == group["track_nMeasurements"].max()
     ]["track_chi2Sum"].idxmin()
     best = group[group.index == best_idx].copy()
-
-    best["track_duplicate"] = group["track_duplicate"].sum()
-    best["track_efficiency"] = group["track_efficiency"].max()
-
+    best["track_duplicate"] = len(group) - 1
     return best
 
 
@@ -61,26 +55,17 @@ hits = ak.to_dataframe(
     uproot.open(args.hits)["hits"].arrays(library="ak"), how="outer"
 ).dropna()
 
-particles_hits = pd.merge(
+hits = hits.groupby(["event_id", "particle_id"]).aggregate(
+    hits=pd.NamedAgg(column="volume_id", aggfunc="count"),
+)
+
+particle_efficiency = pd.merge(
     particles,
     hits,
     how="left",
     left_on=["event_id", "particle_id"],
     right_on=["event_id", "particle_id"],
 )
-del particles
-del hits
-
-particle_efficiency = particles_hits.groupby(["event_id", "particle_id"]).aggregate(
-    hits=pd.NamedAgg(column="volume_id", aggfunc="count"),
-    q=pd.NamedAgg(column="q", aggfunc="first"),
-    phi=pd.NamedAgg(column="phi", aggfunc="first"),
-    eta=pd.NamedAgg(column="eta", aggfunc="first"),
-    p=pd.NamedAgg(column="p", aggfunc="first"),
-    pt=pd.NamedAgg(column="pt", aggfunc="first"),
-    vertex_primary=pd.NamedAgg(column="vertex_primary", aggfunc="first"),
-)
-del particles_hits
 particle_efficiency.reset_index(inplace=True)
 
 # calculate true efficiency
@@ -139,28 +124,18 @@ track_efficiency = pd.merge(
     left_on=["true_event_id", "true_particle_id"],
     right_on=["track_event_nr", "track_majorityParticleId"],
 )
-del particle_efficiency
-del tracksummary
 track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
-
-track_efficiency["track_duplicate"] = (
-    track_efficiency[["true_event_id", "true_particle_id"]]
-    .duplicated(keep="first")
-    .astype(int)
-)
-track_efficiency["track_efficiency"] = (
-    (
-        track_efficiency["track_nMajorityHits"].values
-        / track_efficiency["track_nMeasurements"].values
-        >= args.matching_ratio
-    )
-    & (track_efficiency["track_duplicate"].values == 0)
-).astype(int)
 
 track_efficiency = track_efficiency.groupby(
     ["true_event_id", "true_particle_id"]
 ).apply(aggregate_tracks)
 track_efficiency.reset_index(drop=True, inplace=True)
+
+track_efficiency["track_efficiency"] = (
+    track_efficiency["track_nMajorityHits"].values
+    / track_efficiency["track_nMeasurements"].values
+    >= args.matching_ratio
+).astype(int)
 
 track_efficiency[
     [
