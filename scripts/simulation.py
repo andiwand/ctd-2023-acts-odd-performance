@@ -82,7 +82,8 @@ def run_simulation(tp, event, outdir, events, skip, simulation):
         postSelectParticles=ParticleSelectorConfig(
             # these cuts should not be necessary for sim
             eta=(-3.0, 3.0),
-            pt=(1 * u.GeV, None),
+            # using something close to 1 to include for sure
+            pt=(0.999 * u.GeV, None),
             removeNeutral=True,
         ),
         outputDirRoot=tp,
