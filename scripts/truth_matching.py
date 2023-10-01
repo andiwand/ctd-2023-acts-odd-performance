@@ -71,10 +71,10 @@ hits = ak.to_dataframe(
         [
             "event_id",
             "particle_id",
-            "volume_id",
-            "layer_id",
-            "sensitive_id",
-            "index",
+            # "volume_id",
+            # "layer_id",
+            # "sensitive_id",
+            # "index",
         ],
         library="ak",
     ),
@@ -82,7 +82,7 @@ hits = ak.to_dataframe(
 ).dropna()
 
 hits = hits.groupby(["event_id", "particle_id"]).aggregate(
-    hits=pd.NamedAgg(column="volume_id", aggfunc="count"),
+    hits=pd.NamedAgg(column="particle_id", aggfunc="count"),
 )
 hits.reset_index(inplace=True)
 
