@@ -153,9 +153,12 @@ track_efficiency = track_efficiency.groupby(
 track_efficiency.reset_index(drop=True, inplace=True)
 
 track_efficiency["track_efficiency"] = (
-    track_efficiency["track_nMajorityHits"].values
-    / track_efficiency["track_nMeasurements"].values
-    >= args.matching_ratio
+    (track_efficiency["track_nMeasurements"].values >= args.require_number_of_hits)
+    & (
+        track_efficiency["track_nMajorityHits"].values
+        / track_efficiency["track_nMeasurements"].values
+        >= args.matching_ratio
+    )
 ).astype(int)
 
 track_efficiency[
