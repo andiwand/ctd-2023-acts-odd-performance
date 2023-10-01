@@ -65,7 +65,7 @@ def get_simulation_slices(wildcards):
 
 def get_all_pt_variants(wildcards):
     return expand(
-        "data/reco/{reco_label}/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
         reco_label=wildcards.reco_label,
         single_particle=wildcards.single_particle,
         pt=PT_VALUES,
@@ -74,7 +74,7 @@ def get_all_pt_variants(wildcards):
 
 def get_all_pt_range_variants(wildcards):
     return expand(
-        "data/reco/{reco_label}/{single_particle}_{pt_range}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/{single_particle}_{pt_range}_{simulation}/truth_matched_tracksummary_ambi.csv",
         reco_label=wildcards.reco_label,
         single_particle=SINGLE_PARTICLES,
         pt_range=PT_RANGES,
@@ -83,7 +83,7 @@ def get_all_pt_range_variants(wildcards):
 
 def get_all_flavor_variants(wildcards):
     return expand(
-        "data/reco/{reco_label}/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/{single_particle}_{pt}_{simulation}/truth_matched_tracksummary_ambi.csv",
         reco_label=wildcards.reco_label,
         single_particle=SINGLE_PARTICLES,
         pt=wildcards.pt,
@@ -95,7 +95,7 @@ def get_all_ttbar_variants(wildcards):
     pileup.remove(0)
 
     return expand(
-        "data/reco/{reco_label}/ttbar_{pileup}_{simulation}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/ttbar_{pileup}_{simulation}/truth_matched_tracksummary_ambi.csv",
         reco_label=wildcards.reco_label,
         pileup=pileup,
         simulation=wildcards.simulation
@@ -189,16 +189,16 @@ rule truth_matching:
         "data/sim/{event_label}/particles.root",
         "data/sim/{event_label}/hits.root",
     output:
-        "data/reco/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
-    threads: 2,
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     shell:
         """
+        mkdir -p data/truth_matching/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/truth_matching.py {input} {output}
         """
 
 rule plot_pulls_over_eta_sausage:
     input:
-        "data/reco/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
         "plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png",
     shell:
@@ -275,7 +275,7 @@ rule plot_cross_single_particle_resolution:
 
 rule plot_inefficiencies:
     input:
-        "data/reco/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
         "plots/{reco_label}/{event_label}/inefficiencies.png",
     shell:
