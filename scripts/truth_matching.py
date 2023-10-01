@@ -34,7 +34,22 @@ parser.add_argument("--matching-ratio", type=float, default=0.5)
 args = parser.parse_args()
 
 particles = ak.to_dataframe(
-    uproot.open(args.particles)["particles"].arrays(library="ak"),
+    uproot.open(args.particles)["particles"].arrays(
+        [
+            "event_id",
+            "particle_id",
+            "q",
+            "phi",
+            "eta",
+            "p",
+            "pt",
+            "vertex_primary",
+            "vx",
+            "vy",
+            "vz",
+        ],
+        library="ak",
+    ),
     how="outer",
 ).dropna()
 
@@ -52,12 +67,24 @@ particles = particles[
 ]
 
 hits = ak.to_dataframe(
-    uproot.open(args.hits)["hits"].arrays(library="ak"), how="outer"
+    uproot.open(args.hits)["hits"].arrays(
+        [
+            "event_id",
+            "particle_id",
+            "volume_id",
+            "layer_id",
+            "sensitive_id",
+            "index",
+        ],
+        library="ak",
+    ),
+    how="outer",
 ).dropna()
 
 hits = hits.groupby(["event_id", "particle_id"]).aggregate(
     hits=pd.NamedAgg(column="volume_id", aggfunc="count"),
 )
+hits.reset_index(inplace=True)
 
 particle_efficiency = pd.merge(
     particles,
@@ -110,12 +137,6 @@ tracksummary = ak.to_dataframe(
     ),
     how="outer",
 ).dropna()
-
-# apply reco cuts
-# filter for track we care about
-tracksummary = tracksummary[
-    (tracksummary["nMeasurements"].values >= args.require_number_of_hits)
-]
 
 track_efficiency = pd.merge(
     particle_efficiency.add_prefix("true_"),
