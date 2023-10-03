@@ -12,8 +12,6 @@ from acts.examples.simulation import (
     ParticleSelectorConfig,
 )
 from acts.examples.reconstruction import (
-    addKalmanTracks,
-    addTruthTrackingGsf,
     addTrajectoryWriters,
     addCKFTracks,
     addAmbiguityResolution,
@@ -129,43 +127,6 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         # outputDirRoot=tp,
     )
 
-    if is_truth_seeding:
-        addKalmanTracks(
-            s,
-            trackingGeometry,
-            field,
-            reverseFilteringMomThreshold=float("inf"),
-        )
-        addTrajectoryWriters(
-            s,
-            name="kf",
-            trajectories="kfTrajectories",
-            outputDirRoot=tp,
-            writeStates=False,
-            writeSummary=True,
-            writeCKFperformance=True,
-            writeFinderPerformance=False,
-            writeFitterPerformance=False,
-        )
-
-    if is_single_electrons and is_truth_seeding:
-        addTruthTrackingGsf(
-            s,
-            trackingGeometry,
-            field,
-        )
-        addTrajectoryWriters(
-            s,
-            name="gsf",
-            trajectories="gsf_trajectories",
-            outputDirRoot=tp,
-            writeStates=False,
-            writeSummary=True,
-            writeCKFperformance=True,
-            writeFinderPerformance=False,
-            writeFitterPerformance=False,
-        )
-
     addCKFTracks(
         s,
         trackingGeometry,
@@ -192,6 +153,84 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         writeFitterPerformance=False,
     )
 
+    # TODO broken; needs fixing in acts examples
+    """
+    if is_truth_seeding:
+        kfOptions = {
+            "multipleScattering": True,
+            "energyLoss": True,
+            "reverseFilteringMomThreshold": float("inf"),
+            "freeToBoundCorrection": acts.examples.FreeToBoundCorrection(),
+            "level": acts.logging.VERBOSE,
+        }
+        s.addAlgorithm(
+            acts.examples.RefittingAlgorithm(
+                acts.logging.VERBOSE,
+                inputTracks="ambiTracks",
+                outputTracks="kfTracks",
+                fit=acts.examples.makeKalmanFitterFunction(trackingGeometry, field, **kfOptions),
+            )
+        )
+        s.addAlgorithm(
+            acts.examples.TracksToTrajectories(
+                level=acts.logging.INFO,
+                inputTracks="kfTracks",
+                outputTrajectories="kfTrajectories",
+            )
+        )
+        addTrajectoryWriters(
+            s,
+            name="kf",
+            trajectories="kfTrajectories",
+            outputDirRoot=tp,
+            writeStates=False,
+            writeSummary=True,
+            writeCKFperformance=True,
+            writeFinderPerformance=False,
+            writeFitterPerformance=False,
+        )
+    """
+
+    # TODO broken; needs fixing in acts examples
+    """
+    if is_single_electrons and is_truth_seeding:
+        gsfOptions = {
+            "betheHeitlerApprox": acts.examples.AtlasBetheHeitlerApprox.makeDefault(),
+            "maxComponents": 4,
+            "abortOnError": False,
+            "disableAllMaterialHandling": False,
+            "finalReductionMethod": acts.examples.FinalReductionMethod.maxWeight,
+            "weightCutoff": 1.0e-4,
+            "level": acts.logging.INFO,
+        }
+        s.addAlgorithm(
+            acts.examples.RefittingAlgorithm(
+                acts.logging.INFO,
+                inputTracks="ambiTracks",
+                outputTracks="gsfTracks",
+                fit=acts.examples.makeGsfFitterFunction(trackingGeometry, field, **gsfOptions),
+            )
+        )
+        s.addAlgorithm(
+            acts.examples.TracksToTrajectories(
+                level=acts.logging.INFO,
+                inputTracks="gsfTracks",
+                outputTrajectories="gsfTrajectories",
+            )
+        )
+        addTrajectoryWriters(
+            s,
+            name="gsf",
+            trajectories="gsfTrajectories",
+            outputDirRoot=tp,
+            writeStates=False,
+            writeSummary=True,
+            writeCKFperformance=True,
+            writeFinderPerformance=False,
+            writeFitterPerformance=False,
+        )
+    """
+
     if is_ttbar:
         addVertexFitting(
             s,
@@ -217,18 +256,18 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         ]
         + (
             [
-                "tracksummary_kf.root",
+                # "tracksummary_kf.root",
                 # "trackstates_kf.root",
-                "performance_kf.root",
+                # "performance_kf.root",
             ]
             if is_truth_seeding
             else []
         )
         + (
             [
-                "tracksummary_gsf.root",
+                # "tracksummary_gsf.root",
                 # "trackstates_gsf.root",
-                "performance_gsf.root",
+                # "performance_gsf.root",
             ]
             if is_single_electrons and is_truth_seeding
             else []
