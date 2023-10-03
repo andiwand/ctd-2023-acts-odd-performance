@@ -21,4 +21,5 @@ config.yaml
 activate.sh
 data*/
 plots/
+debug/
 .snakemake/
