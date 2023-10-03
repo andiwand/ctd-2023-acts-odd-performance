@@ -13,7 +13,13 @@ geant4.sort_values(["event_id", "index"], inplace=True)
 print(fatras)
 print(geant4)
 
-merge = pd.merge(fatras.add_prefix("fatras_"), geant4.add_prefix("geant4_"), how="outer", left_on=["fatras_event_id", "fatras_index"], right_on=["geant4_event_id", "geant4_index"])
+merge = pd.merge(
+    fatras.add_prefix("fatras_"),
+    geant4.add_prefix("geant4_"),
+    how="outer",
+    left_on=["fatras_event_id", "fatras_index"],
+    right_on=["geant4_event_id", "geant4_index"],
+)
 
 print(merge[["fatras_tx", "geant4_tx"]])
 print(merge[["fatras_volume_id", "geant4_volume_id"]])
@@ -21,25 +27,37 @@ print(merge[["fatras_layer_id", "geant4_layer_id"]])
 print(merge[["fatras_sensitive_id", "geant4_sensitive_id"]])
 
 fig = plt.figure("position")
-axes = fig.subplots(2,2)
+axes = fig.subplots(2, 2)
 
-axes[0,0].plot(merge["fatras_tz"], merge["fatras_ty"], "o", linestyle="", label="fatras")
-axes[0,0].plot(merge["geant4_tz"], merge["geant4_ty"], "o", linestyle="", label="geant4")
-axes[0,0].set_xlabel("z [mm]")
-axes[0,0].set_ylabel("y [mm]")
-axes[0,0].legend()
+axes[0, 0].plot(
+    merge["fatras_tz"], merge["fatras_ty"], "o", linestyle="", label="fatras"
+)
+axes[0, 0].plot(
+    merge["geant4_tz"], merge["geant4_ty"], "o", linestyle="", label="geant4"
+)
+axes[0, 0].set_xlabel("z [mm]")
+axes[0, 0].set_ylabel("y [mm]")
+axes[0, 0].legend()
 
-axes[0,1].plot(merge["fatras_tx"], merge["fatras_ty"], "o", linestyle="", label="fatras")
-axes[0,1].plot(merge["geant4_tx"], merge["geant4_ty"], "o", linestyle="", label="geant4")
-axes[0,1].set_xlabel("x [mm]")
-axes[0,1].set_ylabel("y [mm]")
-axes[0,1].legend()
+axes[0, 1].plot(
+    merge["fatras_tx"], merge["fatras_ty"], "o", linestyle="", label="fatras"
+)
+axes[0, 1].plot(
+    merge["geant4_tx"], merge["geant4_ty"], "o", linestyle="", label="geant4"
+)
+axes[0, 1].set_xlabel("x [mm]")
+axes[0, 1].set_ylabel("y [mm]")
+axes[0, 1].legend()
 
-axes[1,0].plot(merge["fatras_tz"], merge["fatras_tx"], "o", linestyle="", label="fatras")
-axes[1,0].plot(merge["geant4_tz"], merge["geant4_tx"], "o", linestyle="", label="geant4")
-axes[1,0].set_xlabel("z [mm]")
-axes[1,0].set_ylabel("x [mm]")
-axes[1,0].legend()
+axes[1, 0].plot(
+    merge["fatras_tz"], merge["fatras_tx"], "o", linestyle="", label="fatras"
+)
+axes[1, 0].plot(
+    merge["geant4_tz"], merge["geant4_tx"], "o", linestyle="", label="geant4"
+)
+axes[1, 0].set_xlabel("z [mm]")
+axes[1, 0].set_ylabel("x [mm]")
+axes[1, 0].legend()
 
 """
 axes[1,1].plot(merge["fatras_index"], merge["fatras_tx"]-merge["geant4_tx"], "o", linestyle="", label="x")
@@ -51,7 +69,7 @@ axes[1,1].legend()
 """
 
 fig = plt.figure("momentum")
-axes = fig.subplots(1,3)
+axes = fig.subplots(1, 3)
 
 fatras_r = np.hypot(merge["fatras_tx"], merge["fatras_ty"], merge["fatras_tz"])
 geant4_r = np.hypot(merge["geant4_tx"], merge["geant4_ty"], merge["geant4_tz"])

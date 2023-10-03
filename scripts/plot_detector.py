@@ -32,7 +32,9 @@ for file in args.more_hits:
     morehits = ak.to_dataframe(morehits["hits"].arrays(library="ak"))
 
     fig_xy.gca().scatter(morehits["tx"], morehits["ty"], s=20, label=file)
-    fig_rz.gca().scatter(morehits["tz"], np.hypot(morehits["tx"], morehits["ty"]), s=20, label=file)
+    fig_rz.gca().scatter(
+        morehits["tz"], np.hypot(morehits["tx"], morehits["ty"]), s=20, label=file
+    )
 
 for eta in [0, 1, 2, 3, 4]:
     slope = etaToSlope(eta)
