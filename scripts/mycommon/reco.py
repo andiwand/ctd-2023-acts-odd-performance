@@ -144,14 +144,14 @@ def addMySeeding(
             impactMax=3 * u.mm,
         ),
         initialSigmas=[
-            1 * u.mm,
-            1 * u.mm,
+            10 * u.mm,
+            10 * u.mm,
             1 * u.degree,
             1 * u.degree,
             0.1 / u.GeV,
             1 * u.ns,
         ],
-        initialVarInflation=[100.0] * 6,
+        initialVarInflation=[1.0] * 6,
         geoSelectionConfigFile=geoSelectionConfigFile,
         outputDirRoot=outputDirRoot,
     )
