@@ -1,1 +1,4 @@
-event_scale: 1.0
+event_scale:
+  total: 1.0
+  event: 1.0
+  slice: 1.0

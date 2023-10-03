@@ -31,22 +31,28 @@ def get_reco_threads(wildcards):
     return int(math.ceil(workflow.cores * 0.1))
 
 def get_number_of_events(wildcards):
+    result = None
     event_label = wildcards["event_label"]
     event_type = get_event_type(event_label)
     if event_type == "single_particles":
-        return int(200000 * config["event_scale"])
+        result = 200000
     elif event_type == "ttbar":
-        return int(1000 * config["event_scale"])
-    raise ValueError(f"unknown event type: {event_type}")
+        result = 1000
+    if result is None:
+        raise ValueError(f"unknown event type: {event_type}")
+    return int(result * config["event_scale"]["event"] * config["event_scale"]["total"])
 
 def get_events_per_slice(wildcards):
+    result = None
     event_label = wildcards["event_label"]
     event_type = get_event_type(event_label)
     if event_type == "single_particles":
-        return int(10000 * config["event_scale"])
+        result = 10000
     elif event_type == "ttbar":
-        return int(100 * config["event_scale"])
-    raise ValueError(f"Unknown event type: {event_type}")
+        result = 100
+    if result is None:
+        raise ValueError(f"Unknown event type: {event_type}")
+    return int(result * config["event_scale"]["slice"] * config["event_scale"]["total"])
 
 def get_skip_events(wildcards):
     total = get_number_of_events(wildcards)
