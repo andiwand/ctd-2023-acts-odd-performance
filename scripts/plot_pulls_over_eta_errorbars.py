@@ -45,12 +45,12 @@ def get_data(file):
 
     if str(file).endswith(".csv"):
         columns = [
-            "track_res_eLOC0_fit",
-            "track_res_eLOC1_fit",
-            # "track_res_eT_fit",
-            # "track_res_ePHI_fit",
-            # "track_res_eTHETA_fit",
-            "track_res_eQOP_fit",
+            "track_pull_eLOC0_fit",
+            "track_pull_eLOC1_fit",
+            # "track_pull_eT_fit",
+            # "track_pull_ePHI_fit",
+            # "track_pull_eTHETA_fit",
+            "track_pull_eQOP_fit",
         ]
 
         data = pd.read_csv(file).dropna()
@@ -71,7 +71,7 @@ parser.add_argument("--output")
 args = parser.parse_args()
 
 eta_range = (-3, 3)
-pull_range = (-0.1, 0.1)
+pull_range = (-4, 4)
 eta_bins = 15
 
 pull_labels = [
