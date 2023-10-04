@@ -34,15 +34,24 @@ def smoothed_gauss_fit(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
 
-        if len(data) < 10:
-            raise ValueError("Not enough data to fit a Gaussian")
-
         mean, std = np.mean(data), np.std(data)
-        hist_range = (mean - 10 * std, mean + 10 * std)
-        bins = max(10, int(len(data) ** 0.5))
-        binned, edges = np.histogram(data, range=hist_range, bins=bins, density=True)
-        centers = 0.5 * (edges[1:] + edges[:-1])
-        params, cov = curve_fit(gauss, centers, binned)
+
+        try:
+            if len(data) < 20:
+                raise ValueError(f"Not enough data to fit a Gaussian: {len(data)}")
+
+            hist_range = (mean - 5 * std, mean + 5 * std)
+            bins = 100
+            binned, edges = np.histogram(
+                data, range=hist_range, bins=bins, density=True
+            )
+            centers = 0.5 * (edges[1:] + edges[:-1])
+
+            params, cov = curve_fit(gauss, centers, binned, maxfev=1000000)
+        except Exception as e:
+            print(f"Falling back to naive mean/std. Error: {e}")
+            params, cov = (mean, std), np.zeros((2, 2))
+
         return params, cov
 
     def solve(data):
@@ -54,11 +63,7 @@ def smoothed_gauss_fit(data):
     if len(data) == 0:
         return (0, 0), np.zeros((2, 2))
 
-    try:
-        return solve(data)
-    except Exception as e:
-        print(f"Falling back to naive mean/std. Error: {e}")
-        return smoothed_gauss_fit_naive(data)
+    return solve(data)
 
 
 def clopper_pearson(k, n, alpha=0.32):

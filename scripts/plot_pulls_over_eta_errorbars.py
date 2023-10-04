@@ -45,12 +45,12 @@ def get_data(file):
 
     if str(file).endswith(".csv"):
         columns = [
-            "track_pull_eLOC0_fit",
-            "track_pull_eLOC1_fit",
-            # "track_pull_eT_fit",
-            # "track_pull_ePHI_fit",
-            # "track_pull_eTHETA_fit",
-            "track_pull_eQOP_fit",
+            "track_res_eLOC0_fit",
+            "track_res_eLOC1_fit",
+            # "track_res_eT_fit",
+            # "track_res_ePHI_fit",
+            # "track_res_eTHETA_fit",
+            "track_res_eQOP_fit",
         ]
 
         data = pd.read_csv(file).dropna()
@@ -63,16 +63,16 @@ def get_data(file):
     raise ValueError(f"unknown file type: {file}")
 
 
-myPlotStyle()
+fig = myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tracksummary", nargs="+")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-eta_range = (0, 3)
-pull_range = (-4, 4)
-eta_bins = 7
+eta_range = (-3, 3)
+pull_range = (-0.1, 0.1)
+eta_bins = 15
 
 pull_labels = [
     r"$d_0$",
@@ -83,7 +83,7 @@ pull_labels = [
     r"$\frac{q}{p}$",
 ]
 
-axs = plt.gcf().subplots(1, 3, sharey=True)
+axs = fig.subplots(1, 3, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
     event_label = get_event_label_from_path(file)
@@ -132,10 +132,10 @@ for i, file in enumerate(args.tracksummary):
         ax.axhline(-1, linestyle="--", color="gray")
         ax.axhline(+1, linestyle="--", color="gray")
 
-plt.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
-plt.gcf().supxlabel(r"$\eta$")
-plt.gcf().supylabel(r"pull")
-plt.legend()
+fig.suptitle(f"{get_event_type_label(event)} pulls over $\eta$")
+fig.supxlabel(r"$\eta$")
+fig.supylabel(r"pull")
+fig.legend()
 
 if args.output:
     plt.savefig(args.output)
