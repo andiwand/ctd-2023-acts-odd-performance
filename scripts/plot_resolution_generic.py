@@ -131,7 +131,7 @@ for file in args.input:
     )
 
 plt.title(
-    rf"Resolution of $d_0$ over {x_label} for {get_event_type_label(event)} events"
+    rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
 )
 plt.xlabel(rf"{x_label}{x_unit}")
 plt.ylabel(rf"{y_label}{y_unit}")
