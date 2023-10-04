@@ -148,7 +148,7 @@ def addMySeeding(
             10 * u.mm,
             10 * u.degree,
             10 * u.degree,
-            0.1 / u.GeV,
+            0.2 / u.GeV,
             1 * u.ns,
         ],
         initialVarInflation=[1.0] * 6,
