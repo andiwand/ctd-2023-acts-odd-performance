@@ -132,7 +132,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         trackingGeometry,
         field,
         trackSelectorConfig=reco_config.track_selector_config,
-        trackFindingConfig=reco_config.track_finding_config,
+        ckfConfig=reco_config.ckf_config,
         # outputDirRoot=tp,
     )
 
