@@ -196,7 +196,7 @@ rule plot_material:
 
 rule histcmp_material:
     input:
-        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+        expand("data/sim/material_{simulation}/material_composition.root", simulation=SIMULATIONS),
     output:
         "plots/material_comparison.html",
     shell:
