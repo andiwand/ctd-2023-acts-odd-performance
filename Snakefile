@@ -138,11 +138,15 @@ rule all:
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
+        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+
 rule all_sim:
     input:
         expand("data/sim/{event_label}/particles.root", event_label=EVENT_LABELS),
         expand("data/sim/{event_label}/particles_initial.root", event_label=EVENT_LABELS),
         expand("data/sim/{event_label}/hits.root", event_label=EVENT_LABELS),
+
+        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
 
 rule simulation:
     input:
@@ -166,6 +170,20 @@ rule simulation_slice:
           data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
           > data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stdout.txt \
           2> data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stderr.txt
+        """
+
+rule material_scan:
+    output:
+        "data/sim/material_{simulation}/material_tracks.root",
+    shell:
+        # somehow geant4 is crashing when running multiple instances in parallel
+        """
+        sleep $((RANDOM % 5))
+        mkdir -p data/sim/material_{wildcards.simulation} || true
+        python scripts/simulation.py {wildcards.simulation} --skip 0 --events 100 \
+          data/sim/material_{wildcards.simulation}/ \
+          > data/sim/material_{wildcards.simulation}/stdout.txt \
+          2> data/sim/material_{wildcards.simulation}/stderr.txt
         """
 
 rule reconstruction:

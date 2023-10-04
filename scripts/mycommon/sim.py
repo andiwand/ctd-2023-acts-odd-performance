@@ -14,9 +14,9 @@ from acts.examples.simulation import (
     ParticleSelectorConfig,
 )
 
-from mycommon.events import get_event_type, get_event_details
-
 u = acts.UnitConstants
+
+from mycommon.events import get_event_type, get_event_details
 
 
 def addMyEventGen(
@@ -72,7 +72,7 @@ def addMyEventGen(
 
         addParticleGun(
             s,
-            ParticleConfig(1, particle, randomizeCharge=True),
+            ParticleConfig(num=1, pdg=particle, randomizeCharge=True),
             momentum_config,
             eta_config,
             PhiConfig(0.0 * u.degree, 360.0 * u.degree),
