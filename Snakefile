@@ -135,11 +135,11 @@ rule all:
         expand("plots/{reco_label}/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
         expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=RES_X, res_y=RES_Y),
+        expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS),
         expand("plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
         expand("plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_X, res_y=RES_Y),
+        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS),
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
