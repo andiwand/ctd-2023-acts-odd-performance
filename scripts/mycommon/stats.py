@@ -22,6 +22,9 @@ def smoothed_gauss_fit_naive(data):
     def fit(data):
         return np.mean(data), np.std(data)
 
+    if len(data) == 0:
+        return (0, 0), np.zeros((2, 2))
+
     for _ in range(3):
         m, s = fit(data)
         data = data[np.abs(data - np.median(data)) < 3 * s]
@@ -53,6 +56,9 @@ def smoothed_gauss_fit(data):
             params, cov = (mean, std), np.zeros((2, 2))
 
         return params, cov
+
+    if len(data) == 0:
+        return (0, 0), np.zeros((2, 2))
 
     for _ in range(3):
         (m, s), cov = fit(data)
