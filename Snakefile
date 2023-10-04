@@ -50,7 +50,7 @@ def get_events_per_slice(wildcards):
     event_type = get_event_type(event_label)
     if event_type == "single_particles":
         result = 10000
-    elif event_type == "ttbar":RES_Y
+    elif event_type == "ttbar":
         raise ValueError(f"Unknown event type: {event_type}")
     return int(result * config["event_scale"]["slice"] * config["event_scale"]["total"])
 
