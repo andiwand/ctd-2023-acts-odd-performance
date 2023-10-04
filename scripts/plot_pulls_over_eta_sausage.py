@@ -65,8 +65,8 @@ args = parser.parse_args()
 
 eta_range = (-3, 3)
 pull_range = (-4, 4)
-eta_bins = 40
-pull_bins = 40
+eta_bins = 30
+pull_bins = 30
 
 pull_labels = [
     r"$d_0$",
