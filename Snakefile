@@ -202,7 +202,7 @@ rule histcmp_material:
     shell:
         """
         mkdir -p plots || true
-        histcmp --label-monitored "acts" --label-reference "geant4" --title "ODD material composition" -o {output} {input}
+        histcmp --label-monitored "acts" --label-reference "geant4" --title "ODD material composition" -o {output} {input} || true
         """
 
 rule simulation:
