@@ -20,8 +20,10 @@ PILEUP = list_ttbar_pileups()
 SIMULATIONS = list_simulations()
 EVENT_LABELS = list_event_labels()
 RECO_LABELS = list_reco_labels()
-RES_X = ["eta", "pt"]
-RES_Y = ["d0", "z0", "qop"]
+RES_XS = ["eta", "pt"]
+RES_YS = ["d0", "z0", "qop"]
+MAT_XS = ["eta", "phi"]
+MAT_YS = ["l0", "x0"]
 
 
 def get_reco_threads(wildcards):
@@ -48,9 +50,7 @@ def get_events_per_slice(wildcards):
     event_type = get_event_type(event_label)
     if event_type == "single_particles":
         result = 10000
-    elif event_type == "ttbar":
-        result = 100
-    if result is None:
+    elif event_type == "ttbar":RES_Y
         raise ValueError(f"Unknown event type: {event_type}")
     return int(result * config["event_scale"]["slice"] * config["event_scale"]["total"])
 
@@ -120,11 +120,16 @@ wildcard_constraints:
     prefix="particles|particles_initial|hits",
     skip="[0-9]+",
     events="[0-9]+",
-    res_x="|".join(RES_X),
-    res_y="|".join(RES_Y),
+    res_x="|".join(RES_XS),
+    res_y="|".join(RES_YS),
+    mat_x="|".join(MAT_XS),
+    mat_y="|".join(MAT_YS),
 
 rule all:
     input:
+        expand("plots/material_comparison_{mat_y}_vs_{mat_x}.png", mat_x=MAT_XS, mat_y=MAT_YS),
+        "plots/material_comparison.html",
+
         expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("plots/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("plots/{reco_label}/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
@@ -138,15 +143,65 @@ rule all:
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
-        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
-
 rule all_sim:
     input:
+        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+
         expand("data/sim/{event_label}/particles.root", event_label=EVENT_LABELS),
         expand("data/sim/{event_label}/particles_initial.root", event_label=EVENT_LABELS),
         expand("data/sim/{event_label}/hits.root", event_label=EVENT_LABELS),
 
+rule material_scan:
+    output:
+        "data/sim/material_{simulation}/material_tracks.root",
+    shell:
+        # somehow geant4 is crashing when running multiple instances in parallel
+        """
+        sleep $((RANDOM % 5))
+        mkdir -p data/sim/material_{wildcards.simulation} || true
+        python scripts/material_scan.py {wildcards.simulation} --skip 0 --events 100 \
+          data/sim/material_{wildcards.simulation}/ \
+          > data/sim/material_{wildcards.simulation}/stdout.txt \
+          2> data/sim/material_{wildcards.simulation}/stderr.txt
+        """
+
+rule material_composition:
+    input:
+        "data/sim/material_{simulation}/material_tracks.root",
+    output:
+        "data/sim/material_{simulation}/material_composition.root",
+    shell:
+        """
+        ActsAnalysisMaterialComposition \
+            -i {input} -o {output} -s \
+            --sub-names all beampipe pixel sstrips lstrips solenoid \
+            --sub-rmin 0:0:25:200:680:1100 \
+            --sub-rmax 2000:25:200:680:1100:2000 \
+            --sub-zmin -3200:-3200:-3200:-3200:-3200:-3200 \
+            --sub-zmax 3200:3200:3200:3200:3200:3200 \
+        """
+
+rule plot_material:
+    input:
         expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+    output:
+        "plots/material_comparison_{mat_y}_vs_{mat_x}.png",
+    shell:
+        """
+        mkdir -p plots || true
+        python scripts/plot_material.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
+        """
+
+rule histcmp_material:
+    input:
+        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+    output:
+        "plots/material_comparison.html",
+    shell:
+        """
+        mkdir -p plots || true
+        histcmp --label-monitored "acts" --label-reference "geant4" --title "ODD material composition" -o {output} {input}
+        """
 
 rule simulation:
     input:
@@ -170,20 +225,6 @@ rule simulation_slice:
           data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
           > data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stdout.txt \
           2> data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stderr.txt
-        """
-
-rule material_scan:
-    output:
-        "data/sim/material_{simulation}/material_tracks.root",
-    shell:
-        # somehow geant4 is crashing when running multiple instances in parallel
-        """
-        sleep $((RANDOM % 5))
-        mkdir -p data/sim/material_{wildcards.simulation} || true
-        python scripts/material_scan.py {wildcards.simulation} --skip 0 --events 100 \
-          data/sim/material_{wildcards.simulation}/ \
-          > data/sim/material_{wildcards.simulation}/stdout.txt \
-          2> data/sim/material_{wildcards.simulation}/stderr.txt
         """
 
 rule reconstruction:
