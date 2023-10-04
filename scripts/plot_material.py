@@ -41,7 +41,7 @@ names = {
     "lstrips": "Long Strips",
     "pixel": "Pixel",
     "solenoid": "Solenoid",
-    "ecal": "EM Calorimeter"
+    "ecal": "EM Calorimeter",
 }
 
 y_label = {"l0": r"$\lambda_0$", "x0": "$X_0$"}[args.y]
@@ -51,9 +51,12 @@ labels = []
 
 for k in rf:
     name, _ = k.split(";", 1)
-    if not name.endswith("all"): continue
-    if not args.y in name: continue
-    if not args.x in name: continue
+    if not name.endswith("all"):
+        continue
+    if not args.y in name:
+        continue
+    if not args.x in name:
+        continue
     if name.startswith("detector"):
         continue
 
@@ -68,7 +71,7 @@ ax = plt.gcf().subplots()
 mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
 ymin, ymax = ax.get_ylim()
 ax.set_xlim(hists[0].axes[0].edges[0], hists[0].axes[0].edges[-1])
-ax.set_ylim(top=1.2*ymax)
+ax.set_ylim(top=1.2 * ymax)
 ax.set_ylabel(y_label)
 ax.legend(ncol=3)
 

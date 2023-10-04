@@ -109,14 +109,14 @@ def run_material_scan(tp, outdir, events, skip, simulation):
         )
 
         s.addAlgorithm(
-          acts.examples.geant4.Geant4MaterialRecording(
-              level=acts.logging.INFO,
-              inputParticles="particles_input",
-              outputMaterialTracks="material_tracks",
-              detectorConstructionFactory=getG4DetectorConstructionFactory(detector),
-              randomNumbers=rnd,
-              excludeMaterials=[],
-          )
+            acts.examples.geant4.Geant4MaterialRecording(
+                level=acts.logging.INFO,
+                inputParticles="particles_input",
+                outputMaterialTracks="material_tracks",
+                detectorConstructionFactory=getG4DetectorConstructionFactory(detector),
+                randomNumbers=rnd,
+                excludeMaterials=[],
+            )
         )
     else:
         raise ValueError(f"unknown simulation algorithm: {simulation}")

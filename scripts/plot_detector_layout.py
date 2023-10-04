@@ -99,7 +99,9 @@ fig, ax = plt.subplots(figsize=(10, 7))
 ax.set_xlim(-3200, 3200)
 ax.set_ylim(-20, 1250)
 
-draw_eta_lines(ax=ax, eta_range=(-3, 3), s=0.5, color="lightgray", rmin=35, linestyle="--")
+draw_eta_lines(
+    ax=ax, eta_range=(-3, 3), s=0.5, color="lightgray", rmin=35, linestyle="--"
+)
 
 
 # beampipe
