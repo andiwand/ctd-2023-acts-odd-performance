@@ -54,16 +54,11 @@ def smoothed_gauss_fit(data):
 
         return params, cov
 
-    def solve(data):
-        for _ in range(3):
-            (m, s), cov = fit(data)
-            data = data[np.abs(data - m) < 3 * s]
-        return (m, s), cov
+    for _ in range(3):
+        (m, s), cov = fit(data)
+        data = data[np.abs(data - m) < 3 * s]
 
-    if len(data) == 0:
-        return (0, 0), np.zeros((2, 2))
-
-    return solve(data)
+    return (m, s), cov
 
 
 def clopper_pearson(k, n, alpha=0.32):
