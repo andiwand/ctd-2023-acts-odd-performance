@@ -180,7 +180,7 @@ rule material_scan:
         """
         sleep $((RANDOM % 5))
         mkdir -p data/sim/material_{wildcards.simulation} || true
-        python scripts/simulation.py {wildcards.simulation} --skip 0 --events 100 \
+        python scripts/material_scan.py {wildcards.simulation} --skip 0 --events 100 \
           data/sim/material_{wildcards.simulation}/ \
           > data/sim/material_{wildcards.simulation}/stdout.txt \
           2> data/sim/material_{wildcards.simulation}/stderr.txt
