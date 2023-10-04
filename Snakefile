@@ -189,7 +189,7 @@ rule plot_material:
     shell:
         """
         mkdir -p plots || true
-        python scripts/plot_material.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
+        python scripts/plot_material_generic.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
         """
 
 rule histcmp_material:

@@ -24,7 +24,7 @@ plt.rcParams["legend.handlelength"] = 1.0
 myPlotStyle()
 
 parser = argparse.ArgumentParser(description="Make material composition plots")
-parser.add_argument("x", choices=["eta", "pt"])
+parser.add_argument("x", choices=["phi", "eta"])
 parser.add_argument("y", choices=["l0", "x0"])
 parser.add_argument("input", help="Input root file with histograms")
 parser.add_argument("--output")
@@ -44,6 +44,7 @@ names = {
     "ecal": "EM Calorimeter",
 }
 
+x_label = {"phi": r"$\phi$", "eta": "$\eta$"}[args.y]
 y_label = {"l0": r"$\lambda_0$", "x0": "$X_0$"}[args.y]
 
 hists = []
@@ -72,6 +73,7 @@ mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
 ymin, ymax = ax.get_ylim()
 ax.set_xlim(hists[0].axes[0].edges[0], hists[0].axes[0].edges[-1])
 ax.set_ylim(top=1.2 * ymax)
+ax.set_xlabel(x_label)
 ax.set_ylabel(y_label)
 ax.legend(ncol=3)
 
