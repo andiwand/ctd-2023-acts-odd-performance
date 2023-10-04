@@ -30,10 +30,6 @@ parser.add_argument("input", help="Input root file with histograms")
 parser.add_argument("--output")
 args = parser.parse_args()
 
-args.output.mkdir(parents=True, exist_ok=True)
-
-rf = uproot.open(args.input)
-
 names = {
     "all": "Full detector",
     "beampipe": "Beam pipe",
@@ -49,6 +45,8 @@ y_label = {"l0": r"$\lambda_0$", "x0": "$X_0$"}[args.y]
 
 hists = []
 labels = []
+
+rf = uproot.open(args.input)
 
 for k in rf:
     name, _ = k.split(";", 1)
