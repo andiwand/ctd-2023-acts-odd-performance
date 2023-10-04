@@ -37,7 +37,10 @@ def smoothed_gauss_fit(data):
         if len(data) < 10:
             raise ValueError("Not enough data to fit a Gaussian")
 
-        binned, edges = np.histogram(data, bins=int(len(data) ** 0.5), density=True)
+        mean, std = np.mean(data), np.std(data)
+        hist_range = (mean - 10 * std, mean + 10 * std)
+        bins = max(10, int(len(data) ** 0.5))
+        binned, edges = np.histogram(data, range=hist_range, bins=bins, density=True)
         centers = 0.5 * (edges[1:] + edges[:-1])
         params, cov = curve_fit(gauss, centers, binned)
         return params, cov
