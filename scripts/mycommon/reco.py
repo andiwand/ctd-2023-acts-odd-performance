@@ -10,7 +10,7 @@ from acts.examples.reconstruction import (
     SeedFinderConfigArg,
     addSeeding,
     TrackSelectorConfig,
-    TrackFindingConfig,
+    CkfConfig,
     AmbiguityResolutionConfig,
 )
 
@@ -27,8 +27,8 @@ seedings = [
 
 RecoConfig = namedtuple(
     "RecoCuts",
-    ["track_selector_config", "track_finding_config", "ambi_config"],
-    defaults=[TrackSelectorConfig(), TrackFindingConfig(), AmbiguityResolutionConfig()],
+    ["track_selector_config", "ckf_config", "ambi_config"],
+    defaults=[TrackSelectorConfig(), CkfConfig(), AmbiguityResolutionConfig()],
 )
 
 
@@ -57,7 +57,7 @@ def get_reco_config(event, seeding) -> RecoConfig:
     if event_type == "single_particles":
         return RecoConfig(
             track_selector_config=TrackSelectorConfig(),
-            track_finding_config=TrackFindingConfig(
+            ckf_config=CkfConfig(
                 chi2CutOff=15.0,
                 numMeasurementsCutOff=10,
             ),
@@ -76,7 +76,7 @@ def get_reco_config(event, seeding) -> RecoConfig:
                 loc0=(-4.0 * u.mm, 4.0 * u.mm),
                 nMeasurementsMin=7,
             ),
-            track_finding_config=TrackFindingConfig(
+            ckf_config=CkfConfig(
                 chi2CutOff=15.0,
                 numMeasurementsCutOff=10,
             ),
@@ -146,8 +146,8 @@ def addMySeeding(
         initialSigmas=[
             10 * u.mm,
             10 * u.mm,
-            1 * u.degree,
-            1 * u.degree,
+            10 * u.degree,
+            10 * u.degree,
             0.1 / u.GeV,
             1 * u.ns,
         ],
