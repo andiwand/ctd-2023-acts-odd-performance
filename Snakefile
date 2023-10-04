@@ -51,6 +51,8 @@ def get_events_per_slice(wildcards):
     if event_type == "single_particles":
         result = 10000
     elif event_type == "ttbar":
+        result = 100
+    if result is None:
         raise ValueError(f"Unknown event type: {event_type}")
     return int(result * config["event_scale"]["slice"] * config["event_scale"]["total"])
 
@@ -178,12 +180,12 @@ rule material_composition:
             --sub-rmin 0:0:25:200:680:1100 \
             --sub-rmax 2000:25:200:680:1100:2000 \
             --sub-zmin -3200:-3200:-3200:-3200:-3200:-3200 \
-            --sub-zmax 3200:3200:3200:3200:3200:3200 \
+            --sub-zmax 3200:3200:3200:3200:3200:3200
         """
 
 rule plot_material:
     input:
-        "data/sim/material_{simulation}/material_tracks.root"
+        "data/sim/material_{simulation}/material_composition.root"
     output:
         "plots/material_{simulation}_{mat_y}_vs_{mat_x}.png",
     shell:
