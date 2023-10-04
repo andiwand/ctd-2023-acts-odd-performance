@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import argparse
 
+from mycommon.plot_style import myPlotStyle
+
 
 def line(p1, p2, ax, **kwargs):
     v = np.stack([p1, p2])
@@ -77,18 +79,7 @@ def draw_eta_lines(
         ax.text(z_out, r_out, s=r"$%s$" % (fmt % eta), ha=ha, va=va, **text_args)
 
 
-plt.rcParams["ytick.right"] = plt.rcParams["xtick.top"] = True
-plt.rcParams["xtick.direction"] = "in"
-plt.rcParams["ytick.direction"] = "in"
-plt.rcParams["font.size"] = 12.0
-plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["legend.frameon"] = False
-plt.rcParams["legend.columnspacing"] = 0.2
-plt.rcParams["legend.handletextpad"] = 0.2
-plt.rcParams["legend.labelspacing"] = 0.2
-plt.rcParams["legend.borderpad"] = 0
-plt.rcParams["legend.handlelength"] = 1.0
-
+myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output")
