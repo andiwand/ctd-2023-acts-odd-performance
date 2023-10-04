@@ -127,7 +127,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("plots/material_comparison_{mat_y}_vs_{mat_x}.png", mat_x=MAT_XS, mat_y=MAT_YS),
+        expand("plots/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
         "plots/material_comparison.html",
 
         expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
@@ -183,9 +183,9 @@ rule material_composition:
 
 rule plot_material:
     input:
-        expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
+        "data/sim/material_{simulation}/material_tracks.root"
     output:
-        "plots/material_comparison_{mat_y}_vs_{mat_x}.png",
+        "plots/material_{simulation}_{mat_y}_vs_{mat_x}.png",
     shell:
         """
         mkdir -p plots || true
