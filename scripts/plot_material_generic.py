@@ -3,6 +3,7 @@
 import uproot
 import matplotlib.pyplot as plt
 import mplhep
+from hist import Hist
 import argparse
 
 from mycommon.plot_style import myPlotStyle
@@ -39,6 +40,7 @@ names = {
     "solenoid": "Solenoid",
     "ecal": "EM Calorimeter",
 }
+region_order = ["beampipe", "pixel", "sstrips", "lstrips", "solenoid"]
 
 x_label = {"phi": r"$\phi$", "eta": "$\eta$"}[args.x]
 y_label = {"l0": r"$\lambda_0$", "x0": "$X_0$"}[args.y]
@@ -48,23 +50,17 @@ labels = []
 
 rf = uproot.open(args.input)
 
-for k in rf:
-    name, _ = k.split(";", 1)
-    if not name.endswith("all"):
-        continue
-    if not args.y in name:
-        continue
-    if not args.x in name:
-        continue
-    if name.startswith("detector"):
-        continue
+all_hist = rf[f"all_{args.y}_vs_{args.x}_all"].to_hist()
 
-    o = rf[k].to_hist()
-    o.axes[0].label = args.x
-    hists.append(o)
-    l, _ = k.split("_", 1)
-    l = names[l]
-    labels.append(l)
+for name in region_order:
+    key = f"{name}_{args.y}_vs_{args.x}_all"
+    if key in rf:
+        o = rf[key].to_hist()
+        o.axes[0].label = args.x
+        hists.append(o)
+    else:
+        hists.append(Hist(all_hist.axes[0]))
+    labels.append(name)
 
 ax = plt.gcf().subplots()
 mplhep.histplot(hists, ax=ax, stack=True, histtype="fill", label=labels)
