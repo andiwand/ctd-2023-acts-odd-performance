@@ -40,7 +40,7 @@ names = {
     "ecal": "EM Calorimeter",
 }
 
-x_label = {"phi": r"$\phi$", "eta": "$\eta$"}[args.y]
+x_label = {"phi": r"$\phi$", "eta": "$\eta$"}[args.x]
 y_label = {"l0": r"$\lambda_0$", "x0": "$X_0$"}[args.y]
 
 hists = []
