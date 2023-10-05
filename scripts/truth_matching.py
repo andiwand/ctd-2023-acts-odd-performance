@@ -14,7 +14,7 @@ u = acts.UnitConstants
 def aggregate_tracks(group):
     best_idx = group[
         group["track_nMeasurements"] == group["track_nMeasurements"].max()
-    ]["track_chi2Sum"].idxmin()
+    ]["track_chi2Sum"].idxmin(skipna=False)
     best = group[group.index == best_idx].copy()
     best["track_duplicate"] = len(group) - 1
     return best
