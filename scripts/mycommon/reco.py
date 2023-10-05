@@ -22,7 +22,7 @@ from mycommon.events import get_event_type
 seedings = [
     "truth_smeared",
     "truth_estimated",
-    # "default",
+    "default",
 ]
 
 RecoConfig = namedtuple(
@@ -99,12 +99,60 @@ def addMySeeding(
     geoSelectionConfigFile: str,
     outputDirRoot: Optional[Union[Path, str]] = None,
 ):
+    initialSigmas = [
+        1 * u.mm,
+        1 * u.mm,
+        1 * u.degree,
+        1 * u.degree,
+        0.1 / u.GeV,
+        1 * u.ns,
+    ]
+    initialVarInflation = [1.0] * 6
+
+    particleSmearingSigmas = None
+    seedFinderConfigArg = None
+
     if algortihm == "truth_smeared":
         seedingAlgorithm = SeedingAlgorithm.TruthSmeared
+
+        initialSigmas = [
+            10 * u.mm,
+            10 * u.mm,
+            10 * u.degree,
+            10 * u.degree,
+            0.2 / u.GeV,
+            1 * u.ns,
+        ]
+        initialVarInflation = [1.0] * 6
     elif algortihm == "truth_estimated":
         seedingAlgorithm = SeedingAlgorithm.TruthEstimated
+
+        particleSmearingSigmas = ParticleSmearingSigmas(
+            d0=20 * u.um,
+            d0PtA=30 * u.um,
+            d0PtB=0.3 / u.GeV,
+            z0=20 * u.um,
+            z0PtA=30 * u.um,
+            z0PtB=0.3 / u.GeV,
+            t0=1 * u.ns,
+            phi=0.1 * u.degree,
+            theta=0.1 * u.degree,
+            pRel=0.01,
+        )
     elif algortihm == "default":
         seedingAlgorithm = SeedingAlgorithm.Default
+
+        seedFinderConfigArg = SeedFinderConfigArg(
+            r=(33 * u.mm, 200 * u.mm),
+            deltaR=(1 * u.mm, 60 * u.mm),
+            collisionRegion=(-250 * u.mm, 250 * u.mm),
+            z=(-2000 * u.mm, 2000 * u.mm),
+            maxSeedsPerSpM=1,
+            sigmaScattering=5,
+            radLengthPerSeed=0.1,
+            minPt=0.5 * u.GeV,
+            impactMax=3 * u.mm,
+        )
     else:
         raise ValueError(f"unknown seeding algorithm: {algortihm}")
 
@@ -120,38 +168,10 @@ def addMySeeding(
             eta=(-3.0, 3.0),
             nHits=(3, None),
         ),
-        particleSmearingSigmas=ParticleSmearingSigmas(
-            d0=20 * u.um,
-            d0PtA=30 * u.um,
-            d0PtB=0.3 / u.GeV,
-            z0=20 * u.um,
-            z0PtA=30 * u.um,
-            z0PtB=0.3 / u.GeV,
-            t0=1 * u.ns,
-            phi=0.1 * u.degree,
-            theta=0.1 * u.degree,
-            pRel=0.01,
-        ),
-        seedFinderConfigArg=SeedFinderConfigArg(
-            r=(33 * u.mm, 200 * u.mm),
-            deltaR=(1 * u.mm, 60 * u.mm),
-            collisionRegion=(-250 * u.mm, 250 * u.mm),
-            z=(-2000 * u.mm, 2000 * u.mm),
-            maxSeedsPerSpM=1,
-            sigmaScattering=5,
-            radLengthPerSeed=0.1,
-            minPt=0.5 * u.GeV,
-            impactMax=3 * u.mm,
-        ),
-        initialSigmas=[
-            10 * u.mm,
-            10 * u.mm,
-            10 * u.degree,
-            10 * u.degree,
-            0.2 / u.GeV,
-            1 * u.ns,
-        ],
-        initialVarInflation=[1.0] * 6,
+        particleSmearingSigmas=particleSmearingSigmas,
+        seedFinderConfigArg=seedFinderConfigArg,
+        initialSigmas=initialSigmas,
+        initialVarInflation=initialVarInflation,
         geoSelectionConfigFile=geoSelectionConfigFile,
         outputDirRoot=outputDirRoot,
     )
