@@ -83,7 +83,7 @@ pull_labels = [
     r"$\frac{q}{p}$",
 ]
 
-axs = fig.subplots(1, 3, sharey=True)
+axs = fig.subplots(3, 1, sharex=True, sharey=True)
 
 for i, file in enumerate(args.tracksummary):
     event_label = get_event_label_from_path(file)

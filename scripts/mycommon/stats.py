@@ -37,13 +37,12 @@ def smoothed_gauss_fit(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)
 
-        mean, std = np.mean(data), np.std(data)
-
         try:
             if len(data) < 20:
                 raise ValueError(f"Not enough data to fit a Gaussian: {len(data)}")
 
-            hist_range = (mean - 5 * std, mean + 5 * std)
+            low, high = np.percentile(data, [1, 99])
+            hist_range = (low, high)
             bins = 100
             binned, edges = np.histogram(
                 data, range=hist_range, bins=bins, density=True
@@ -53,7 +52,7 @@ def smoothed_gauss_fit(data):
             params, cov = curve_fit(gauss, centers, binned, maxfev=1000000)
         except Exception as e:
             print(f"Falling back to naive mean/std. Error: {e}")
-            params, cov = (mean, std), np.zeros((2, 2))
+            params, cov = (np.mean(data), np.std(data)), np.zeros((2, 2))
 
         return params, cov
 

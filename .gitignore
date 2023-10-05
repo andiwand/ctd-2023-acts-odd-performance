@@ -17,6 +17,8 @@
 
 **/.ipynb_checkpoints
 
+node_modules/
+
 config.yaml
 activate.sh
 data*/
