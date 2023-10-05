@@ -11,8 +11,12 @@ from scipy.stats import binned_statistic
 from mycommon.plot_style import myPlotStyle
 from mycommon.stats import smoothed_std, smoothed_std_std
 from mycommon.events import split_event_label
-from mycommon.label import get_event_variant_label, get_event_type_label
-from mycommon.paths import get_event_label_from_path
+from mycommon.label import (
+    get_event_variant_label,
+    get_event_type_label,
+    get_event_label,
+)
+from mycommon.paths import get_event_label_from_path, check_same_event_type
 
 
 def get_data(file):
@@ -97,6 +101,8 @@ y_unit = {
     "qop": r" [$\frac{1}{GeV}$]",
 }[args.y]
 
+is_same_event_type = check_same_event_type(args.input)
+
 for file in args.input:
     event_label = get_event_label_from_path(file)
     event, _ = split_event_label(event_label)
@@ -120,6 +126,9 @@ for file in args.input:
     x_mid = 0.5 * (x_edges[:-1] + x_edges[1:])
     x_step = x_mid[1] - x_mid[0]
 
+    label = (
+        get_event_variant_label(event) if is_same_event_type else get_event_label(event)
+    )
     plt.errorbar(
         x=x_mid,
         y=std,
@@ -127,12 +136,15 @@ for file in args.input:
         xerr=x_step * 0.4,
         fmt="",
         linestyle="",
-        label=get_event_variant_label(event),
+        label=label,
     )
 
-plt.title(
-    rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
-)
+if is_same_event_type:
+    plt.title(
+        rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
+    )
+else:
+    plt.title(rf"Resolution of {y_label} over {x_label}")
 plt.xlabel(rf"{x_label}{x_unit}")
 plt.ylabel(rf"{y_label}{y_unit}")
 if args.x == "eta":

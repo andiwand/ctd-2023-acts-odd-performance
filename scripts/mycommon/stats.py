@@ -41,15 +41,21 @@ def smoothed_gauss_fit(data):
             if len(data) < 20:
                 raise ValueError(f"Not enough data to fit a Gaussian: {len(data)}")
 
-            low, high = np.percentile(data, [1, 99])
+            low, mp1s, median, mm1s, high = np.percentile(data, [1, 16, 50, 84, 99])
             hist_range = (low, high)
-            bins = 100
+            bins = 30
             binned, edges = np.histogram(
                 data, range=hist_range, bins=bins, density=True
             )
             centers = 0.5 * (edges[1:] + edges[:-1])
 
-            params, cov = curve_fit(gauss, centers, binned, maxfev=1000000)
+            p0 = median, mm1s - mp1s
+            params, cov = curve_fit(gauss, centers, binned, p0=p0, maxfev=1000000)
+
+            if cov[1, 1] > 5 * params[1] ** 2:
+                raise ValueError(
+                    f"Fit failed, covariance too large: {cov[1, 1]} > {5 * params[1] ** 2}"
+                )
         except Exception as e:
             print(f"Falling back to naive mean/std. Error: {e}")
             params, cov = (np.mean(data), np.std(data)), np.zeros((2, 2))

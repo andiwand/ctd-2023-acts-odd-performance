@@ -13,21 +13,11 @@ from mycommon.label import (
     get_event_label,
     get_event_type_label,
 )
-from mycommon.paths import get_event_label_from_path
+from mycommon.paths import get_event_label_from_path, check_same_event_type
 from mycommon.stats import (
     create_clopper_pearson_upper_bounds,
     create_clopper_pearson_lower_bounds,
 )
-
-
-def check_same_event_type(input):
-    def get_event_type_label_from_path(file):
-        event_label = get_event_label_from_path(file)
-        event, _ = split_event_label(event_label)
-        return get_event_type_label(event)
-
-    event_types = [get_event_type_label_from_path(file) for file in input]
-    return len(set(event_types)) == 1
 
 
 def get_data(file):
