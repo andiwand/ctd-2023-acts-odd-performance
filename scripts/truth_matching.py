@@ -142,6 +142,8 @@ tracksummary = ak.to_dataframe(
     uproot.open(args.tracksummary)["tracksummary"].arrays(
         [
             "event_nr",
+            "multiTraj_nr",
+            "subTraj_nr",
             "nStates",
             "nMeasurements",
             "nOutliers",
@@ -175,17 +177,26 @@ tracksummary = ak.to_dataframe(
 ).dropna()
 print(f"{len(tracksummary)} tracks read.")
 
-print(f"merge particles and tracksummary...")
+print(f"aggregate tracks...")
 track_efficiency = pd.merge(
-    particle_efficiency.add_prefix("true_"),
-    tracksummary.add_prefix("track_"),
+    particle_efficiency[["event_id", "particle_id"]].add_prefix("true_"),
+    tracksummary[
+        [
+            "event_nr",
+            "multiTraj_nr",
+            "subTraj_nr",
+            "nMeasurements",
+            "chi2Sum",
+            "majorityParticleId",
+            "nMajorityHits",
+        ]
+    ].add_prefix("track_"),
     how="left",
     left_on=["true_event_id", "true_particle_id"],
     right_on=["track_event_nr", "track_majorityParticleId"],
 )
 track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
-
-print(f"aggregate tracks...")
+track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 track_efficiency.sort_values(
     ["track_nMeasurements", "track_chi2Sum"], ascending=[False, True], inplace=True
 )
@@ -208,7 +219,33 @@ track_efficiency["track_efficiency"] = (
     )
 ).astype(int)
 
-print(f"write tracks to csv...")
+print(f"merge tracks into track efficiency...")
+track_efficiency = pd.merge(
+    track_efficiency[
+        [
+            "true_event_id",
+            "true_particle_id",
+            "track_event_nr",
+            "track_multiTraj_nr",
+            "track_subTraj_nr",
+            "track_duplicate",
+            "track_efficiency",
+        ]
+    ],
+    tracksummary.add_prefix("track_"),
+    how="left",
+    on=["track_event_nr", "track_multiTraj_nr", "track_subTraj_nr"],
+)
+print(f"merge particles into track efficiency...")
+track_efficiency = pd.merge(
+    track_efficiency,
+    particle_efficiency.add_prefix("true_"),
+    how="left",
+    on=["true_event_id", "true_particle_id"],
+)
+track_efficiency.reset_index(inplace=True)
+
+print(f"write {len(track_efficiency)} tracks to csv...")
 track_efficiency[
     [
         "true_event_id",
@@ -220,6 +257,10 @@ track_efficiency[
         "true_pt",
         "true_vertex_primary",
         "true_hits",
+        "true_hits_pixel",
+        "true_hits_pixel_layer1",
+        "track_multiTraj_nr",
+        "track_subTraj_nr",
         "track_duplicate",
         "track_efficiency",
         "track_nStates",
