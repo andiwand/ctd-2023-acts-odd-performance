@@ -65,6 +65,7 @@ particles = particles[particles["vz"].abs() < args.require_max_absz * u.m]
 particles = particles[
     np.hypot(particles["vx"], particles["vy"]) < args.require_max_r * u.mm
 ]
+particles = particles.copy()
 print(f"{len(particles)} particles remaining.")
 
 print(f"read hits...")
@@ -122,6 +123,7 @@ particle_efficiency = pd.merge(
     right_on=["event_id", "particle_id"],
 )
 particle_efficiency.reset_index(inplace=True)
+hits = None
 
 print(f"calculate true efficiency and cut...")
 # calculate true efficiency

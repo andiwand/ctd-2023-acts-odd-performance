@@ -30,7 +30,7 @@ def get_reco_threads(wildcards):
     event_label = wildcards["event_label"]
     event_type = get_event_type(event_label)
     reco_label = wildcards["reco_label"]
-    if reco_label != "default" and event_type == "ttbar":
+    if event_type == "ttbar":
         return int(math.ceil(workflow.cores * 0.3))
     return int(math.ceil(workflow.cores * 0.1))
 
