@@ -100,10 +100,10 @@ def addMySeeding(
     outputDirRoot: Optional[Union[Path, str]] = None,
 ):
     initialSigmas = [
-        1 * u.mm,
-        1 * u.mm,
-        1 * u.degree,
-        1 * u.degree,
+        2 * u.mm,
+        2 * u.mm,
+        2 * u.degree,
+        2 * u.degree,
         0.1 / u.GeV,
         1 * u.ns,
     ]

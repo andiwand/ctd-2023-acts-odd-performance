@@ -11,31 +11,6 @@ import acts
 u = acts.UnitConstants
 
 
-def aggregate_hits(group):
-    pixel_volumes = [16, 17, 18]
-    pixel_volumes_first_layers = [10, 2, 2]
-
-    event_id = group.iloc[0]["event_id"]
-    particle_id = group.iloc[0]["particle_id"]
-    hits = len(group)
-    hits_pixel = group["volume_id"].isin(pixel_volumes).sum()
-    hits_pixel_layer1 = sum(
-        ((group["volume_id"] == volume_id) & (group["layer_id"] == layer_id)).sum()
-        for volume_id, layer_id in zip(pixel_volumes, pixel_volumes_first_layers)
-    )
-    return pd.DataFrame(
-        [
-            {
-                "event_id": event_id,
-                "particle_id": particle_id,
-                "hits": hits,
-                "hits_pixel": hits_pixel,
-                "hits_pixel_layer1": hits_pixel_layer1,
-            }
-        ]
-    )
-
-
 def aggregate_tracks(group):
     best_idx = group[
         group["track_nMeasurements"] == group["track_nMeasurements"].max()
@@ -43,6 +18,10 @@ def aggregate_tracks(group):
     best = group[group.index == best_idx].copy()
     best["track_duplicate"] = len(group) - 1
     return best
+
+
+pixel_volumes = [16, 17, 18]
+pixel_volumes_first_layers = [10, 2, 2]
 
 
 parser = argparse.ArgumentParser()
@@ -126,7 +105,21 @@ hits.reset_index(drop=True, inplace=True)
 print(f"{len(hits)} hits left.")
 
 print(f"group hits...")
-hits = hits.groupby(["event_id", "particle_id"]).apply(aggregate_hits)
+hits["hits"] = 1
+hits["hits_pixel"] = hits["volume_id"].isin(pixel_volumes)
+hits["hits_pixel_layer1"] = sum(
+    ((hits["volume_id"] == volume_id) & (hits["layer_id"] == layer_id))
+    for volume_id, layer_id in zip(pixel_volumes, pixel_volumes_first_layers)
+)
+hits = hits.groupby(["event_id", "particle_id"]).agg(
+    {
+        "event_id": "first",
+        "particle_id": "first",
+        "hits": "sum",
+        "hits_pixel": "sum",
+        "hits_pixel_layer1": "sum",
+    }
+)
 hits.reset_index(drop=True, inplace=True)
 
 print(f"merge particles and hits...")
