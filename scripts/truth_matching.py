@@ -11,15 +11,6 @@ import acts
 u = acts.UnitConstants
 
 
-def aggregate_tracks(group):
-    best_idx = group[
-        group["track_nMeasurements"] == group["track_nMeasurements"].max()
-    ]["track_chi2Sum"].idxmin(skipna=True)
-    best = group[group.index == best_idx].copy()
-    best["track_duplicate"] = len(group) - 1
-    return best
-
-
 pixel_volumes = [16, 17, 18]
 pixel_volumes_first_layers = [10, 2, 2]
 
@@ -195,11 +186,17 @@ track_efficiency = pd.merge(
 track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 
 print(f"aggregate tracks...")
-track_efficiency = track_efficiency.groupby(
-    ["true_event_id", "true_particle_id"]
-).apply(aggregate_tracks)
+track_efficiency.sort_values(
+    ["track_nMeasurements", "track_chi2Sum"], ascending=[False, True], inplace=True
+)
+track_efficiency["track_duplicate"] = 1
+aggregate_dict = {column: "first" for column in track_efficiency.columns}
+aggregate_dict["track_duplicate"] = "sum"
+track_efficiency = track_efficiency.groupby(["true_event_id", "true_particle_id"]).agg(
+    aggregate_dict
+)
+track_efficiency["track_duplicate"] -= 1
 track_efficiency.reset_index(drop=True, inplace=True)
-print(f"{len(track_efficiency)} tracks remaining.")
 
 print(f"calculate track efficiency...")
 track_efficiency["track_efficiency"] = (
