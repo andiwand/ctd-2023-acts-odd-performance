@@ -11,6 +11,31 @@ import acts
 u = acts.UnitConstants
 
 
+def aggregate_hits(group):
+    pixel_volumes = [16, 17, 18]
+    pixel_volumes_first_layers = [10, 2, 2]
+
+    event_id = group.iloc[0]["event_id"]
+    particle_id = group.iloc[0]["particle_id"]
+    hits = len(group)
+    hits_pixel = group["volume_id"].isin(pixel_volumes).sum()
+    hits_pixel_layer1 = sum(
+        ((group["volume_id"] == volume_id) & (group["layer_id"] == layer_id)).sum()
+        for volume_id, layer_id in zip(pixel_volumes, pixel_volumes_first_layers)
+    )
+    return pd.DataFrame(
+        [
+            {
+                "event_id": event_id,
+                "particle_id": particle_id,
+                "hits": hits,
+                "hits_pixel": hits_pixel,
+                "hits_pixel_layer1": hits_pixel_layer1,
+            }
+        ]
+    )
+
+
 def aggregate_tracks(group):
     best_idx = group[
         (group["track_nMeasurements"] == group["track_nMeasurements"].max())
@@ -31,6 +56,8 @@ parser.add_argument("--require-pt", type=float, default=1, help="in GeV")
 parser.add_argument("--require-max-absz", type=float, default=1.0, help="in meters")
 parser.add_argument("--require-max-r", type=float, default=24.0, help="in mm")
 parser.add_argument("--require-number-of-hits", type=int, default=7)
+parser.add_argument("--require-number-of-pixel-hits", type=int, default=3)
+parser.add_argument("--require-number-of-layer1-pixel-hits", type=int, default=1)
 parser.add_argument("--matching-ratio", type=float, default=0.5)
 args = parser.parse_args()
 
@@ -77,10 +104,10 @@ hits = ak.to_dataframe(
         [
             "event_id",
             "particle_id",
-            # "volume_id",
-            # "layer_id",
-            # "sensitive_id",
-            # "index",
+            "volume_id",
+            "layer_id",
+            "sensitive_id",
+            "index",
         ],
         library="ak",
     ),
@@ -88,11 +115,20 @@ hits = ak.to_dataframe(
 ).dropna()
 print(f"{len(hits)} hits read.")
 
-print(f"group hits...")
-hits = hits.groupby(["event_id", "particle_id"]).aggregate(
-    hits=pd.NamedAgg(column="particle_id", aggfunc="count"),
+print(f"reduce hits to known particles...")
+hits = pd.merge(
+    particles[["event_id", "particle_id"]],
+    hits,
+    how="left",
+    left_on=["event_id", "particle_id"],
+    right_on=["event_id", "particle_id"],
 )
-hits.reset_index(inplace=True)
+hits.reset_index(drop=True, inplace=True)
+print(f"{len(hits)} hits left.")
+
+print(f"group hits...")
+hits = hits.groupby(["event_id", "particle_id"]).apply(aggregate_hits)
+hits.reset_index(drop=True, inplace=True)
 
 print(f"merge particles and hits...")
 particle_efficiency = pd.merge(
@@ -107,7 +143,12 @@ particle_efficiency.reset_index(inplace=True)
 print(f"calculate true efficiency and cut...")
 # calculate true efficiency
 particle_efficiency["efficiency"] = (
-    particle_efficiency["hits"].values >= args.require_number_of_hits
+    (particle_efficiency["hits"].values >= args.require_number_of_hits)
+    & (particle_efficiency["hits_pixel"].values >= args.require_number_of_pixel_hits)
+    & (
+        particle_efficiency["hits_pixel_layer1"].values
+        >= args.require_number_of_layer1_pixel_hits
+    )
 ).astype(int)
 # drop true inefficiencies
 particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0.0]
