@@ -39,7 +39,7 @@ def aggregate_hits(group):
 def aggregate_tracks(group):
     best_idx = group[
         (group["track_nMeasurements"] == group["track_nMeasurements"].max())
-        & group["track_nMeasurements"].notna()
+        & group["track_chi2Sum"].notna()
     ]["track_chi2Sum"].idxmin()
     best = group[group.index == best_idx].copy()
     best["track_duplicate"] = len(group) - 1
