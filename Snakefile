@@ -29,7 +29,7 @@ MAT_YS = ["l0", "x0"]
 def get_reco_threads(wildcards):
     event_type = get_event_type(wildcards["event_label"])
     if event_type == "ttbar":
-        return int(math.ceil(workflow.cores * 0.3))
+        return int(math.ceil(workflow.cores * 0.2))
     return int(math.ceil(workflow.cores * 0.1))
 
 def get_number_of_events(wildcards):
