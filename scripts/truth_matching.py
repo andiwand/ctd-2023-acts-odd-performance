@@ -13,8 +13,9 @@ u = acts.UnitConstants
 
 def aggregate_tracks(group):
     best_idx = group[
-        group["track_nMeasurements"] == group["track_nMeasurements"].max()
-    ]["track_chi2Sum"].idxmin(skipna=True)
+        (group["track_nMeasurements"] == group["track_nMeasurements"].max())
+        & group["track_nMeasurements"].notna()
+    ]["track_chi2Sum"].idxmin()
     best = group[group.index == best_idx].copy()
     best["track_duplicate"] = len(group) - 1
     return best
@@ -33,6 +34,7 @@ parser.add_argument("--require-number-of-hits", type=int, default=7)
 parser.add_argument("--matching-ratio", type=float, default=0.5)
 args = parser.parse_args()
 
+print(f"read particles...")
 particles = ak.to_dataframe(
     uproot.open(args.particles)["particles"].arrays(
         [
@@ -52,7 +54,9 @@ particles = ak.to_dataframe(
     ),
     how="outer",
 ).dropna()
+print(f"{len(particles)} particles read.")
 
+print(f"apply cuts to particles...")
 # apply truth cuts
 # we only care about the first primary vertex which is the hard scatter for ttbar
 particles = particles[particles["vertex_primary"] == args.require_primary_vertex]
@@ -65,7 +69,9 @@ particles = particles[particles["vz"].abs() < args.require_max_absz * u.m]
 particles = particles[
     np.hypot(particles["vx"], particles["vy"]) < args.require_max_r * u.mm
 ]
+print(f"{len(particles)} particles remaining.")
 
+print(f"read hits...")
 hits = ak.to_dataframe(
     uproot.open(args.hits)["hits"].arrays(
         [
@@ -80,12 +86,15 @@ hits = ak.to_dataframe(
     ),
     how="outer",
 ).dropna()
+print(f"{len(hits)} hits read.")
 
+print(f"group hits...")
 hits = hits.groupby(["event_id", "particle_id"]).aggregate(
     hits=pd.NamedAgg(column="particle_id", aggfunc="count"),
 )
 hits.reset_index(inplace=True)
 
+print(f"merge particles and hits...")
 particle_efficiency = pd.merge(
     particles,
     hits,
@@ -95,13 +104,16 @@ particle_efficiency = pd.merge(
 )
 particle_efficiency.reset_index(inplace=True)
 
+print(f"calculate true efficiency and cut...")
 # calculate true efficiency
 particle_efficiency["efficiency"] = (
     particle_efficiency["hits"].values >= args.require_number_of_hits
 ).astype(int)
 # drop true inefficiencies
 particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0.0]
+print(f"{len(particle_efficiency)} particles remaining.")
 
+print(f"read tracksummary...")
 tracksummary = ak.to_dataframe(
     uproot.open(args.tracksummary)["tracksummary"].arrays(
         [
@@ -137,7 +149,9 @@ tracksummary = ak.to_dataframe(
     ),
     how="outer",
 ).dropna()
+print(f"{len(tracksummary)} tracks read.")
 
+print(f"merge particles and tracksummary...")
 track_efficiency = pd.merge(
     particle_efficiency.add_prefix("true_"),
     tracksummary.add_prefix("track_"),
@@ -147,11 +161,14 @@ track_efficiency = pd.merge(
 )
 track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 
+print(f"aggregate tracks...")
 track_efficiency = track_efficiency.groupby(
     ["true_event_id", "true_particle_id"]
 ).apply(aggregate_tracks)
 track_efficiency.reset_index(drop=True, inplace=True)
+print(f"{len(track_efficiency)} tracks remaining.")
 
+print(f"calculate track efficiency...")
 track_efficiency["track_efficiency"] = (
     (track_efficiency["track_nMeasurements"].values >= args.require_number_of_hits)
     & (
@@ -161,6 +178,7 @@ track_efficiency["track_efficiency"] = (
     )
 ).astype(int)
 
+print(f"write tracks to csv...")
 track_efficiency[
     [
         "true_event_id",
