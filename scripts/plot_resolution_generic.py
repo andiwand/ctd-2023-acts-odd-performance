@@ -64,100 +64,106 @@ def get_data(file):
     raise ValueError(f"unknown file type: {file}")
 
 
-myPlotStyle()
+def plot_resolution(x, y, input, fig, ax):
+    x_range = {
+        "eta": (-3, 3),
+        "pt": (1, 100),
+    }[x]
+    x_bins = {
+        "eta": 25,
+        "pt": 10,
+    }[x]
+    x_label = {
+        "eta": r"$\eta$",
+        "pt": r"$p_T$",
+    }[x]
+    x_unit = {
+        "eta": r"",
+        "pt": r" [GeV]",
+    }[x]
 
-parser = argparse.ArgumentParser()
-parser.add_argument("x", choices=["eta", "pt"])
-parser.add_argument("y", choices=["d0", "z0", "qop"])
-parser.add_argument("input", nargs="+")
-parser.add_argument("--output")
-args = parser.parse_args()
+    y_label = {
+        "d0": r"$d_0$",
+        "z0": r"$z_0$",
+        "qop": r"$\frac{q}{p}$",
+    }[y]
+    y_unit = {
+        "d0": r" [mm]",
+        "z0": r" [mm]",
+        "qop": r" [$\frac{1}{GeV}$]",
+    }[y]
 
-x_range = {
-    "eta": (-3, 3),
-    "pt": (1, 100),
-}[args.x]
-x_bins = {
-    "eta": 25,
-    "pt": 10,
-}[args.x]
-x_label = {
-    "eta": r"$\eta$",
-    "pt": r"$p_T$",
-}[args.x]
-x_unit = {
-    "eta": r"",
-    "pt": r" [GeV]",
-}[args.x]
+    is_same_event_type = check_same_event_type(input)
 
-y_label = {
-    "d0": r"$d_0$",
-    "z0": r"$z_0$",
-    "qop": r"$\frac{q}{p}$",
-}[args.y]
-y_unit = {
-    "d0": r" [mm]",
-    "z0": r" [mm]",
-    "qop": r" [$\frac{1}{GeV}$]",
-}[args.y]
+    for file in input:
+        event_label = get_event_label_from_path(file)
+        event, _ = split_event_label(event_label)
 
-is_same_event_type = check_same_event_type(args.input)
+        data = get_data(file)
 
-for file in args.input:
-    event_label = get_event_label_from_path(file)
-    event, _ = split_event_label(event_label)
+        std, x_edges, _ = binned_statistic(
+            data[x],
+            data[f"res_{y}"],
+            bins=x_bins,
+            range=x_range,
+            statistic=smoothed_std,
+        )
+        std_std, _, _ = binned_statistic(
+            data[x],
+            data[f"res_{y}"],
+            bins=x_bins,
+            range=x_range,
+            statistic=smoothed_std_std,
+        )
+        x_mid = 0.5 * (x_edges[:-1] + x_edges[1:])
+        x_step = x_mid[1] - x_mid[0]
 
-    data = get_data(file)
+        label = (
+            get_event_variant_label(event)
+            if is_same_event_type
+            else get_event_label(event)
+        )
+        ax.errorbar(
+            x=x_mid,
+            y=std,
+            yerr=std_std,
+            xerr=x_step * 0.4,
+            fmt="",
+            linestyle="",
+            label=label,
+        )
 
-    std, x_edges, _ = binned_statistic(
-        data[args.x],
-        data[f"res_{args.y}"],
-        bins=x_bins,
-        range=x_range,
-        statistic=smoothed_std,
-    )
-    std_std, _, _ = binned_statistic(
-        data[args.x],
-        data[f"res_{args.y}"],
-        bins=x_bins,
-        range=x_range,
-        statistic=smoothed_std_std,
-    )
-    x_mid = 0.5 * (x_edges[:-1] + x_edges[1:])
-    x_step = x_mid[1] - x_mid[0]
+    if is_same_event_type:
+        ax.set_title(
+            rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
+        )
+    else:
+        ax.set_title(rf"Resolution of {y_label} over {x_label}")
+    ax.set_xlabel(rf"{x_label}{x_unit}")
+    ax.set_ylabel(rf"{y_label}{y_unit}")
+    if x == "eta":
+        ax.set_xticks(np.linspace(*x_range, 7))
+        ax.set_xlim(x_range)
+    elif x == "pt":
+        ax.set_xticks(np.linspace(0, x_range[1], 11))
+        ax.set_xlim(x_range)
+    else:
+        raise ValueError(f"unknown x: {x}")
+    ax.legend()
 
-    label = (
-        get_event_variant_label(event) if is_same_event_type else get_event_label(event)
-    )
-    plt.errorbar(
-        x=x_mid,
-        y=std,
-        yerr=std_std,
-        xerr=x_step * 0.4,
-        fmt="",
-        linestyle="",
-        label=label,
-    )
 
-if is_same_event_type:
-    plt.title(
-        rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
-    )
-else:
-    plt.title(rf"Resolution of {y_label} over {x_label}")
-plt.xlabel(rf"{x_label}{x_unit}")
-plt.ylabel(rf"{y_label}{y_unit}")
-if args.x == "eta":
-    plt.xticks(np.linspace(*x_range, 7))
-    plt.xlim(x_range)
-elif args.x == "pt":
-    plt.xticks(np.linspace(0, x_range[1], 11))
-    plt.xlim(x_range)
-else:
-    raise ValueError(f"unknown x: {args.x}")
-plt.legend()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("x", choices=["eta", "pt"])
+    parser.add_argument("y", choices=["d0", "z0", "qop"])
+    parser.add_argument("input", nargs="+")
+    parser.add_argument("--output")
+    args = parser.parse_args()
 
-if args.output:
-    plt.savefig(args.output)
-else:
-    plt.show()
+    fig = myPlotStyle()
+    plot_resolution(args.x, args.y, args.input, fig, fig.gca())
+
+    if args.output:
+        plt.savefig(args.output)
+    else:
+        plt.show()

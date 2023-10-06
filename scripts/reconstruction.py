@@ -28,8 +28,6 @@ from mycommon.events import (
 from mycommon.detector import get_odd
 from mycommon.reco import split_reco_label, addMySeeding, get_reco_config
 
-detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -57,6 +55,8 @@ def main():
 
 
 def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, events):
+    detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
+
     event_type = get_event_type(event)
     is_single_electrons = event.startswith("e_")
     is_ttbar = event_type == "ttbar"

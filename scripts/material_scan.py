@@ -22,11 +22,6 @@ u = acts.UnitConstants
 from mycommon.detector import get_odd
 
 
-detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
-
-tracks_per_event = 1000
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("simulation")
@@ -47,6 +42,8 @@ def main():
 
 
 def run_material_scan(tp, outdir, events, skip, simulation):
+    detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
+    tracks_per_event = 1000
     # single thread because of G4
     numThreads = 1
 

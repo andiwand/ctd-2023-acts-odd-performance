@@ -20,8 +20,6 @@ from mycommon.sim import addMyEventGen, addMySimulation
 
 u = acts.UnitConstants
 
-detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -44,6 +42,7 @@ def main():
 
 
 def run_simulation(tp, event, outdir, events, skip, simulation):
+    detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
     # single thread because of G4
     numThreads = 1
 
