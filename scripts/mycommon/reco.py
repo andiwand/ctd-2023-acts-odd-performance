@@ -115,18 +115,6 @@ def addMySeeding(
     if algortihm == "truth_smeared":
         seedingAlgorithm = SeedingAlgorithm.TruthSmeared
 
-        initialSigmas = [
-            10 * u.mm,
-            10 * u.mm,
-            10 * u.degree,
-            10 * u.degree,
-            0.2 / u.GeV,
-            1 * u.ns,
-        ]
-        initialVarInflation = [1.0] * 6
-    elif algortihm == "truth_estimated":
-        seedingAlgorithm = SeedingAlgorithm.TruthEstimated
-
         particleSmearingSigmas = ParticleSmearingSigmas(
             d0=20 * u.um,
             d0PtA=30 * u.um,
@@ -139,6 +127,18 @@ def addMySeeding(
             theta=0.1 * u.degree,
             pRel=0.01,
         )
+
+        initialSigmas = [
+            10 * u.mm,
+            10 * u.mm,
+            10 * u.degree,
+            10 * u.degree,
+            0.2 / u.GeV,
+            1 * u.ns,
+        ]
+        initialVarInflation = [1.0] * 6
+    elif algortihm == "truth_estimated":
+        seedingAlgorithm = SeedingAlgorithm.TruthEstimated
     elif algortihm == "default":
         seedingAlgorithm = SeedingAlgorithm.Default
 

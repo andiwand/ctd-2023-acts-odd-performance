@@ -149,6 +149,9 @@ rule all:
 
         expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
+        "data/event_display/truth_smeared/ttbar_200_geant4/hits.csv",
+        "data/event_display/truth_smeared/ttbar_200_geant4/tracks.csv",
+
 rule all_sim:
     input:
         expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
@@ -364,4 +367,52 @@ rule plot_particles:
         """
         mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/plot_particles.py {input} --output {output}
+        """
+
+rule event_display_reco:
+    input:
+        "data/sim/{event_label}/particles.root",
+        "data/sim/{event_label}/particles_initial.root",
+        "data/sim/{event_label}/hits.root",
+    output:
+        "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
+    params:
+        skip=0,
+        events=1,
+    shell:
+        """
+        mkdir -p data/event_display/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
+          data/sim/{wildcards.event_label} data/event_display/{wildcards.reco_label}/{wildcards.event_label} \
+          --skip {params.skip} --events {params.events} --threads {threads} --output-trackstates \
+          > data/event_display/{wildcards.reco_label}/{wildcards.event_label}/stdout.txt \
+          2> data/event_display/{wildcards.reco_label}/{wildcards.event_label}/stderr.txt
+        """
+
+rule event_display_dump_hits:
+    input:
+        "data/sim/{event_label}/hits.root",
+    output:
+        "data/event_display/{reco_label}/{event_label}/hits.csv",
+    params:
+        skip=0,
+    shell:
+        """
+        python scripts/dump_hits.py data/sim/{wildcards.event_label}/hits.root \
+          {params.skip} \
+          data/event_display/{wildcards.reco_label}/{wildcards.event_label}/hits.csv
+        """
+
+rule event_display_dump_tracks:
+    input:
+        "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
+    output:
+        "data/event_display/{reco_label}/{event_label}/tracks.csv",
+    params:
+        skip=0,
+    shell:
+        """
+        python scripts/dump_tracks.py data/event_display/{wildcards.reco_label}/{wildcards.event_label}/trackstates_ambi.root \
+          {params.skip} \
+          data/event_display/{wildcards.reco_label}/{wildcards.event_label}/tracks.csv
         """

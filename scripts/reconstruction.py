@@ -38,6 +38,7 @@ def main():
     parser.add_argument("--skip", type=int, required=True, help="Skip number of events")
     parser.add_argument("--events", type=int, required=True, help="Number of events")
     parser.add_argument("--threads", type=int, default=4, help="Number of threads")
+    parser.add_argument("--output-trackstates", action="store_true")
     args = parser.parse_args()
 
     event, simulation = split_event_label(args.event_label)
@@ -50,11 +51,29 @@ def main():
 
     with tempfile.TemporaryDirectory() as temp:
         run_reconstruction(
-            args.threads, Path(temp), event, seeding, indir, outdir, skip, events
+            args.threads,
+            Path(temp),
+            event,
+            seeding,
+            indir,
+            outdir,
+            skip,
+            events,
+            args.output_trackstates,
         )
 
 
-def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, events):
+def run_reconstruction(
+    threads,
+    tp,
+    event,
+    seeding,
+    indir,
+    outdir,
+    skip,
+    events,
+    output_trackstates=False,
+):
     detector, trackingGeometry, decorators, field, digiConfig, seedingSel = get_odd()
 
     event_type = get_event_type(event)
@@ -64,15 +83,18 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
 
     reco_config = get_reco_config(event, seeding)
 
+    output_files = []
+
     rnd = acts.examples.RandomNumbers(seed=42)
 
     s = acts.examples.Sequencer(
         events=events,
         skip=skip,
-        numThreads=numThreads,
+        numThreads=threads,
         trackFpes=False,
         outputDir=tp,
     )
+    output_files.append("timing.tsv")
 
     for d in decorators:
         s.addContextDecorator(d)
@@ -116,6 +138,7 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         rnd=rnd,
         # outputDirRoot=tp,
     )
+    # output_files.append("measurements.root")
 
     addMySeeding(
         s,
@@ -135,6 +158,9 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         ckfConfig=reco_config.ckf_config,
         # outputDirRoot=tp,
     )
+    # output_files.append("tracksummary_ckf.root")
+    # output_files.append("trackstates_ckf.root")
+    # output_files.append("performance_ckf.root")
 
     addAmbiguityResolution(
         s,
@@ -146,12 +172,16 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
         name="ambi",
         trajectories="trajectories",
         outputDirRoot=tp,
-        writeStates=False,
+        writeStates=output_trackstates,
         writeSummary=True,
         writeCKFperformance=True,
         writeFinderPerformance=False,
         writeFitterPerformance=False,
     )
+    output_files.append("tracksummary_ambi.root")
+    if output_trackstates:
+        output_files.append("trackstates_ambi.root")
+    output_files.append("performance_ambi.root")
 
     # TODO broken; needs fixing in acts examples
     """
@@ -189,6 +219,9 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             writeFinderPerformance=False,
             writeFitterPerformance=False,
         )
+        output_files.append("tracksummary_kf.root")
+        output_files.append("trackstates_kf.root")
+        output_files.append("performance_kf.root")
     """
 
     # TODO broken; needs fixing in acts examples
@@ -229,6 +262,9 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             writeFinderPerformance=False,
             writeFitterPerformance=False,
         )
+        output_files.append("tracksummary_gsf.root")
+        output_files.append("trackstates_gsf.root")
+        output_files.append("performance_gsf.root")
     """
 
     if is_ttbar:
@@ -238,42 +274,13 @@ def run_reconstruction(numThreads, tp, event, seeding, indir, outdir, skip, even
             vertexFinder=VertexFinder.AMVF,
             outputDirRoot=tp,
         )
+        output_files.append("performance_vertexing.root")
 
     s.run()
     del s
 
     outdir.mkdir(parents=True, exist_ok=True)
-    for file in (
-        [
-            "timing.tsv",
-            # "measurements.root",
-            # "tracksummary_ckf.root",
-            # "trackstates_ckf.root",
-            # "performance_ckf.root",
-            "tracksummary_ambi.root",
-            # "trackstates_ambi.root",
-            "performance_ambi.root",
-        ]
-        + (
-            [
-                # "tracksummary_kf.root",
-                # "trackstates_kf.root",
-                # "performance_kf.root",
-            ]
-            if is_truth_seeding
-            else []
-        )
-        + (
-            [
-                # "tracksummary_gsf.root",
-                # "trackstates_gsf.root",
-                # "performance_gsf.root",
-            ]
-            if is_single_electrons and is_truth_seeding
-            else []
-        )
-        + (["performance_vertexing.root"] if is_ttbar else [])
-    ):
+    for file in output_files:
         source = tp / file
         destination = outdir / file
         assert source.exists(), f"File not found: {source}"
