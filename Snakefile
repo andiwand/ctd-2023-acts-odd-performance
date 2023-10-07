@@ -133,23 +133,23 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand("plots/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
-        "plots/material_comparison.html",
+        expand("plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
+        "plots/sim/material_comparison.html",
 
         expand("plots/sim/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("plots/sim/{event_label}/nhits_over_eta.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
-        expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-        expand("plots/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("plots/reco/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
-        expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=["eta"], res_y=RES_YS),
-        expand("plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=["eta"], res_y=RES_YS),
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
 
-        expand("plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
-        expand("plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS),
+        expand("plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
+        expand("plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS),
 
-        expand("plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
+        expand("plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
 
         "data/event_display/truth_smeared/ttbar_200_geant4/hits.csv",
         "data/event_display/truth_smeared/ttbar_200_geant4/tracks.csv",
@@ -196,10 +196,10 @@ rule plot_material:
     input:
         "data/sim/material_{simulation}/material_composition.root"
     output:
-        "plots/material_{simulation}_{mat_y}_vs_{mat_x}.png",
+        "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.png",
     shell:
         """
-        mkdir -p plots || true
+        mkdir -p plots/sim || true
         python scripts/plot_material_generic.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
         """
 
@@ -207,10 +207,10 @@ rule histcmp_material:
     input:
         expand("data/sim/material_{simulation}/material_composition.root", simulation=SIMULATIONS),
     output:
-        "plots/material_comparison.html",
+        "plots/sim/material_comparison.html",
     shell:
         """
-        mkdir -p plots || true
+        mkdir -p plots/sim || true
         histcmp --label-monitored "acts" --label-reference "geant4" --title "ODD material composition" -o {output} {input} || true
         """
 
@@ -276,10 +276,10 @@ rule plot_pulls_over_eta_sausage:
     input:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
-        "plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png",
+        "plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
         """
 
@@ -287,10 +287,10 @@ rule plot_single_particle_pulls_over_eta_errorbars:
     input:
         get_all_pt_variants,
     output:
-        "plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
         """
 
@@ -298,10 +298,10 @@ rule plot_single_particle_resolution:
     input:
         get_all_pt_variants,
     output:
-        "plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
@@ -309,10 +309,10 @@ rule plot_single_particle_efficiency_over_eta:
     input:
         get_all_pt_variants,
     output:
-        "plots/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
@@ -320,10 +320,10 @@ rule plot_cross_single_particle_efficiency_over_eta:
     input:
         get_all_flavor_variants,
     output:
-        "plots/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/single_particles_{wildcards.pt}_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt}_{wildcards.simulation} || true
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
@@ -331,10 +331,10 @@ rule plot_ttbar_efficiency_over_eta:
     input:
         get_all_ttbar_variants,
     output:
-        "plots/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
         python scripts/plot_efficiency_over_eta.py {input} --output {output}
         """
 
@@ -342,10 +342,10 @@ rule plot_cross_single_particle_resolution:
     input:
         get_all_pt_range_variants,
     output:
-        "plots/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png",
+        "plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
         python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
@@ -353,10 +353,10 @@ rule plot_inefficiencies:
     input:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
-        "plots/{reco_label}/{event_label}/inefficiencies.png",
+        "plots/reco/{reco_label}/{event_label}/inefficiencies.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
         python scripts/plot_inefficiencies.py {input} --output {output}
         """
 
