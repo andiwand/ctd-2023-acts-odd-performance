@@ -123,6 +123,7 @@ particle_efficiency = pd.merge(
     right_on=["event_id", "particle_id"],
 )
 particle_efficiency.reset_index(inplace=True)
+particles = None
 hits = None
 
 print(f"calculate true efficiency and cut...")
@@ -144,8 +145,6 @@ tracksummary = ak.to_dataframe(
     uproot.open(args.tracksummary)["tracksummary"].arrays(
         [
             "event_nr",
-            "multiTraj_nr",
-            "subTraj_nr",
             "nStates",
             "nMeasurements",
             "nOutliers",
@@ -177,20 +176,9 @@ tracksummary = ak.to_dataframe(
     ),
     how="outer",
 )
-# for whatever reason multiTraj_nr and subTraj_nr are not filled properly, but we can fix that
-tracksummary[
-    [
-        "event_nr",
-        "multiTraj_nr",
-        "subTraj_nr",
-    ]
-] = tracksummary[
-    [
-        "event_nr",
-        "multiTraj_nr",
-        "subTraj_nr",
-    ]
-].fillna(method="ffill")
+# for whatever reason multiTraj_nr and subTraj_nr are not filled properly, creating random index
+tracksummary.reset_index(drop=True, inplace=True)
+tracksummary["track_nr"] = tracksummary.index
 tracksummary = tracksummary.dropna()
 
 print(f"aggregate tracks...")
@@ -199,8 +187,7 @@ track_efficiency = pd.merge(
     tracksummary[
         [
             "event_nr",
-            "multiTraj_nr",
-            "subTraj_nr",
+            "track_nr",
             "nMeasurements",
             "chi2Sum",
             "majorityParticleId",
@@ -241,15 +228,14 @@ track_efficiency = pd.merge(
             "true_event_id",
             "true_particle_id",
             "track_event_nr",
-            "track_multiTraj_nr",
-            "track_subTraj_nr",
+            "track_track_nr",
             "track_duplicate",
             "track_efficiency",
         ]
     ],
     tracksummary.add_prefix("track_"),
     how="left",
-    on=["track_event_nr", "track_multiTraj_nr", "track_subTraj_nr"],
+    on=["track_event_nr", "track_track_nr"],
 )
 print(f"merge particles into track efficiency...")
 track_efficiency = pd.merge(
@@ -274,8 +260,7 @@ track_efficiency[
         "true_hits",
         "true_hits_pixel",
         "true_hits_pixel_layer1",
-        "track_multiTraj_nr",
-        "track_subTraj_nr",
+        "track_track_nr",
         "track_duplicate",
         "track_efficiency",
         "track_nStates",
