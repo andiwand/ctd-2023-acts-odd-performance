@@ -17,9 +17,9 @@ from mycommon.data import get_pull_data
 
 
 def plot_pulls_over_eta_errorbars(input, fig):
-    eta_range = (-3, 3)
-    pull_range = (-4, 4)
-    eta_bins = 15
+    eta_range = (0, 3)
+    pull_range = (-2, 2)
+    eta_bins = 8
 
     pull_labels = [
         r"$d_0$",

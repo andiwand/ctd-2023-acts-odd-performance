@@ -66,11 +66,11 @@ def get_data(file):
 
 def plot_resolution(x, y, input, fig, ax):
     x_range = {
-        "eta": (-3, 3),
+        "eta": (0, 3),
         "pt": (1, 100),
     }[x]
     x_bins = {
-        "eta": 25,
+        "eta": 13,
         "pt": 10,
     }[x]
     x_label = {

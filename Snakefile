@@ -136,9 +136,11 @@ rule all:
         expand("plots/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
         "plots/material_comparison.html",
 
+        expand("plots/sim/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("plots/sim/{event_label}/nhits_over_eta.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+
         expand("plots/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("plots/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-        expand("plots/{reco_label}/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
 
         expand("plots/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
         expand("plots/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=["eta"], res_y=RES_YS),
@@ -362,11 +364,23 @@ rule plot_particles:
     input:
         "data/sim/{event_label}/particles.root",
     output:
-        "plots/{reco_label}/{event_label}/particles.png",
+        "plots/sim/{event_label}/particles.png",
     shell:
         """
-        mkdir -p plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        mkdir -p plots/sim/{wildcards.event_label} || true
         python scripts/plot_particles.py {input} --output {output}
+        """
+
+rule plot_nhits_over_eta:
+    input:
+        "data/sim/{event_label}/particles.root",
+        "data/sim/{event_label}/hits.root",
+    output:
+        "plots/sim/{event_label}/nhits_over_eta.png",
+    shell:
+        """
+        mkdir -p plots/sim/{wildcards.event_label} || true
+        python scripts/plot_nhits_over_eta.py {input} --output {output}
         """
 
 rule event_display_reco:

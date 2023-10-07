@@ -33,8 +33,8 @@ def get_data(file):
 
 
 def plot_efficiency_over_eta(input, fig, ax):
-    eta_range = (-3, 3)
-    eta_bins = 25
+    eta_range = (0, 3)
+    eta_bins = 13
 
     is_same_event_type = check_same_event_type(input)
 
