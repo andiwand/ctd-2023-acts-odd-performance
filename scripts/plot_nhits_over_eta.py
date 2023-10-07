@@ -8,7 +8,6 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import smoothed_mean, smoothed_std
 
 
 def plot_nhits_over_eta(particles, hits, fig, ax):
@@ -41,10 +40,10 @@ def plot_nhits_over_eta(particles, hits, fig, ax):
     hits = particle_hits["hits"].values
 
     mean, eta_edges, _ = binned_statistic(
-        eta, hits, bins=eta_bins, range=eta_range, statistic=smoothed_mean
+        eta, hits, bins=eta_bins, range=eta_range, statistic="mean"
     )
     std, _, _ = binned_statistic(
-        eta, hits, bins=eta_bins, range=eta_range, statistic=smoothed_std
+        eta, hits, bins=eta_bins, range=eta_range, statistic="std"
     )
     eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
     eta_step = eta_mid[1] - eta_mid[0]

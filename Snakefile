@@ -185,11 +185,11 @@ rule material_composition:
         """
         ActsAnalysisMaterialComposition \
             -i {input} -o {output} -s \
-            --sub-names all beampipe pixel sstrips lstrips solenoid \
-            --sub-rmin 0:0:25:200:680:1100 \
-            --sub-rmax 2000:25:200:680:1100:2000 \
-            --sub-zmin -3200:-3200:-3200:-3200:-3200:-3200 \
-            --sub-zmax 3200:3200:3200:3200:3200:3200
+            --sub-names all inner beampipe pixel sstrips lstrips solenoid \
+            --sub-rmin 0:0:0:25:200:680:1100 \
+            --sub-rmax 2000:1100:25:200:680:1100:2000 \
+            --sub-zmin -3200:-3200:-3200:-3200:-3200:-3200:-3200 \
+            --sub-zmax 3200:3200:3200:3200:3200:3200:3200
         """
 
 rule plot_material:
