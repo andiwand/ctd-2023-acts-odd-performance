@@ -266,7 +266,7 @@ rule truth_matching:
         "data/sim/{event_label}/hits.root",
     output:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
-    threads: 2
+    threads: 6
     shell:
         """
         mkdir -p data/truth_matching/{wildcards.reco_label}/{wildcards.event_label} || true

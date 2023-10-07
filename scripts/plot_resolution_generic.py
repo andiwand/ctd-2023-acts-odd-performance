@@ -83,9 +83,9 @@ def plot_resolution(x, y, input, fig, ax):
     }[x]
 
     y_label = {
-        "d0": r"$d_0$",
-        "z0": r"$z_0$",
-        "qop": r"$\frac{q}{p}$",
+        "d0": r"$\sigma_{d_0}$",
+        "z0": r"$\sigma_{z_0}$",
+        "qop": r"$\sigma_{\frac{q}{p}}$",
     }[y]
     y_unit = {
         "d0": r" [mm]",
@@ -140,7 +140,7 @@ def plot_resolution(x, y, input, fig, ax):
     else:
         ax.set_title(rf"Resolution of {y_label} over {x_label}")
     ax.set_xlabel(rf"{x_label}{x_unit}")
-    ax.set_ylabel(rf"\sigma_{{{y_label}}}{y_unit}")
+    ax.set_ylabel(rf"{y_label}{y_unit}")
     if x == "eta":
         ax.set_xticks(np.linspace(*x_range, 7))
         ax.set_xlim(x_range)

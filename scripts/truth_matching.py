@@ -90,8 +90,7 @@ hits = pd.merge(
     particles[["event_id", "particle_id"]],
     hits,
     how="left",
-    left_on=["event_id", "particle_id"],
-    right_on=["event_id", "particle_id"],
+    on=["event_id", "particle_id"],
 )
 hits.reset_index(drop=True, inplace=True)
 print(f"{len(hits)} hits left.")
@@ -119,8 +118,7 @@ particle_efficiency = pd.merge(
     particles,
     hits,
     how="left",
-    left_on=["event_id", "particle_id"],
-    right_on=["event_id", "particle_id"],
+    on=["event_id", "particle_id"],
 )
 particle_efficiency.reset_index(inplace=True)
 particles = None
