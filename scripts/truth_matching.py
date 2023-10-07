@@ -136,7 +136,7 @@ particle_efficiency["efficiency"] = (
     )
 ).astype(int)
 # drop true inefficiencies
-particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0.0]
+particle_efficiency = particle_efficiency[particle_efficiency["efficiency"] != 0]
 print(f"{len(particle_efficiency)} particles remaining.")
 
 print(f"read tracksummary...")
@@ -176,8 +176,22 @@ tracksummary = ak.to_dataframe(
         library="ak",
     ),
     how="outer",
-).dropna()
-print(f"{len(tracksummary)} tracks read.")
+)
+# for whatever reason multiTraj_nr and subTraj_nr are not filled properly, but we can fix that
+tracksummary[
+    [
+        "event_nr",
+        "multiTraj_nr",
+        "subTraj_nr",
+    ]
+] = tracksummary[
+    [
+        "event_nr",
+        "multiTraj_nr",
+        "subTraj_nr",
+    ]
+].fillna(method="ffill")
+tracksummary = tracksummary.dropna()
 
 print(f"aggregate tracks...")
 track_efficiency = pd.merge(
@@ -197,7 +211,6 @@ track_efficiency = pd.merge(
     left_on=["true_event_id", "true_particle_id"],
     right_on=["track_event_nr", "track_majorityParticleId"],
 )
-track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 track_efficiency["track_nMeasurements"].fillna(0, inplace=True)
 track_efficiency.sort_values(
     ["track_nMeasurements", "track_chi2Sum"], ascending=[False, True], inplace=True

@@ -17,7 +17,9 @@ def plot_nhits_over_eta(particles, hits, fig, ax):
     hits_bins = hits_range[1] - hits_range[0] + 1
 
     particles = ak.to_dataframe(
-        uproot.open(particles)["particles"].arrays(["event_id", "particle_id", "eta"], library="ak"),
+        uproot.open(particles)["particles"].arrays(
+            ["event_id", "particle_id", "eta"], library="ak"
+        ),
         how="outer",
     ).dropna()
 
@@ -26,7 +28,9 @@ def plot_nhits_over_eta(particles, hits, fig, ax):
         how="outer",
     ).dropna()
 
-    particle_hits = pd.merge(particles, hits, on=["event_id", "particle_id"], how="left")
+    particle_hits = pd.merge(
+        particles, hits, on=["event_id", "particle_id"], how="left"
+    )
     particle_hits["hits"] = 1
     particle_hits = particle_hits.groupby(["event_id", "particle_id"]).agg(
         {

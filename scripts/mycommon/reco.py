@@ -136,7 +136,6 @@ def addMySeeding(
             0.2 / u.GeV,
             1 * u.ns,
         ]
-        initialVarInflation = [1.0] * 6
     elif algortihm == "truth_estimated":
         seedingAlgorithm = SeedingAlgorithm.TruthEstimated
     elif algortihm == "default":
