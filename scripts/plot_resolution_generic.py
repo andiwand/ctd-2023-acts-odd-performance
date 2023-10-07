@@ -74,8 +74,8 @@ def plot_resolution(x, y, input, fig, ax):
         "pt": 10,
     }[x]
     x_label = {
-        "eta": r"$\eta$",
-        "pt": r"$p_T$",
+        "eta": r"\eta",
+        "pt": r"p_T",
     }[x]
     x_unit = {
         "eta": r"",
@@ -83,9 +83,9 @@ def plot_resolution(x, y, input, fig, ax):
     }[x]
 
     y_label = {
-        "d0": r"$\sigma_{d_0}$",
-        "z0": r"$\sigma_{z_0}$",
-        "qop": r"$\sigma_{\frac{q}{p}}$",
+        "d0": r"d_0",
+        "z0": r"z_0",
+        "qop": r"\frac{q}{p}",
     }[y]
     y_unit = {
         "d0": r" [mm]",
@@ -135,12 +135,12 @@ def plot_resolution(x, y, input, fig, ax):
 
     if is_same_event_type:
         ax.set_title(
-            rf"Resolution of {y_label} over {x_label} for {get_event_type_label(event)} events"
+            rf"Resolution of ${y_label}$ over ${x_label}$ for {get_event_type_label(event)} events"
         )
     else:
-        ax.set_title(rf"Resolution of {y_label} over {x_label}")
-    ax.set_xlabel(rf"{x_label}{x_unit}")
-    ax.set_ylabel(rf"{y_label}{y_unit}")
+        ax.set_title(rf"Resolution of ${y_label}$ over ${x_label}$")
+    ax.set_xlabel(rf"${x_label}${x_unit}")
+    ax.set_ylabel(rf"$\sigma_{{{y_label}}}${y_unit}")
     if x == "eta":
         ax.set_xticks(np.linspace(*x_range, 7))
         ax.set_xlim(x_range)
