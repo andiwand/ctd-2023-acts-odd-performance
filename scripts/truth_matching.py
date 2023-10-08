@@ -244,6 +244,8 @@ track_efficiency = pd.merge(
 )
 track_efficiency.reset_index(inplace=True)
 
+assert len(track_efficiency) == len(particle_efficiency), "track efficiency not 1:1"
+
 print(f"write {len(track_efficiency)} tracks to csv...")
 track_efficiency[
     [
