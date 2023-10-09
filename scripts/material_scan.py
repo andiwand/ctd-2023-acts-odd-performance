@@ -80,7 +80,7 @@ def run_material_scan(tp, outdir, events, skip, simulation):
                 recordMaterialInteractions=True,
                 phiRange=(0 * u.degree, 360 * u.degree),
                 etaRange=(-4, 4),
-                ptRange=(1.0 * u.GeV, 1.0 * u.GeV),
+                ptRange=(1.0 * u.TeV, 1.0 * u.TeV),
                 d0Sigma=0,
                 z0Sigma=50 * u.mm,
                 phiSigma=0,
@@ -93,7 +93,7 @@ def run_material_scan(tp, outdir, events, skip, simulation):
         addParticleGun(
             s,
             ParticleConfig(num=1, pdg=acts.PdgParticle.eInvalid, charge=0, mass=0),
-            MomentumConfig(1.0 * u.GeV, 1.0 * u.GeV, transverse=True),
+            MomentumConfig(1.0 * u.TeV, 1.0 * u.TeV, transverse=True),
             EtaConfig(-4.0, 4.0, uniform=True),
             PhiConfig(0.0 * u.degree, 360.0 * u.degree),
             vtxGen=acts.examples.GaussianVertexGenerator(

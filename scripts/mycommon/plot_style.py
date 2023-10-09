@@ -14,5 +14,5 @@ def myPlotStyle():
     plt.rcParams["legend.borderpad"] = 0
     plt.rcParams["legend.handlelength"] = 1.0
 
-    fig = plt.figure(figsize=(8, 5), dpi=100)
+    fig = plt.figure(figsize=(10, 7), dpi=100)
     return fig
