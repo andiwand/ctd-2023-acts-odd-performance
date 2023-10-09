@@ -76,7 +76,8 @@ def draw_eta_lines(
         if eta > 0:
             ha = "left"
 
-        ax.text(z_out, r_out, s=r"$%s$" % (fmt % eta), ha=ha, va=va, **text_args)
+        if eta > 0:
+            ax.text(z_out, r_out, s=r"$%s$" % (fmt % eta), ha=ha, va=va, **text_args)
 
 
 myPlotStyle()

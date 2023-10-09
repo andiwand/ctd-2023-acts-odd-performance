@@ -133,6 +133,8 @@ wildcard_constraints:
 
 rule all:
     input:
+        "plots/detector_layout.png",
+
         expand("plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
         "plots/sim/material_comparison.html",
 
@@ -430,4 +432,13 @@ rule event_display_dump_tracks:
         python scripts/dump_tracks.py data/event_display/{wildcards.reco_label}/{wildcards.event_label}/trackstates_ambi.root \
           {params.skip} \
           data/event_display/{wildcards.reco_label}/{wildcards.event_label}/tracks.csv
+        """
+
+rule plot_detector_layout:
+    output:
+        "plots/detector_layout.png",
+    shell:
+        """
+        mkdir -p plots || true
+        python scripts/plot_detector_layout.py --output {output}
         """
