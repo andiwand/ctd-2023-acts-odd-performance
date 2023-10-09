@@ -80,13 +80,13 @@ def draw_eta_lines(
             ax.text(z_out, r_out, s=r"$%s$" % (fmt % eta), ha=ha, va=va, **text_args)
 
 
-myPlotStyle()
+fig = myPlotStyle()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output")
 args = parser.parse_args()
 
-fig, ax = plt.subplots(figsize=(10, 7))
+ax = fig.subplots(1, 1)
 
 ax.set_xlim(-3200, 3200)
 ax.set_ylim(-20, 1250)
