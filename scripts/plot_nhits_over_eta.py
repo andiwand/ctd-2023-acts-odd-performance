@@ -14,7 +14,7 @@ def plot_nhits_over_eta(particles, hits, fig, ax):
     eta_range = (-3, 3)
     hits_range = (8, 20)
     eta_bins = 25
-    hits_bins = hits_range[1] - hits_range[0] + 1
+    hits_bins = hits_range[1] - hits_range[0]
 
     particles = ak.to_dataframe(
         uproot.open(particles)["particles"].arrays(

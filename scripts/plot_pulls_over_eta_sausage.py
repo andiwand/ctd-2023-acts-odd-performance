@@ -92,6 +92,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     fig = myPlotStyle()
+    fig.set_size_inches(16, 10, forward=True)
     plot_pulls_over_eta_sausage(args.input, fig)
 
     if args.output:

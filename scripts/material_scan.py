@@ -82,7 +82,7 @@ def run_material_scan(tp, outdir, events, skip, simulation):
                 etaRange=(-4, 4),
                 ptRange=(1.0 * u.TeV, 1.0 * u.TeV),
                 d0Sigma=0,
-                z0Sigma=50 * u.mm,
+                z0Sigma=0,
                 phiSigma=0,
                 thetaSigma=0,
                 qpSigma=0,
@@ -98,7 +98,7 @@ def run_material_scan(tp, outdir, events, skip, simulation):
             PhiConfig(0.0 * u.degree, 360.0 * u.degree),
             vtxGen=acts.examples.GaussianVertexGenerator(
                 mean=acts.Vector4(0, 0, 0, 0),
-                stddev=acts.Vector4(0, 0, 50 * u.mm, 0),
+                stddev=acts.Vector4(0, 0, 0, 0),
             ),
             multiplicity=tracks_per_event,
             rnd=rnd,
@@ -120,9 +120,9 @@ def run_material_scan(tp, outdir, events, skip, simulation):
 
     s.addWriter(
         acts.examples.RootMaterialTrackWriter(
-            prePostStep=True,
+            prePostStep=False,
             recalculateTotals=True,
-            collapseInteractions=True,
+            collapseInteractions=False,
             collection="material_tracks",
             filePath=tp / "material_tracks.root",
             level=acts.logging.INFO,
