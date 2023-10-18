@@ -5,7 +5,7 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import smoothed_mean, smoothed_std
+from mycommon.stats import robust_mean, robust_std
 from mycommon.data import get_pull_data
 
 
@@ -59,14 +59,14 @@ def plot_pulls_over_eta_sausage(input, fig):
             pull,
             bins=eta_bins,
             range=eta_range,
-            statistic=smoothed_mean,
+            statistic=robust_mean,
         )
         std_binned, _, _ = binned_statistic(
             eta,
             pull,
             bins=eta_bins,
             range=eta_range,
-            statistic=smoothed_std,
+            statistic=robust_std,
         )
 
         ax.plot(eta_mid, mean_binned, linestyle="-", color="black", label="fit")

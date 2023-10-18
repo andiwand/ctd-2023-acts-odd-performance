@@ -3,22 +3,22 @@ import scipy.stats
 from scipy.optimize import curve_fit
 
 
-def smoothed_mean(data):
-    (m, s), cov = smoothed_gauss_fit(data)
+def robust_mean(data):
+    (m, s), cov = robust_gauss_fit(data)
     return m
 
 
-def smoothed_std(data):
-    (m, s), cov = smoothed_gauss_fit(data)
+def robust_std(data):
+    (m, s), cov = robust_gauss_fit(data)
     return s
 
 
-def smoothed_std_std(data):
-    (m, s), cov = smoothed_gauss_fit(data)
+def robust_std_std(data):
+    (m, s), cov = robust_gauss_fit(data)
     return cov[1, 1] ** 0.5
 
 
-def smoothed_gauss_fit_naive(data):
+def robust_gauss_fit_naive(data):
     def fit(data):
         return np.mean(data), np.std(data)
 
@@ -32,7 +32,7 @@ def smoothed_gauss_fit_naive(data):
     return (m, s), np.zeros((2, 2))
 
 
-def smoothed_gauss_fit(data):
+def robust_gauss_fit(data):
     def fit(data):
         def gauss(x, m, s):
             return 1 / (s * (2 * np.pi) ** 0.5) * np.exp(-0.5 * ((x - m) / s) ** 2)

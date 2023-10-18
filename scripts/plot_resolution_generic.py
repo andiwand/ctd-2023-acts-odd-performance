@@ -9,7 +9,7 @@ import pandas as pd
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import smoothed_std, smoothed_std_std
+from mycommon.stats import robust_std, robust_std_std
 from mycommon.events import split_event_label
 from mycommon.label import (
     get_event_variant_label,
@@ -106,14 +106,14 @@ def plot_resolution(x, y, input, fig, ax):
             data[f"res_{y}"],
             bins=x_bins,
             range=x_range,
-            statistic=smoothed_std,
+            statistic=robust_std,
         )
         std_std, _, _ = binned_statistic(
             data[x],
             data[f"res_{y}"],
             bins=x_bins,
             range=x_range,
-            statistic=smoothed_std_std,
+            statistic=robust_std_std,
         )
         x_mid = 0.5 * (x_edges[:-1] + x_edges[1:])
         x_step = x_mid[1] - x_mid[0]

@@ -6,7 +6,7 @@ import argparse
 from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import smoothed_mean, smoothed_std
+from mycommon.stats import robust_mean, robust_std
 from mycommon.events import split_event_label
 from mycommon.label import (
     get_event_variant_label,
@@ -55,14 +55,14 @@ def plot_pulls_over_eta_errorbars(input, fig):
                 pull,
                 bins=eta_bins,
                 range=eta_range,
-                statistic=smoothed_mean,
+                statistic=robust_mean,
             )
             std_binned, _, _ = binned_statistic(
                 eta,
                 pull,
                 bins=eta_bins,
                 range=eta_range,
-                statistic=smoothed_std,
+                statistic=robust_std,
             )
             eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
 
