@@ -181,7 +181,7 @@ tracksummary = tracksummary.dropna()
 
 print(f"aggregate tracks...")
 track_efficiency = pd.merge(
-    particle_efficiency[["event_id", "particle_id"]].add_prefix("true_"),
+    particle_efficiency[["event_id", "particle_id", "hits"]].add_prefix("true_"),
     tracksummary[
         [
             "event_nr",
@@ -214,7 +214,10 @@ track_efficiency["track_efficiency"] = (
     (track_efficiency["track_nMeasurements"].values >= args.require_number_of_hits)
     & (
         track_efficiency["track_nMajorityHits"].values
-        / track_efficiency["track_nMeasurements"].values
+        / np.maximum(
+            track_efficiency["track_nMeasurements"].values,
+            track_efficiency["true_hits"].values,
+        )
         >= args.matching_ratio
     )
 ).astype(int)
