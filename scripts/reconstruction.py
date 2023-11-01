@@ -12,7 +12,7 @@ from acts.examples.simulation import (
     ParticleSelectorConfig,
 )
 from acts.examples.reconstruction import (
-    addTrajectoryWriters,
+    addTrackWriters,
     addCKFTracks,
     addAmbiguityResolution,
     VertexFinder,
@@ -157,6 +157,7 @@ def run_reconstruction(
         trackSelectorConfig=reco_config.track_selector_config,
         ckfConfig=reco_config.ckf_config,
         # outputDirRoot=tp,
+        # logLevel=acts.logging.VERBOSE,
     )
     # output_files.append("tracksummary_ckf.root")
     # output_files.append("trackstates_ckf.root")
@@ -167,10 +168,10 @@ def run_reconstruction(
         config=reco_config.ambi_config,
         # outputDirRoot=tp,
     )
-    addTrajectoryWriters(
+    addTrackWriters(
         s,
         name="ambi",
-        trajectories="trajectories",
+        tracks="tracks",
         outputDirRoot=tp,
         writeStates=output_trackstates,
         writeSummary=True,
@@ -201,17 +202,10 @@ def run_reconstruction(
                 fit=acts.examples.makeKalmanFitterFunction(trackingGeometry, field, **kfOptions),
             )
         )
-        s.addAlgorithm(
-            acts.examples.TracksToTrajectories(
-                level=acts.logging.INFO,
-                inputTracks="kfTracks",
-                outputTrajectories="kfTrajectories",
-            )
-        )
-        addTrajectoryWriters(
+        addTrackWriters(
             s,
             name="kf",
-            trajectories="kfTrajectories",
+            tracks="kfTracks",
             outputDirRoot=tp,
             writeStates=False,
             writeSummary=True,
@@ -244,17 +238,10 @@ def run_reconstruction(
                 fit=acts.examples.makeGsfFitterFunction(trackingGeometry, field, **gsfOptions),
             )
         )
-        s.addAlgorithm(
-            acts.examples.TracksToTrajectories(
-                level=acts.logging.INFO,
-                inputTracks="gsfTracks",
-                outputTrajectories="gsfTrajectories",
-            )
-        )
-        addTrajectoryWriters(
+        addTrackWriters(
             s,
             name="gsf",
-            trajectories="gsfTrajectories",
+            tracks="gsfTracks",
             outputDirRoot=tp,
             writeStates=False,
             writeSummary=True,
