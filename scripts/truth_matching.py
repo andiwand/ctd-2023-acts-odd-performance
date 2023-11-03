@@ -143,6 +143,7 @@ tracksummary = ak.to_dataframe(
     uproot.open(args.tracksummary)["tracksummary"].arrays(
         [
             "event_nr",
+            "track_nr",
             "nStates",
             "nMeasurements",
             "nOutliers",
@@ -173,11 +174,7 @@ tracksummary = ak.to_dataframe(
         library="ak",
     ),
     how="outer",
-)
-# for whatever reason multiTraj_nr and subTraj_nr are not filled properly, creating random index
-tracksummary.reset_index(drop=True, inplace=True)
-tracksummary["track_nr"] = tracksummary.index
-tracksummary = tracksummary.dropna()
+).dropna()
 
 print(f"aggregate tracks...")
 track_efficiency = pd.merge(

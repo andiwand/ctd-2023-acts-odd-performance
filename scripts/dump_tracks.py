@@ -11,12 +11,12 @@ args = parser.parse_args()
 
 trackstates = ak.to_dataframe(
     uproot.open(args.input)["trackstates"].arrays(
-        ["event_nr", "multiTraj_nr", "subTraj_nr", "g_x_smt", "g_y_smt", "g_z_smt"],
+        ["event_nr", "track_nr", "g_x_smt", "g_y_smt", "g_z_smt"],
         library="ak",
     ),
     how="outer",
 ).dropna()
 trackstates = trackstates[trackstates["event_nr"] == int(args.event_nr)]
-trackstates[
-    ["event_nr", "multiTraj_nr", "subTraj_nr", "g_x_smt", "g_y_smt", "g_z_smt"]
-].to_csv(args.output, index=False)
+trackstates[["event_nr", "track_nr", "g_x_smt", "g_y_smt", "g_z_smt"]].to_csv(
+    args.output, index=False
+)
