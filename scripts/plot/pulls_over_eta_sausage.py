@@ -2,11 +2,10 @@
 
 import matplotlib.pyplot as plt
 import argparse
-from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import robust_mean, robust_std
-from mycommon.data import get_pull_data
+from mycommon.io import read_pulls
+from mycommon.agg import agg_pulls_over_eta
 
 
 def plot_pulls_over_eta_sausage(input, fig):
@@ -24,7 +23,7 @@ def plot_pulls_over_eta_sausage(input, fig):
         r"$\frac{q}{p}$",
     ]
 
-    eta, pulls = get_pull_data(input)
+    eta, pulls = read_pulls(input)
 
     subfigs = fig.subfigures(2, 3)
 
@@ -54,20 +53,13 @@ def plot_pulls_over_eta_sausage(input, fig):
         )
         eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
 
-        mean_binned, _, other_digi = binned_statistic(
-            eta,
-            pull,
-            bins=eta_bins,
-            range=eta_range,
-            statistic=robust_mean,
-        )
-        std_binned, _, _ = binned_statistic(
-            eta,
-            pull,
-            bins=eta_bins,
-            range=eta_range,
-            statistic=robust_std,
-        )
+        (
+            eta_mid,
+            (
+                mean_binned,
+                std_binned,
+            ),
+        ) = agg_pulls_over_eta(eta_range, eta_bins, eta, pull)
 
         ax.plot(eta_mid, mean_binned, linestyle="-", color="black", label="fit")
         ax.plot(eta_mid, mean_binned - std_binned, linestyle="--", color="black")

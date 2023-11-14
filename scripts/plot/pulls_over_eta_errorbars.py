@@ -3,17 +3,16 @@
 import matplotlib.pyplot as plt
 from matplotlib.transforms import Affine2D
 import argparse
-from scipy.stats import binned_statistic
 
 from mycommon.plot_style import myPlotStyle
-from mycommon.stats import robust_mean, robust_std
 from mycommon.events import split_event_label
 from mycommon.label import (
     get_event_variant_label,
     get_event_type_label,
 )
 from mycommon.paths import get_event_label_from_path
-from mycommon.data import get_pull_data
+from mycommon.io import read_pulls
+from mycommon.agg import agg_pulls_over_eta
 
 
 def plot_pulls_over_eta_errorbars(input, fig):
@@ -36,7 +35,7 @@ def plot_pulls_over_eta_errorbars(input, fig):
         event_label = get_event_label_from_path(file)
         event, _ = split_event_label(event_label)
 
-        eta, pulls = get_pull_data(file)
+        eta, pulls = read_pulls(file)
         pulls = pulls[0], pulls[1], pulls[5]
 
         for j, (pull_label, pull, ax) in enumerate(
@@ -50,21 +49,13 @@ def plot_pulls_over_eta_errorbars(input, fig):
             ax.set_xlim(eta_range[0], eta_range[1] + 0.2)
             ax.set_ylim(*pull_range)
 
-            mean_binned, eta_edges, _ = binned_statistic(
-                eta,
-                pull,
-                bins=eta_bins,
-                range=eta_range,
-                statistic=robust_mean,
-            )
-            std_binned, _, _ = binned_statistic(
-                eta,
-                pull,
-                bins=eta_bins,
-                range=eta_range,
-                statistic=robust_std,
-            )
-            eta_mid = 0.5 * (eta_edges[:-1] + eta_edges[1:])
+            (
+                eta_mid,
+                (
+                    mean_binned,
+                    std_binned,
+                ),
+            ) = agg_pulls_over_eta(eta_range, eta_bins, eta, pull)
 
             trans = Affine2D().translate(0.1 * i, 0.0) + ax.transData
             ax.errorbar(

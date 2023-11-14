@@ -24,6 +24,7 @@ RES_XS = ["eta", "pt"]
 RES_YS = ["d0", "z0", "qop"]
 MAT_XS = ["eta", "phi"]
 MAT_YS = ["l0", "x0"]
+FORMATS = ["png", "pdf"]
 
 
 def get_reco_threads(wildcards):
@@ -130,31 +131,36 @@ wildcard_constraints:
     res_y="|".join(RES_YS),
     mat_x="|".join(MAT_XS),
     mat_y="|".join(MAT_YS),
+    format="|".join(FORMATS),
 
 rule all:
     input:
-        "plots/detector_layout.png",
-
-        expand("plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.png", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS),
-        "plots/sim/material_comparison.html",
-
-        expand("plots/sim/{event_label}/particles.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-        expand("plots/sim/{event_label}/nhits_over_eta.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-
-        expand("plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-        expand("plots/reco/{reco_label}/{event_label}/inefficiencies.png", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
-
-        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=["eta"], res_y=RES_YS),
-        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS),
-
-        expand("plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS),
-        expand("plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS),
-
-        expand("plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png", reco_label=RECO_LABELS, simulation=SIMULATIONS),
+        expand("data/plots/{reco_label}/{event_label}/pulls_over_eta.csv", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("data/plots/{reco_label}/{event_label}/efficiency_over_eta.csv", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
+        expand("data/plots/{reco_label}/{event_label}/resolution_{res_y}_over_{res_x}.csv", reco_label=RECO_LABELS, event_label=EVENT_LABELS, res_x=RES_XS, res_y=RES_YS),
 
         "data/event_display/truth_smeared/ttbar_200_geant4/hits.csv",
         "data/event_display/truth_smeared/ttbar_200_geant4/tracks.csv",
+
+        expand("plots/detector_layout.{format}", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS, format=FORMATS),
+
+        expand("plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.{format}", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS, format=FORMATS),
+        "plots/sim/material_comparison.html",
+
+        expand("plots/sim/{event_label}/particles.{format}", reco_label=RECO_LABELS, event_label=EVENT_LABELS, format=FORMATS),
+        expand("plots/sim/{event_label}/nhits_over_eta.{format}", reco_label=RECO_LABELS, event_label=EVENT_LABELS, format=FORMATS),
+
+        expand("plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.{format}", reco_label=RECO_LABELS, event_label=EVENT_LABELS, format=FORMATS),
+        expand("plots/reco/{reco_label}/{event_label}/inefficiencies.{format}", reco_label=RECO_LABELS, event_label=EVENT_LABELS, format=FORMATS),
+
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.{format}", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, format=FORMATS),
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.{format}", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, res_x=["eta"], res_y=RES_YS, format=FORMATS),
+        expand("plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.{format}", reco_label=RECO_LABELS, single_particle=SINGLE_PARTICLES, simulation=SIMULATIONS, format=FORMATS),
+
+        expand("plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.{format}", reco_label=RECO_LABELS, pt=PT_VALUES, simulation=SIMULATIONS, format=FORMATS),
+        expand("plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.{format}", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS, format=FORMATS),
+
+        expand("plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.{format}", reco_label=RECO_LABELS, simulation=SIMULATIONS, format=FORMATS),
 
 rule all_sim:
     input:
@@ -198,11 +204,11 @@ rule plot_material:
     input:
         "data/sim/material_{simulation}/material_composition.root"
     output:
-        "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.png",
+        "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.{format}",
     shell:
         """
         mkdir -p plots/sim || true
-        python scripts/plot_material_generic.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
+        python scripts/plot/material_generic.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
         """
 
 rule histcmp_material:
@@ -275,103 +281,136 @@ rule truth_matching:
         python scripts/truth_matching.py {input} {output}
         """
 
+rule dump_pulls_over_eta:
+    input:
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+    output:
+        "data/plots/{reco_label}/{event_label}/pulls_over_eta.csv",
+    shell:
+        """
+        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/dump/pulls_over_eta.py {input} {output}
+        """
+
+rule dump_efficiency_over_eta:
+    input:
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+    output:
+        "data/plots/{reco_label}/{event_label}/efficiency_over_eta.csv",
+    shell:
+        """
+        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/dump/efficiency_over_eta.py {input} {output}
+        """
+
+rule dump_resolution:
+    input:
+        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+    output:
+        "data/plots/{reco_label}/{event_label}/resolution_{res_y}_over_{res_x}.csv",
+    shell:
+        """
+        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
+        python scripts/dump/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} {output}
+        """
+
 rule plot_pulls_over_eta_sausage:
     input:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
-        "plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.png",
+        "plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/plot_pulls_over_eta_sausage.py {input} --output {output}
+        python scripts/plot/pulls_over_eta_sausage.py {input} --output {output}
         """
 
 rule plot_single_particle_pulls_over_eta_errorbars:
     input:
         get_all_pt_variants,
     output:
-        "plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot_pulls_over_eta_errorbars.py {input} --output {output}
+        python scripts/plot/pulls_over_eta_errorbars.py {input} --output {output}
         """
 
 rule plot_single_particle_resolution:
     input:
         get_all_pt_variants,
     output:
-        "plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
+        python scripts/plot/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
 rule plot_single_particle_efficiency_over_eta:
     input:
         get_all_pt_variants,
     output:
-        "plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        python scripts/plot/efficiency_over_eta.py {input} --output {output}
         """
 
 rule plot_cross_single_particle_efficiency_over_eta:
     input:
         get_all_flavor_variants,
     output:
-        "plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt}_{wildcards.simulation} || true
-        python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        python scripts/plot/efficiency_over_eta.py {input} --output {output}
         """
 
 rule plot_ttbar_efficiency_over_eta:
     input:
         get_all_ttbar_variants,
     output:
-        "plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.png",
+        "plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
-        python scripts/plot_efficiency_over_eta.py {input} --output {output}
+        python scripts/plot/efficiency_over_eta.py {input} --output {output}
         """
 
 rule plot_cross_single_particle_resolution:
     input:
         get_all_pt_range_variants,
     output:
-        "plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.png",
+        "plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
-        python scripts/plot_resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
+        python scripts/plot/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
         """
 
 rule plot_inefficiencies:
     input:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     output:
-        "plots/reco/{reco_label}/{event_label}/inefficiencies.png",
+        "plots/reco/{reco_label}/{event_label}/inefficiencies.{format}",
     shell:
         """
         mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/plot_inefficiencies.py {input} --output {output}
+        python scripts/plot/inefficiencies.py {input} --output {output}
         """
 
 rule plot_particles:
     input:
         "data/sim/{event_label}/particles.root",
     output:
-        "plots/sim/{event_label}/particles.png",
+        "plots/sim/{event_label}/particles.{format}",
     shell:
         """
         mkdir -p plots/sim/{wildcards.event_label} || true
-        python scripts/plot_particles.py {input} --output {output}
+        python scripts/plot/particles.py {input} --output {output}
         """
 
 rule plot_nhits_over_eta:
@@ -379,11 +418,11 @@ rule plot_nhits_over_eta:
         "data/sim/{event_label}/particles.root",
         "data/sim/{event_label}/hits.root",
     output:
-        "plots/sim/{event_label}/nhits_over_eta.png",
+        "plots/sim/{event_label}/nhits_over_eta.{format}",
     shell:
         """
         mkdir -p plots/sim/{wildcards.event_label} || true
-        python scripts/plot_nhits_over_eta.py {input} --output {output}
+        python scripts/plot/nhits_over_eta.py {input} --output {output}
         """
 
 rule event_display_reco:
@@ -436,9 +475,9 @@ rule event_display_dump_tracks:
 
 rule plot_detector_layout:
     output:
-        "plots/detector_layout.png",
+        "plots/detector_layout.{format}",
     shell:
         """
         mkdir -p plots || true
-        python scripts/plot_detector_layout.py --output {output}
+        python scripts/plot/detector_layout.py --output {output}
         """

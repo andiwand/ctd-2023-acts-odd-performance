@@ -22,7 +22,7 @@ from mycommon.events import get_event_type
 seedings = [
     "truth_smeared",
     "truth_estimated",
-    "default",
+    # "default",
 ]
 
 RecoConfig = namedtuple(
