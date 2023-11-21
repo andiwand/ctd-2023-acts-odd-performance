@@ -7,9 +7,9 @@ def getDefaultStyle():
         {
             "marker": [20, 21, 22],
             "color": [r.kAzure + 1, r.kAzure + 2, r.kAzure + 3],
-            "offset": [-0.05, 0.0, 0.05],
+            "offset": [-0.07, 0.0, 0.07],
             "font": [43] * 3,
-            "font_size": [24] * 3,
+            "font_size": [22] * 3,
         }
     )
 
@@ -65,22 +65,21 @@ def createEfficency(efficiency, style):
     graph.SetLineColor(style["color"])
     graph.SetTitle("")
 
-    graph.GetYaxis().SetNdivisions(505)
-    graph.GetYaxis().SetTitleSize(28)
-    graph.GetYaxis().SetTitleFont(43)
-    graph.GetYaxis().SetTitleOffset(1.55)
-    graph.GetYaxis().SetLabelSize(28)
-    graph.GetYaxis().SetLabelFont(43)
-
+    graph.GetXaxis().SetTitle("|#eta|")
+    graph.GetXaxis().SetRangeUser(0.0, 3.0)
     graph.GetXaxis().SetTitleSize(28)
-    graph.GetXaxis().SetTitleFont(43)
+    graph.GetXaxis().SetTitleFont(style["font"])
     graph.GetXaxis().SetTitleOffset(1.0)
     graph.GetXaxis().SetLabelSize(28)
-    graph.GetXaxis().SetLabelFont(43)
+    graph.GetXaxis().SetLabelFont(style["font"])
 
-    graph.GetXaxis().SetTitle("|#eta|")
     graph.GetYaxis().SetTitle("Technical efficiency")
-    graph.GetXaxis().SetRangeUser(0.0, 3.0)
+    graph.GetYaxis().SetNdivisions(505)
+    graph.GetYaxis().SetTitleSize(28)
+    graph.GetYaxis().SetTitleFont(style["font"])
+    graph.GetYaxis().SetTitleOffset(1.55)
+    graph.GetYaxis().SetLabelSize(28)
+    graph.GetYaxis().SetLabelFont(style["font"])
 
     return graph
 
@@ -105,18 +104,18 @@ def createResolution(resolution, style):
     graph.SetLineColor(style["color"])
     graph.SetTitle("")
 
-    graph.GetYaxis().SetNdivisions(505)
-    graph.GetYaxis().SetTitleSize(28)
-    graph.GetYaxis().SetTitleFont(43)
-    graph.GetYaxis().SetTitleOffset(1.55)
-    graph.GetYaxis().SetLabelSize(28)
-    graph.GetYaxis().SetLabelFont(43)
-
     graph.GetXaxis().SetTitleSize(28)
-    graph.GetXaxis().SetTitleFont(43)
+    graph.GetXaxis().SetTitleFont(style["font"])
     graph.GetXaxis().SetTitleOffset(1.0)
     graph.GetXaxis().SetLabelSize(28)
-    graph.GetXaxis().SetLabelFont(43)
+    graph.GetXaxis().SetLabelFont(style["font"])
+
+    graph.GetYaxis().SetNdivisions(505)
+    graph.GetYaxis().SetTitleSize(28)
+    graph.GetYaxis().SetTitleFont(style["font"])
+    graph.GetYaxis().SetTitleOffset(1.55)
+    graph.GetYaxis().SetLabelSize(28)
+    graph.GetYaxis().SetLabelFont(style["font"])
 
     return graph
 
@@ -141,25 +140,20 @@ def createPull(pull, style, prefix, title):
     graph.SetTitle("")
 
     graph.GetXaxis().SetTitle("|#eta|")
-    graph.GetYaxis().SetTitle(title)
     graph.GetXaxis().SetRangeUser(0.0, 3.0)
-    graph.GetYaxis().SetRangeUser(-2.0, 2.0)
-
-    graph.GetXaxis().SetLabelFont(style["font"])
-    graph.GetXaxis().SetLabelSize(style["font_size"])
-    graph.GetYaxis().SetLabelFont(style["font"])
-    graph.GetYaxis().SetLabelSize(style["font_size"])
-
     graph.GetXaxis().SetTitleFont(style["font"])
     graph.GetXaxis().SetTitleSize(style["font_size"])
+    graph.GetXaxis().SetLabelFont(style["font"])
+    graph.GetXaxis().SetLabelSize(style["font_size"])
+
+    graph.GetYaxis().SetTitle(title)
+    graph.GetYaxis().SetRangeUser(-2.0, 2.0)
     graph.GetYaxis().SetTitleFont(style["font"])
     graph.GetYaxis().SetTitleSize(style["font_size"])
+    graph.GetYaxis().SetLabelFont(style["font"])
+    graph.GetYaxis().SetLabelSize(style["font_size"])
     graph.GetYaxis().SetTitleOffset(1.5)
     graph.GetYaxis().CenterTitle()
-
     graph.GetYaxis().SetNdivisions(3)
-
-    graph.SetFillColor(0)
-    graph.SetFillStyle(0)
 
     return graph

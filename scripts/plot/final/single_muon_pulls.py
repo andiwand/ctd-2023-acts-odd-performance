@@ -7,6 +7,11 @@ from mycommon.root import getDefaultStyle, createLabel, createLegend, createPull
 
 
 style = getDefaultStyle()
+labels = [
+    "#frac{d_{0}^{reco}-d_{0}^{true}}{#sigma_{d_{0}}^{reco}}",
+    "#frac{z_{0}^{reco}-z_{0}^{true}}{#sigma_{z_{0}}^{reco}}",
+    "#frac{q/p^{reco}-q/p^{true}}{#sigma_{q/p}^{reco}}",
+]
 
 parser = argparse.ArgumentParser()
 parser.add_argument("mu_1GeV", help="Path to the 1 GeV muon pull csv file")
@@ -18,20 +23,20 @@ args = parser.parse_args()
 files = [args.mu_1GeV, args.mu_10GeV, args.mu_100GeV]
 data = [pd.read_csv(file) for file in files]
 
-canvas = r.TCanvas("canvas", "", 800, 800)
+canvas = r.TCanvas("canvas", "", 800, 700)
 
 canvas.Divide(1, 4)
 
 all_graphs = []
 all_lines = []
 
-for i, d, title in zip([2, 3, 4], data, ["#frac{d_{0}^{reco}-d_{0}^{true}}{#sigma(d_{0}^{reco})}", "#frac{z_{0}^{reco}-z_{0}^{true}}{#sigma(z_{0}^{reco})}", "#frac{q/p^{reco}-q/p^{true}}{#sigma(q/p^{reco})}"]):
+for i, d, title in zip([2, 3, 4], data, labels):
     canvas.cd(i)
 
     r.gPad.SetLeftMargin(0.15)
     r.gPad.SetRightMargin(0.02)
     r.gPad.SetTopMargin(0.05)
-    r.gPad.SetBottomMargin(0.35)
+    r.gPad.SetBottomMargin(0.3)
 
     graphs = [
         createPull(d, s, prefix, title) for s, prefix in zip(style, ["d0", "z0", "qop"])
