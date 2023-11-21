@@ -7,16 +7,7 @@ from mycommon.io import read_residuals
 from mycommon.agg import agg_resolution
 
 
-def dump_resolution(x, y, input, output):
-    x_range = {
-        "eta": (-3, 3),
-        "pt": (1, 100),
-    }[x]
-    x_bins = {
-        "eta": 13,
-        "pt": 10,
-    }[x]
-
+def dump_resolution(x, y, input, output, x_range, x_bins):
     data = read_residuals(input)
 
     (x_mid, (std, std_std)) = agg_resolution(x_range, x_bins, data[x], data[f"res_{y}"])
@@ -36,6 +27,14 @@ if __name__ == "__main__":
     parser.add_argument("y", choices=["d0", "z0", "qop"])
     parser.add_argument("input")
     parser.add_argument("output")
+    parser.add_argument("--x-range", nargs=2, type=float, default=None)
+    parser.add_argument("--x-bins", type=int, default=13)
     args = parser.parse_args()
 
-    dump_resolution(args.x, args.y, args.input, args.output)
+    if args.x_range is None:
+        args.x_range = {
+            "eta": (0, 3),
+            "pt": (0, 100),
+        }[args.x]
+
+    dump_resolution(args.x, args.y, args.input, args.output, args.x_range, args.x_bins)

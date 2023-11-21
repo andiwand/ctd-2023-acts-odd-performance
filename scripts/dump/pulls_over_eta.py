@@ -7,10 +7,7 @@ from mycommon.io import read_pulls
 from mycommon.agg import agg_pulls_over_eta
 
 
-def dump_pulls_over_eta_sausage(input, output):
-    eta_range = (-3, 3)
-    eta_bins = 30
-
+def dump_pulls_over_eta_sausage(input, output, eta_range, eta_bins):
     pull_labels = ["d0", "z0", "t", "phi", "theta", "qop"]
 
     eta, pulls = read_pulls(input)
@@ -37,6 +34,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input")
     parser.add_argument("output")
+    parser.add_argument("--eta-range", nargs=2, type=float, default=(0, 3))
+    parser.add_argument("--eta-bins", type=int, default=8)
     args = parser.parse_args()
 
-    dump_pulls_over_eta_sausage(args.input, args.output)
+    dump_pulls_over_eta_sausage(args.input, args.output, args.eta_range, args.eta_bins)

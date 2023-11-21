@@ -24,7 +24,7 @@ RES_XS = ["eta", "pt"]
 RES_YS = ["d0", "z0", "qop"]
 MAT_XS = ["eta", "phi"]
 MAT_YS = ["l0", "x0"]
-FORMATS = ["png", "pdf"]
+FORMATS = ["pdf"]
 
 
 def get_reco_threads(wildcards):
@@ -161,6 +161,14 @@ rule all:
         expand("plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.{format}", reco_label=RECO_LABELS, pt_range=PT_RANGES, simulation=SIMULATIONS, res_x=RES_XS, res_y=RES_YS, format=FORMATS),
 
         expand("plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.{format}", reco_label=RECO_LABELS, simulation=SIMULATIONS, format=FORMATS),
+
+        "plots/final/single_muon_efficiency.pdf",
+        "plots/final/single_particle_efficiency.pdf",
+        "plots/final/ttbar_efficiency_ts.pdf",
+        "plots/final/ttbar_efficiency_te.pdf",
+        "plots/final/single_muon_resolution.pdf",
+        "plots/final/single_particle_resolution.pdf",
+        "plots/final/single_muon_pulls.pdf",
 
 rule all_sim:
     input:
@@ -300,7 +308,7 @@ rule dump_efficiency_over_eta:
     shell:
         """
         mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/dump/efficiency_over_eta.py {input} {output}
+        python scripts/dump/efficiency_over_eta.py {input} {output} --eta-range 0 3 --eta-bins 13
         """
 
 rule dump_resolution:
@@ -311,7 +319,7 @@ rule dump_resolution:
     shell:
         """
         mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/dump/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} {output}
+        python scripts/dump/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} {output} --x-bins 13
         """
 
 rule plot_pulls_over_eta_sausage:
@@ -480,4 +488,95 @@ rule plot_detector_layout:
         """
         mkdir -p plots || true
         python scripts/plot/detector_layout.py --output {output}
+        """
+
+rule plot_final_single_muon_efficiency:
+    input:
+        "data/plots/truth_smeared/mu_1GeV_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/mu_100GeV_geant4/efficiency_over_eta.csv",
+    output:
+        "plots/final/single_muon_efficiency.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/single_muon_efficiency.py {input} {output}
+        """
+
+rule plot_final_single_particle_efficiency:
+    input:
+        "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/pi_10GeV_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/e_10GeV_geant4/efficiency_over_eta.csv",
+    output:
+        "plots/final/single_particle_efficiency.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/single_particle_efficiency.py {input} {output}
+        """
+
+rule plot_final_ttbar_efficiency_ts:
+    input:
+        "data/plots/truth_smeared/ttbar_60_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/ttbar_120_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_smeared/ttbar_200_geant4/efficiency_over_eta.csv",
+    output:
+        "plots/final/ttbar_efficiency_ts.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/ttbar_efficiency_ts.py {input} {output}
+        """
+
+rule plot_final_ttbar_efficiency_te:
+    input:
+        "data/plots/truth_estimated/ttbar_60_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_estimated/ttbar_120_geant4/efficiency_over_eta.csv",
+        "data/plots/truth_estimated/ttbar_200_geant4/efficiency_over_eta.csv",
+    output:
+        "plots/final/ttbar_efficiency_te.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/ttbar_efficiency_te.py {input} {output}
+        """
+
+rule plot_final_single_muon_resolution:
+    input:
+        "data/plots/truth_smeared/mu_1GeV_geant4/resolution_d0_over_eta.csv",
+        "data/plots/truth_smeared/mu_10GeV_geant4/resolution_d0_over_eta.csv",
+        "data/plots/truth_smeared/mu_100GeV_geant4/resolution_d0_over_eta.csv",
+    output:
+        "plots/final/single_muon_resolution.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/single_muon_resolution.py {input} {output}
+        """
+
+rule plot_final_single_particle_resolution:
+    input:
+        "data/plots/truth_smeared/mu_1-100GeV_geant4/resolution_z0_over_pt.csv",
+        "data/plots/truth_smeared/pi_1-100GeV_geant4/resolution_z0_over_pt.csv",
+        "data/plots/truth_smeared/e_1-100GeV_geant4/resolution_z0_over_pt.csv",
+    output:
+        "plots/final/single_particle_resolution.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/single_particle_resolution.py {input} {output}
+        """
+
+rule plot_final_single_muon_pulls:
+    input:
+        "data/plots/truth_smeared/mu_1GeV_geant4/pulls_over_eta.csv",
+        "data/plots/truth_smeared/mu_10GeV_geant4/pulls_over_eta.csv",
+        "data/plots/truth_smeared/mu_100GeV_geant4/pulls_over_eta.csv",
+    output:
+        "plots/final/single_muon_pulls.pdf",
+    shell:
+        """
+        mkdir -p plots/final || true
+        python scripts/plot/final/single_muon_pulls.py {input} {output}
         """

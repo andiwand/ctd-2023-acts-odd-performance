@@ -7,10 +7,7 @@ from mycommon.agg import agg_efficiency_over_eta
 from mycommon.io import read_track_efficiency
 
 
-def dump_efficiency_over_eta(input, output):
-    eta_range = (-3, 3)
-    eta_bins = 30
-
+def dump_efficiency_over_eta(input, output, eta_range, eta_bins):
     eta, track_efficiency = read_track_efficiency(input)
 
     (
@@ -38,6 +35,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input")
     parser.add_argument("output")
+    parser.add_argument("--eta-range", nargs=2, type=float, default=(0, 3))
+    parser.add_argument("--eta-bins", type=int, default=13)
     args = parser.parse_args()
 
-    dump_efficiency_over_eta(args.input, args.output)
+    dump_efficiency_over_eta(args.input, args.output, args.eta_range, args.eta_bins)
