@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def myPlotStyle():
+def myPlotStyle(figsize=(10, 7)):
     plt.rcParams["ytick.right"] = plt.rcParams["xtick.top"] = True
     plt.rcParams["xtick.direction"] = "in"
     plt.rcParams["ytick.direction"] = "in"
@@ -14,5 +14,5 @@ def myPlotStyle():
     plt.rcParams["legend.borderpad"] = 0
     plt.rcParams["legend.handlelength"] = 1.0
 
-    fig = plt.figure(figsize=(10, 7), dpi=100)
+    fig = plt.figure(figsize=figsize, dpi=100)
     return fig

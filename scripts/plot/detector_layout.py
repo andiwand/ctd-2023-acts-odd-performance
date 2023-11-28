@@ -1,5 +1,5 @@
 """
-provided by https://github.com/paulgessinger
+originally from https://github.com/paulgessinger
 """
 
 import numpy as np
@@ -28,7 +28,17 @@ def box(bl, tr, ax, **kwargs):
 
 
 def draw_eta_lines(
-    ax, eta_range=(-3, 3), n=None, s=None, fmt="%.2f", text_args={}, rmin=None, **kwargs
+    ax,
+    eta_range=(-3, 3),
+    n=None,
+    s=None,
+    fmt="%.0f",
+    text_args={},
+    rmin=None,
+    rmax=None,
+    zmin=None,
+    zmax=None,
+    **kwargs
 ):
     assert (n is None and s is not None) or (n is not None and s is None)
     eta_min, eta_max = eta_range
@@ -37,11 +47,10 @@ def draw_eta_lines(
     else:
         eta_vals = np.arange(eta_min, eta_max + s, s)
     thetas = 2 * np.arctan(np.exp(-eta_vals))
-    zmin, zmax = ax.get_xlim()
+    if zmin is None:
+        zmin, zmax = ax.get_xlim()
     if rmin is None:
         rmin, rmax = ax.get_ylim()
-    else:
-        _, rmax = ax.get_ylim()
     z_vals = np.array([zmin if theta > np.pi / 2.0 else zmax for theta in thetas])
     r_vals = z_vals * np.tan(thetas)
 
@@ -52,9 +61,13 @@ def draw_eta_lines(
         ha = "right"
         va = "center"
 
+        kwargs2 = kwargs.copy()
+        if eta % 1 == 0:
+            kwargs2["color"] = "grey"
+
         if eta == 0.0:
             ax.text(0, rmax, s=r"$\eta=0$", ha="center", va="bottom", **text_args)
-            ax.plot([0, 0], [max(r_in, rmin), rmax], **kwargs)
+            ax.plot([0, 0], [max(r_in, rmin), rmax], **kwargs2)
             continue
 
         if r_out > rmax:
@@ -72,27 +85,41 @@ def draw_eta_lines(
             z_in = rmin / np.tan(theta)
             r_in = rmin
 
-        ax.plot([z_in, z_out], [r_in, r_out], **kwargs)
+        ax.plot([z_in, z_out], [r_in, r_out], **kwargs2)
         if eta > 0:
             ha = "left"
 
-        if eta > 0:
-            ax.text(z_out, r_out, s=r"$%s$" % (fmt % eta), ha=ha, va=va, **text_args)
+        if eta > 0 and eta % 1 == 0:
+            ax.text(
+                z_out, r_out, s=r"$\eta=%s$" % (fmt % eta), ha=ha, va=va, **text_args
+            )
 
 
-fig = myPlotStyle()
+fig = myPlotStyle(figsize=(12, 7))
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output")
 args = parser.parse_args()
 
+# set margin on the right side of the plot
+fig.tight_layout()
+fig.subplots_adjust(right=0.82)
+
 ax = fig.subplots(1, 1)
 
-ax.set_xlim(-3200, 3200)
-ax.set_ylim(-20, 1250)
+ax.set_xlim(-3200, 3800)
+ax.set_ylim(-20, 1350)
 
 draw_eta_lines(
-    ax=ax, eta_range=(-3, 3), s=0.5, color="lightgray", rmin=35, linestyle="--"
+    ax=ax,
+    eta_range=(-3, 3),
+    s=0.25,
+    color="lightgray",
+    rmin=35,
+    rmax=1250,
+    zmin=-3200,
+    zmax=3200,
+    linestyle="--",
 )
 
 
@@ -176,16 +203,47 @@ for z in [1300, 1600, 1900, 2250, 2600, 3000]:
 
 box([-3000, 1160], [3000, 1200], ax=ax, color="tab:purple", alpha=0.7)
 
-ax.text(0, 23, s="Beam pipe", va="top", ha="center")
-ax.text(0, 130, s="Pixels", ha="center")
-ax.text(0, 420, s="Short Strips", ha="center")
-ax.text(0, 900, s="Long Strips", ha="center")
-ax.text(0, 1200, s="Solenoid", va="bottom", ha="center")
+ax.text(4700, 15, s="Beam pipe", va="top", ha="center")
+ax.text(4700, 80, s="Pixels", ha="center")
+ax.text(4700, 420, s="Short Strips", ha="center")
+ax.text(4700, 880, s="Long Strips", ha="center")
+ax.text(4700, 1200, s="Solenoid", va="bottom", ha="center")
+
+ax.annotate(
+    "",
+    xy=(3800, 25),
+    xytext=(5500, 25),
+    arrowprops=dict(
+        alpha=0.7, linewidth=1.7, linestyle="--", arrowstyle="-", color="black"
+    ),
+)
+ax.annotate(
+    "",
+    xy=(3800, 186),
+    xytext=(5500, 186),
+    arrowprops=dict(
+        alpha=0.7, linewidth=1.7, linestyle="--", arrowstyle="-", color="black"
+    ),
+)
+ax.annotate(
+    "",
+    xy=(3800, 715),
+    xytext=(5500, 715),
+    arrowprops=dict(
+        alpha=0.7, linewidth=1.7, linestyle="--", arrowstyle="-", color="black"
+    ),
+)
+ax.annotate(
+    "",
+    xy=(3800, 1095),
+    xytext=(5500, 1095),
+    arrowprops=dict(
+        alpha=0.7, linewidth=1.7, linestyle="--", arrowstyle="-", color="black"
+    ),
+)
 
 ax.set_ylabel("r [mm]")
 ax.set_xlabel("z [mm]")
-
-fig.tight_layout()
 
 if args.output:
     fig.savefig(args.output)
