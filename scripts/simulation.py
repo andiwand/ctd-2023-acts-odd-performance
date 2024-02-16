@@ -98,8 +98,7 @@ def run_simulation(tp, event, outdir, events, skip, simulation):
     for file in [
         "timing.tsv",
         "particles.root",
-        "particles_initial.root",
-        # "particles_final.root",
+        # "particles_simulation.root",
         "hits.root",
     ]:
         source = tp / file
