@@ -8,9 +8,9 @@ from mycommon.root import getDefaultStyle, createLabel, createLegend, createPull
 
 style = getDefaultStyle()
 labels = [
-    "#frac{d_{0}^{reco}-d_{0}^{true}}{#sigma_{d_{0}}^{reco}}",
-    "#frac{z_{0}^{reco}-z_{0}^{true}}{#sigma_{z_{0}}^{reco}}",
-    "#frac{q/p^{reco}-q/p^{true}}{#sigma_{q/p}^{reco}}",
+    "(d_{0}^{reco}-d_{0}^{true})/#sigma_{d_{0}}^{reco}",
+    "(z_{0}^{reco}-z_{0}^{true})/#sigma_{z_{0}}^{reco}",
+    "(q/p^{reco}-q/p^{true})/#sigma_{q/p}^{reco}",
 ]
 
 parser = argparse.ArgumentParser()
