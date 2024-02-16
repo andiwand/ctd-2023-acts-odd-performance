@@ -215,12 +215,12 @@ rule material_composition:
 
 rule plot_material:
     input:
-        "data/sim/material_{simulation}/material_composition.root",
+        file = "data/sim/material_{simulation}/material_composition.root",
         script = "scripts/plot/material_generic.py",
     output:
         "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.{format}",
     shell:
-        "python {input.script} {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}"
+        "python {input.script} {wildcards.mat_x} {wildcards.mat_y} {input.file} --output {output}"
 
 rule histcmp_material:
     input:
