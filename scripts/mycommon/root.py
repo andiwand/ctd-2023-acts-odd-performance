@@ -147,7 +147,7 @@ def createPull(pull, style, prefix, title):
     graph.GetXaxis().SetLabelSize(style["font_size"])
 
     graph.GetYaxis().SetTitle(title)
-    graph.GetYaxis().SetRangeUser(-2.0, 2.0)
+    graph.GetYaxis().SetRangeUser(-1.3, 1.3)
     graph.GetYaxis().SetTitleFont(style["font"])
     graph.GetYaxis().SetTitleSize(style["font_size"])
     graph.GetYaxis().SetLabelFont(style["font"])

@@ -431,6 +431,10 @@ rule event_display_reco:
         events=1,
     shell:
         """
+        # ugly macos fix
+        export ZSH_VERSION=
+        source activate.sh
+
         python {input.script} {wildcards.event_label} {wildcards.reco_label} \
           data/sim/{wildcards.event_label} data/event_display/{wildcards.reco_label}/{wildcards.event_label} \
           --skip {params.skip} --events {params.events} --threads {threads} --output-trackstates \
