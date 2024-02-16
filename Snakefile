@@ -124,7 +124,7 @@ wildcard_constraints:
     pt_range="|".join(PT_RANGES),
     simulation="|".join(SIMULATIONS),
     reco="|".join(RECO_LABELS),
-    prefix="particles|particles_initial|hits",
+    prefix="particles|hits",
     skip="[0-9]+",
     events="[0-9]+",
     res_x="|".join(RES_XS),
@@ -175,18 +175,22 @@ rule all_sim:
         expand("data/sim/material_{simulation}/material_tracks.root", simulation=SIMULATIONS),
 
         expand("data/sim/{event_label}/particles.root", event_label=EVENT_LABELS),
-        expand("data/sim/{event_label}/particles_initial.root", event_label=EVENT_LABELS),
         expand("data/sim/{event_label}/hits.root", event_label=EVENT_LABELS),
 
 rule material_scan:
     output:
         "data/sim/material_{simulation}/material_tracks.root",
+        script = "scripts/material_scan.py",
     shell:
-        # somehow geant4 is crashing when running multiple instances in parallel
         """
+        # ugly macos fix
+        export ZSH_VERSION=
+        source activate.sh
+
+        # somehow geant4 is crashing when running multiple instances in parallel
         sleep $((RANDOM % 5))
-        mkdir -p data/sim/material_{wildcards.simulation} || true
-        python scripts/material_scan.py {wildcards.simulation} --skip 0 --events 100 \
+
+        python {input.script} {wildcards.simulation} --skip 0 --events 100 \
           data/sim/material_{wildcards.simulation}/ \
           > data/sim/material_{wildcards.simulation}/stdout.txt \
           2> data/sim/material_{wildcards.simulation}/stderr.txt
@@ -211,13 +215,11 @@ rule material_composition:
 rule plot_material:
     input:
         "data/sim/material_{simulation}/material_composition.root"
+        script = "scripts/plot/material_generic.py"
     output:
         "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.{format}",
     shell:
-        """
-        mkdir -p plots/sim || true
-        python scripts/plot/material_generic.py {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}
-        """
+        "python {input.script} {wildcards.mat_x} {wildcards.mat_y} {input} --output {output}"
 
 rule histcmp_material:
     input:
@@ -226,7 +228,6 @@ rule histcmp_material:
         "plots/sim/material_comparison.html",
     shell:
         """
-        mkdir -p plots/sim || true
         histcmp --label-monitored "Acts" --label-reference "Geant4" --title "ODD material composition" -o {output} {input} || true
         """
 
@@ -241,14 +242,18 @@ rule simulation:
 rule simulation_slice:
     output:
         "data/sim/{event_label}/slices/{skip}_{events}/particles.root",
-        "data/sim/{event_label}/slices/{skip}_{events}/particles_initial.root",
         "data/sim/{event_label}/slices/{skip}_{events}/hits.root",
+        script = "scripts/simulation.py",
     shell:
-        # somehow geant4 is crashing when running multiple instances in parallel
         """
+        # ugly macos fix
+        export ZSH_VERSION=
+        source activate.sh
+
+        # somehow geant4 is crashing when running multiple instances in parallel
         sleep $((RANDOM % 5))
-        mkdir -p data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events} || true
-        python scripts/simulation.py {wildcards.event_label} --skip {wildcards.skip} --events {wildcards.events} \
+
+        python {input.script} {wildcards.event_label} --skip {wildcards.skip} --events {wildcards.events} \
           data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/ \
           > data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stdout.txt \
           2> data/sim/{wildcards.event_label}/slices/{wildcards.skip}_{wildcards.events}/stderr.txt
@@ -257,8 +262,8 @@ rule simulation_slice:
 rule reconstruction:
     input:
         "data/sim/{event_label}/particles.root",
-        "data/sim/{event_label}/particles_initial.root",
         "data/sim/{event_label}/hits.root",
+        script = "scripts/reconstruction.py",
     output:
         "data/reco/{reco_label}/{event_label}/tracksummary_ambi.root",
     params:
@@ -267,8 +272,11 @@ rule reconstruction:
     threads: get_reco_threads
     shell:
         """
-        mkdir -p data/reco/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
+        # ugly macos fix
+        export ZSH_VERSION=
+        source activate.sh
+        
+        python {input.script} {wildcards.event_label} {wildcards.reco_label} \
           data/sim/{wildcards.event_label} data/reco/{wildcards.reco_label}/{wildcards.event_label} \
           --skip {params.skip} --events {params.events} --threads {threads} \
           > data/reco/{wildcards.reco_label}/{wildcards.event_label}/stdout.txt \
@@ -277,167 +285,143 @@ rule reconstruction:
 
 rule truth_matching:
     input:
-        "data/reco/{reco_label}/{event_label}/tracksummary_ambi.root",
-        "data/sim/{event_label}/particles.root",
-        "data/sim/{event_label}/hits.root",
+        files = (
+            "data/reco/{reco_label}/{event_label}/tracksummary_ambi.root",
+            "data/sim/{event_label}/particles.root",
+            "data/sim/{event_label}/hits.root",
+        ),
+        script = "scripts/truth_matching.py",
     output:
         "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
     threads: 6
     shell:
-        """
-        mkdir -p data/truth_matching/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/truth_matching.py {input} {output}
-        """
+        "python {input.script} {input.files} {output}"
 
 rule dump_pulls_over_eta:
     input:
-        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        file = "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        script = "scripts/dump/pulls_over_eta.py",
     output:
         "data/plots/{reco_label}/{event_label}/pulls_over_eta.csv",
     shell:
-        """
-        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/dump/pulls_over_eta.py {input} {output}
-        """
+        "python {input.script} {input.file} {output}"
 
 rule dump_efficiency_over_eta:
     input:
-        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        file = "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        script = "scripts/dump/efficiency_over_eta.py",
     output:
         "data/plots/{reco_label}/{event_label}/efficiency_over_eta.csv",
     shell:
-        """
-        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/dump/efficiency_over_eta.py {input} {output} --eta-range 0 3 --eta-bins 13
-        """
+        "python {input.script} {input.file} {output} --eta-range 0 3 --eta-bins 13"
 
 rule dump_resolution:
     input:
-        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        file = "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        script = "scripts/dump/resolution_generic.py",
     output:
         "data/plots/{reco_label}/{event_label}/resolution_{res_y}_over_{res_x}.csv",
     shell:
-        """
-        mkdir -p data/plots/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/dump/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} {output} --x-bins 13
-        """
+        "python {input.script} {wildcards.res_x} {wildcards.res_y} {input.file} {output} --x-bins 13"
 
 rule plot_pulls_over_eta_sausage:
     input:
-        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        file = "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        script = "scripts/plot/pulls_over_eta_sausage.py",
     output:
         "plots/reco/{reco_label}/{event_label}/pulls_over_eta_sausage.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/plot/pulls_over_eta_sausage.py {input} --output {output}
-        """
+        "python {input.script} {input.file} --output {output}"
 
 rule plot_single_particle_pulls_over_eta_errorbars:
     input:
-        get_all_pt_variants,
+        files = get_all_pt_variants,
+        script = "scripts/plot/pulls_over_eta_errorbars.py",
     output:
         "plots/reco/{reco_label}/{single_particle}_{simulation}/pulls_over_eta_errorbars.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot/pulls_over_eta_errorbars.py {input} --output {output}
-        """
+        "python {input.script} {input.files} --output {output}"
 
 rule plot_single_particle_resolution:
     input:
-        get_all_pt_variants,
+        files = get_all_pt_variants,
+        script = "scripts/plot/resolution_generic.py",
     output:
         "plots/reco/{reco_label}/{single_particle}_{simulation}/resolution_{res_y}_over_{res_x}.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
-        """
+        "python {input.script} {wildcards.res_x} {wildcards.res_y} {input.files} --output {output}"
 
 rule plot_single_particle_efficiency_over_eta:
     input:
-        get_all_pt_variants,
+        files = get_all_pt_variants,
+        script = "scripts/plot/efficiency_over_eta.py",
     output:
         "plots/reco/{reco_label}/{single_particle}_{simulation}/efficiency_over_eta.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.single_particle}_{wildcards.simulation} || true
-        python scripts/plot/efficiency_over_eta.py {input} --output {output}
-        """
+        "python {input.script} {input.files} --output {output}"
 
 rule plot_cross_single_particle_efficiency_over_eta:
     input:
-        get_all_flavor_variants,
+        files = get_all_flavor_variants,
+        script = "scripts/plot/efficiency_over_eta.py",
     output:
         "plots/reco/{reco_label}/single_particles_{pt}_{simulation}/efficiency_over_eta.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt}_{wildcards.simulation} || true
-        python scripts/plot/efficiency_over_eta.py {input} --output {output}
-        """
+        "python {input.script} {input.files} --output {output}"
 
 rule plot_ttbar_efficiency_over_eta:
     input:
-        get_all_ttbar_variants,
+        files = get_all_ttbar_variants,
+        script = "scripts/plot/efficiency_over_eta.py",
     output:
         "plots/reco/{reco_label}/ttbar_{simulation}/efficiency_over_eta.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/ttbar_{wildcards.simulation} || true
-        python scripts/plot/efficiency_over_eta.py {input} --output {output}
-        """
+        "python {input.script} {input.files} --output {output}"
 
 rule plot_cross_single_particle_resolution:
     input:
-        get_all_pt_range_variants,
+        files = get_all_pt_range_variants,
+        script = "scripts/plot/resolution_generic.py",
     output:
         "plots/reco/{reco_label}/single_particles_{pt_range}_{simulation}/resolution_{res_y}_over_{res_x}.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/single_particles_{wildcards.pt_range}_{wildcards.simulation} || true
-        python scripts/plot/resolution_generic.py {wildcards.res_x} {wildcards.res_y} {input} --output {output}
-        """
+        "python {input.script} {wildcards.res_x} {wildcards.res_y} {input.files} --output {output}"
 
 rule plot_inefficiencies:
     input:
-        "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        file = "data/truth_matching/{reco_label}/{event_label}/truth_matched_tracksummary_ambi.csv",
+        script = "scripts/plot/inefficiencies.py",
     output:
         "plots/reco/{reco_label}/{event_label}/inefficiencies.{format}",
     shell:
-        """
-        mkdir -p plots/reco/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/plot/inefficiencies.py {input} --output {output}
-        """
+        "python {input.script} {input.file} --output {output}"
 
 rule plot_particles:
     input:
-        "data/sim/{event_label}/particles.root",
+        file = "data/sim/{event_label}/particles.root",
+        script = "scripts/plot/particles.py",
     output:
         "plots/sim/{event_label}/particles.{format}",
     shell:
-        """
-        mkdir -p plots/sim/{wildcards.event_label} || true
-        python scripts/plot/particles.py {input} --output {output}
-        """
+        "python {input.script} {input.file} --output {output}"
 
 rule plot_nhits_over_eta:
     input:
-        "data/sim/{event_label}/particles.root",
-        "data/sim/{event_label}/hits.root",
+        files = (
+            "data/sim/{event_label}/particles.root",
+            "data/sim/{event_label}/hits.root",
+        ),
+        script = "scripts/plot/nhits_over_eta.py",
     output:
         "plots/sim/{event_label}/nhits_over_eta.{format}",
     shell:
-        """
-        mkdir -p plots/sim/{wildcards.event_label} || true
-        python scripts/plot/nhits_over_eta.py {input} --output {output}
-        """
+        "python {input.script} {input.files} --output {output}"
 
 rule event_display_reco:
     input:
         "data/sim/{event_label}/particles.root",
-        "data/sim/{event_label}/particles_initial.root",
         "data/sim/{event_label}/hits.root",
+        script = "scripts/reconstruction.py",
     output:
         "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
     params:
@@ -445,8 +429,7 @@ rule event_display_reco:
         events=1,
     shell:
         """
-        mkdir -p data/event_display/{wildcards.reco_label}/{wildcards.event_label} || true
-        python scripts/reconstruction.py {wildcards.event_label} {wildcards.reco_label} \
+        python {input.script} {wildcards.event_label} {wildcards.reco_label} \
           data/sim/{wildcards.event_label} data/event_display/{wildcards.reco_label}/{wildcards.event_label} \
           --skip {params.skip} --events {params.events} --threads {threads} --output-trackstates \
           > data/event_display/{wildcards.reco_label}/{wildcards.event_label}/stdout.txt \
@@ -455,128 +438,134 @@ rule event_display_reco:
 
 rule event_display_dump_hits:
     input:
-        "data/sim/{event_label}/hits.root",
+        file = "data/sim/{event_label}/hits.root",
+        script = "scripts/dump_hits.py",
     output:
         "data/event_display/{reco_label}/{event_label}/hits.csv",
     params:
         skip=0,
     shell:
         """
-        python scripts/dump_hits.py data/sim/{wildcards.event_label}/hits.root \
+        python {input.script} {input.file} \
           {params.skip} \
           data/event_display/{wildcards.reco_label}/{wildcards.event_label}/hits.csv
         """
 
 rule event_display_dump_tracks:
     input:
-        "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
+        file = "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
+        script = "scripts/dump_tracks.py",
     output:
         "data/event_display/{reco_label}/{event_label}/tracks.csv",
     params:
         skip=0,
     shell:
         """
-        python scripts/dump_tracks.py data/event_display/{wildcards.reco_label}/{wildcards.event_label}/trackstates_ambi.root \
-          {params.skip} \
+        python {input.script} {input.file} {params.skip} \
           data/event_display/{wildcards.reco_label}/{wildcards.event_label}/tracks.csv
         """
 
 rule plot_detector_layout:
+    input:
+        script = "scripts/plot/detector_layout.py",
     output:
         "plots/detector_layout.{format}",
     shell:
-        """
-        mkdir -p plots || true
-        python scripts/plot/detector_layout.py --output {output}
-        """
+        "python {input.script} --output {output}"
 
 rule plot_final_single_muon_efficiency:
     input:
-        "data/plots/truth_smeared/mu_1GeV_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/mu_100GeV_geant4/efficiency_over_eta.csv",
+        files = (
+            "data/plots/truth_smeared/mu_1GeV_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/mu_100GeV_geant4/efficiency_over_eta.csv",
+        ),
+        script = "scripts/plot/final/single_muon_efficiency.py",
     output:
         "plots/final/single_muon_efficiency.pdf",
     shell:
-        """
-        mkdir -p plots/final || true
-        python scripts/plot/final/single_muon_efficiency.py {input} {output}
-        """
+        "python {input.script} {input.files} {output}"
 
 rule plot_final_single_particle_efficiency:
     input:
-        "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/pi_10GeV_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/e_10GeV_geant4/efficiency_over_eta.csv",
+        files = (
+            "data/plots/truth_smeared/mu_10GeV_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/pi_10GeV_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/e_10GeV_geant4/efficiency_over_eta.csv",
+        ),
+        script = "scripts/plot/final/single_particle_efficiency.py",
     output:
         "plots/final/single_particle_efficiency.pdf",
     shell:
-        """
-        mkdir -p plots/final || true
-        python scripts/plot/final/single_particle_efficiency.py {input} {output}
-        """
+        "python {input.script} {input.files} {output}"
 
 rule plot_final_ttbar_efficiency_ts:
     input:
-        "data/plots/truth_smeared/ttbar_60_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/ttbar_120_geant4/efficiency_over_eta.csv",
-        "data/plots/truth_smeared/ttbar_200_geant4/efficiency_over_eta.csv",
+        files = (
+            "data/plots/truth_smeared/ttbar_60_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/ttbar_120_geant4/efficiency_over_eta.csv",
+            "data/plots/truth_smeared/ttbar_200_geant4/efficiency_over_eta.csv",
+        ),
+        script = "scripts/plot/final/ttbar_efficiency_ts.py",
     output:
         "plots/final/ttbar_efficiency_ts.pdf",
     shell:
-        """
-        mkdir -p plots/final || true
-        python scripts/plot/final/ttbar_efficiency_ts.py {input} {output}
-        """
+        "python {input.script} {input.files} {output}"
 
 rule plot_final_ttbar_efficiency_te:
     input:
+        files = (
         "data/plots/truth_estimated/ttbar_60_geant4/efficiency_over_eta.csv",
         "data/plots/truth_estimated/ttbar_120_geant4/efficiency_over_eta.csv",
         "data/plots/truth_estimated/ttbar_200_geant4/efficiency_over_eta.csv",
+        ),
+        script = "scripts/plot/final/ttbar_efficiency_te.py",
     output:
         "plots/final/ttbar_efficiency_te.pdf",
     shell:
-        """
-        mkdir -p plots/final || true
-        python scripts/plot/final/ttbar_efficiency_te.py {input} {output}
-        """
+        "python {input.script} {input.files} {output}"
 
 rule plot_final_single_muon_resolution:
     input:
-        "data/plots/truth_smeared/mu_1GeV_geant4/resolution_d0_over_eta.csv",
-        "data/plots/truth_smeared/mu_10GeV_geant4/resolution_d0_over_eta.csv",
-        "data/plots/truth_smeared/mu_100GeV_geant4/resolution_d0_over_eta.csv",
+        files = (
+            "data/plots/truth_smeared/mu_1GeV_geant4/resolution_d0_over_eta.csv",
+            "data/plots/truth_smeared/mu_10GeV_geant4/resolution_d0_over_eta.csv",
+            "data/plots/truth_smeared/mu_100GeV_geant4/resolution_d0_over_eta.csv",
+        ),
+        script = "scripts/plot/final/single_muon_resolution.py",
     output:
         "plots/final/single_muon_resolution.pdf",
     shell:
         """
-        mkdir -p plots/final || true
-        python scripts/plot/final/single_muon_resolution.py {input} {output}
+        python {input.script} {input.files} {output}
         """
 
 rule plot_final_single_particle_resolution:
     input:
-        "data/plots/truth_smeared/mu_1-100GeV_geant4/resolution_z0_over_pt.csv",
-        "data/plots/truth_smeared/pi_1-100GeV_geant4/resolution_z0_over_pt.csv",
-        "data/plots/truth_smeared/e_1-100GeV_geant4/resolution_z0_over_pt.csv",
+        files = (
+            "data/plots/truth_smeared/mu_1-100GeV_geant4/resolution_z0_over_pt.csv",
+            "data/plots/truth_smeared/pi_1-100GeV_geant4/resolution_z0_over_pt.csv",
+            "data/plots/truth_smeared/e_1-100GeV_geant4/resolution_z0_over_pt.csv",
+        ),
+        script = "scripts/plot/final/single_particle_resolution.py",
     output:
         "plots/final/single_particle_resolution.pdf",
     shell:
         """
-        mkdir -p plots/final || true
-        python scripts/plot/final/single_particle_resolution.py {input} {output}
+        python {input.script} {input.files} {output}
         """
 
 rule plot_final_single_muon_pulls:
     input:
-        "data/plots/truth_smeared/mu_1GeV_geant4/pulls_over_eta.csv",
-        "data/plots/truth_smeared/mu_10GeV_geant4/pulls_over_eta.csv",
-        "data/plots/truth_smeared/mu_100GeV_geant4/pulls_over_eta.csv",
+        files = (
+            "data/plots/truth_smeared/mu_1GeV_geant4/pulls_over_eta.csv",
+            "data/plots/truth_smeared/mu_10GeV_geant4/pulls_over_eta.csv",
+            "data/plots/truth_smeared/mu_100GeV_geant4/pulls_over_eta.csv",
+        ),
+        script = "scripts/plot/final/single_muon_pulls.py",
     output:
         "plots/final/single_muon_pulls.pdf",
     shell:
         """
-        mkdir -p plots/final || true
-        python scripts/plot/final/single_muon_pulls.py {input} {output}
+        python {input.script} {input.files} {output}
         """
