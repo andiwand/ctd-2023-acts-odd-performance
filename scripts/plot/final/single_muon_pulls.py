@@ -23,11 +23,11 @@ args = parser.parse_args()
 files = [args.mu_1GeV, args.mu_10GeV, args.mu_100GeV]
 data = [pd.read_csv(file) for file in files]
 
-canvas = r.TCanvas("canvas", "", 1000, 800)
+canvas = r.TCanvas("canvas", "", 1000, 600)
 
 pads = [
-    r.TPad("a", "a", 0.0, 0.65, 0.7, 0.95),
-    r.TPad("b", "b", 0.0, 0.35, 0.7, 0.65),
+    r.TPad("a", "a", 0.0, 0.6, 0.7, 0.95),
+    r.TPad("b", "b", 0.0, 0.3, 0.7, 0.65),
     r.TPad("c", "c", 0.0, 0.0, 0.7, 0.35),
 ]
 
@@ -40,12 +40,9 @@ for i, (pad, d, title) in enumerate(zip(pads, data, labels)):
     pad.cd()
 
     pad.SetTopMargin(0.0)
-    pad.SetBottomMargin(0.05)
+    pad.SetBottomMargin(0.25)
     pad.SetLeftMargin(0.15)
     pad.SetRightMargin(0.01)
-
-    if i == 2:
-        pad.SetBottomMargin(0.2)
 
     graphs = [
         createPull(d, s, prefix, title) for s, prefix in zip(style, ["d0", "z0", "qop"])
