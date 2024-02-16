@@ -139,7 +139,7 @@ rule all:
         expand("data/plots/{reco_label}/{event_label}/efficiency_over_eta.csv", reco_label=RECO_LABELS, event_label=EVENT_LABELS),
         expand("data/plots/{reco_label}/{event_label}/resolution_{res_y}_over_{res_x}.csv", reco_label=RECO_LABELS, event_label=EVENT_LABELS, res_x=RES_XS, res_y=RES_YS),
 
-        "data/event_display/truth_smeared/ttbar_200_geant4/hits.csv",
+        "data/event_display/ttbar_200_geant4/hits.csv",
         "data/event_display/truth_smeared/ttbar_200_geant4/tracks.csv",
 
         expand("plots/detector_layout.{format}", simulation=SIMULATIONS, mat_x=MAT_XS, mat_y=MAT_YS, format=FORMATS),
@@ -178,9 +178,10 @@ rule all_sim:
         expand("data/sim/{event_label}/hits.root", event_label=EVENT_LABELS),
 
 rule material_scan:
+    input:
+        script = "scripts/material_scan.py",
     output:
         "data/sim/material_{simulation}/material_tracks.root",
-        script = "scripts/material_scan.py",
     shell:
         """
         # ugly macos fix
@@ -214,8 +215,8 @@ rule material_composition:
 
 rule plot_material:
     input:
-        "data/sim/material_{simulation}/material_composition.root"
-        script = "scripts/plot/material_generic.py"
+        "data/sim/material_{simulation}/material_composition.root",
+        script = "scripts/plot/material_generic.py",
     output:
         "plots/sim/material_{simulation}_{mat_y}_vs_{mat_x}.{format}",
     shell:
@@ -240,10 +241,11 @@ rule simulation:
         "hadd -f {output} {input}"
 
 rule simulation_slice:
+    input:
+        script = "scripts/simulation.py",
     output:
         "data/sim/{event_label}/slices/{skip}_{events}/particles.root",
         "data/sim/{event_label}/slices/{skip}_{events}/hits.root",
-        script = "scripts/simulation.py",
     shell:
         """
         # ugly macos fix
@@ -439,31 +441,24 @@ rule event_display_reco:
 rule event_display_dump_hits:
     input:
         file = "data/sim/{event_label}/hits.root",
-        script = "scripts/dump_hits.py",
+        script = "scripts/dump/hits.py",
     output:
-        "data/event_display/{reco_label}/{event_label}/hits.csv",
+        "data/event_display/{event_label}/hits.csv",
     params:
         skip=0,
     shell:
-        """
-        python {input.script} {input.file} \
-          {params.skip} \
-          data/event_display/{wildcards.reco_label}/{wildcards.event_label}/hits.csv
-        """
+        "python {input.script} {input.file} {params.skip} {output}"
 
 rule event_display_dump_tracks:
     input:
         file = "data/event_display/{reco_label}/{event_label}/trackstates_ambi.root",
-        script = "scripts/dump_tracks.py",
+        script = "scripts/dump/tracks.py",
     output:
         "data/event_display/{reco_label}/{event_label}/tracks.csv",
     params:
         skip=0,
     shell:
-        """
-        python {input.script} {input.file} {params.skip} \
-          data/event_display/{wildcards.reco_label}/{wildcards.event_label}/tracks.csv
-        """
+        "python {input.script} {input.file} {params.skip} {output}"
 
 rule plot_detector_layout:
     input:
